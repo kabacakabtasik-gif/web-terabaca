@@ -58,7 +58,7 @@
                     Nalungtik Titik Manggihan Diri
                 </h2>
                 <p class="text-gray-750 leading-relaxed text-sm md:text-base">
-                    GAMBAR adalah berupa coretan tangan, baik berbentuk maupun abstrak. Di dalamnya terdapat banyak unsur, di antaranya titik dan garis. Rangkaian components ini dapat dianalisis karena memiliki makna mendalam, meliputi sisi dalam maupun luar dari penggambar. 
+                    GAMBAR adalah berupa coretan tangan, baik berbentuk maupun abstrak. Di dalamnya terdapat banyak unsur, di antaranya titik dan garis. Rangkaian komponen ini dapat dianalisis karena memiliki makna mendalam, meliputi sisi dalam maupun luar dari penggambar. 
                 </p>
                 <p class="text-gray-750 leading-relaxed text-sm md:text-base">
                     Melalui <strong>Graphos Aesthetic Methods</strong>, TERABACA hadir berperan sebagai <em>precho-diagnostic</em> untuk membantu membedah kandungan gambar atau coretan benang kusut/tanda tangan guna menyajikan informasi psikologis yang holistik, komprehensif, serta memberikan solusi terbaik bagi pengembangan diri Anda.
@@ -77,7 +77,7 @@
                     </div>
                     <div class="border-b border-gray-100 pb-3">
                         <h4 class="font-bold text-blue-900 mb-1">8 Kebutuhan Peran Kebundaan (Motherly)</h4>
-                        <p class="text-gray-600">Membaca tingkat <em>inner sensitivity</em>, ketangguhan (*toughness*), kesabaran, *motherhood*, pengembangan diri, tanggung jawab, serta *aware & belief system*.</p>
+                        <p class="text-gray-600">Membaca tingkat <em>inner sensitivity</em>, ketangguhan (<em>toughness</em>), kesabaran, <em>motherhood</em>, pengembangan diri, tanggung jawab, serta <em>aware & belief system</em>.</p>
                     </div>
                     <div class="border-b border-gray-100 pb-3">
                         <h4 class="font-bold text-blue-900 mb-1">Potensi, Emosi & Jendela Persepsi</h4>
@@ -112,7 +112,7 @@
                 </div>
             </section>
 
-            <!-- SECTION 4: PROGRAM LAYANAN & PAKET (UPDATE HARGA & CABANG) -->
+            <!-- SECTION 4: PROGRAM LAYANAN & PAKET -->
             <section id="paket" class="space-y-6">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-l-4 border-red-650 pl-3">
                     <h2 class="text-xl font-extrabold text-blue-950">Pilihan Paket Terabaca</h2>
@@ -123,7 +123,7 @@
                     </div>
                 </div>
 
-                <!-- FORM INPUT NAMA & INTEGRASI OPSI MULTI-CABANG -->
+                <!-- FORM INPUT NAMA DI ATAS PRICELIST -->
                 <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-xs max-w-md space-y-3">
                     <div>
                         <label class="block text-xs font-bold text-blue-950 mb-1" id="label-input-nama">Nama Lengkap Anda:</label>
@@ -133,7 +133,6 @@
                         <label class="block text-xs font-bold text-blue-950 mb-1">Pilih Kota / Cabang Terdekat:</label>
                         <select id="klien-cabang" onchange="updateAllWhatsAppLinks()" class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 bg-slate-50 focus:outline-hidden focus:border-blue-900 transition font-bold text-blue-900">
                             <option value="pusat">TERABACA Pusat</option>
-                            <option value="depok">TERABACA Cabang Depok</option>
                         </select>
                     </div>
                 </div>
@@ -220,7 +219,7 @@
                             <div class="flex justify-between items-start">
                                 <span class="text-[10px] font-bold text-red-700 uppercase tracking-widest bg-red-50 px-2 py-0.5 rounded">Paket Eksklusif 04</span>
                                 <div class="text-right">
-                                    <span id="price-brainwave" class="text-lg font-black text-red-700">Rp 14.000.000</span>
+                                    <span id="price-brainwave" class="text-lg font-black text-red-700">Rp 11.000.000</span>
                                     <p class="text-[9px] text-gray-400 font-medium" id="label-brainwave">Kategori Personal</p>
                                 </div>
                             </div>
@@ -249,10 +248,8 @@
     <script>
         let currentKategori = 'personal';
         
-        // DAFTAR NOMOR WHATSAPP CABANG
         const WA_NUMBERS = {
-            "pusat": "6281324262633", // Nomor Anda (Pusat)
-            "depok": "628XXXXXXXXXX"  // Silakan ganti XXXXX dengan nomor WA Admin Cabang Depok asli
+            "pusat": "6281324262633"
         };
 
         function bukaDashboard() {
@@ -287,14 +284,14 @@
                 labelInput.innerText = "Nama Lengkap Anda:";
                 inputKlien.placeholder = "Ketik nama Anda di sini...";
                 
-                // Set Update Harga Terkini (Personal)
+                // HARGA PERSONAL
                 document.getElementById('price-basic').innerText = "Rp 350.000";
                 document.getElementById('label-basic').innerText = "Kategori Personal";
                 document.getElementById('price-parent').innerText = "Rp 350.000";
                 document.getElementById('label-parent').innerText = "Kategori Personal";
                 document.getElementById('price-talent').innerText = "Rp 600.000";
                 document.getElementById('label-talent').innerText = "Kategori Personal";
-                document.getElementById('price-brainwave').innerText = "Rp 14.000.000";
+                document.getElementById('price-brainwave').innerText = "Rp 11.000.000";
                 document.getElementById('label-brainwave').innerText = "Kategori Personal";
             } else {
                 btnLembaga.className = "px-4 py-1.5 rounded-full bg-blue-900 text-white transition-all cursor-pointer";
@@ -302,25 +299,23 @@
                 labelInput.innerText = "Nama Lembaga / Instansi (MoU):";
                 inputKlien.placeholder = "Ketik nama sekolah/lembaga/perusahaan...";
 
-                // Set Update Harga Terkini (Lembaga)
+                // HARGA LEMBAGA
                 document.getElementById('price-basic').innerText = "Rp 250.000";
                 document.getElementById('label-basic').innerText = "Tarif Khusus MoU";
                 document.getElementById('price-parent').innerText = "Rp 250.000";
                 document.getElementById('label-parent').innerText = "Tarif Khusus MoU";
                 document.getElementById('price-talent').innerText = "Rp 450.000";
                 document.getElementById('label-talent').innerText = "Tarif Khusus MoU";
-                document.getElementById('price-brainwave').innerText = "Rp 11.000.000";
+                document.getElementById('price-brainwave').innerText = "Rp 14.000.000";
                 document.getElementById('label-brainwave').innerText = "Tarif Khusus MoU";
             }
             updateAllWhatsAppLinks();
         }
 
-        // FUNGSI UTAMA WHATSAPP DINAMIS (Mendukung Nama + Pilihan Kategori + Distribusi Cabang)
         function updateAllWhatsAppLinks() {
             const namaInput = document.getElementById('klien-name').value.trim();
             const namaKlien = namaInput ? namaInput : "(Belum Mengisi Nama)";
             
-            // Logika Deteksi Cabang Terpilih
             const cabangSelected = document.getElementById('klien-cabang').value;
             const nomorTujuan = WA_NUMBERS[cabangSelected]; 
             const namaCabangTeks = document.getElementById('klien-cabang').options[document.getElementById('klien-cabang').selectedIndex].text;
@@ -328,13 +323,11 @@
             const tipeText = currentKategori === 'personal' ? "Personal" : "Lembaga/Instansi yang sudah MoU";
             const identitasLabel = currentKategori === 'personal' ? "Nama" : "Nama Lembaga";
 
-            // Draf Template Chat Otomatis
             const txtBasic = `Halo ${namaCabangTeks}, saya ingin mendaftar Paket BASIC.\n\nDetail Klien:\n- Kategori: ${tipeText}\n- ${identitasLabel}: ${namaKlien}\n\nSaya sudah membaca panduan alur tes di website dan siap menerima instruksi selanjutnya.`;
             const txtParent = `Halo ${namaCabangTeks}, saya ingin mendaftar Paket PARENT.\n\nDetail Klien:\n- Kategori: ${tipeText}\n- ${identitasLabel}: ${namaKlien}\n\nSaya sudah membaca panduan alur tes di website dan siap menerima instruksi selanjutnya.`;
             const txtTalent = `Halo ${namaCabangTeks}, saya ingin mendaftar Paket TALENT.\n\nDetail Klien:\n- Kategori: ${tipeText}\n- ${identitasLabel}: ${namaKlien}\n\nSaya sudah membaca panduan alur tes di website dan siap menerima instruksi selanjutnya.`;
             const txtBrainwave = `Halo ${namaCabangTeks}, saya ingin mendaftar Paket Eksklusif BRAINWAVE.\n\nDetail Klien:\n- Kategori: ${tipeText}\n- ${identitasLabel}: ${namaKlien}\n\nMohon informasi penjadwalan konsultasi khusus.`;
 
-            // Inject Link dengan enkripsi teks
             document.getElementById('lnk-basic').href = `https://wa.me/${nomorTujuan}?text=${encodeURIComponent(txtBasic)}`;
             document.getElementById('lnk-parent').href = `https://wa.me/${nomorTujuan}?text=${encodeURIComponent(txtParent)}`;
             document.getElementById('lnk-talent').href = `https://wa.me/${nomorTujuan}?text=${encodeURIComponent(txtTalent)}`;
