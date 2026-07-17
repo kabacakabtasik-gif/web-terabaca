@@ -58,7 +58,7 @@
                     Nalungtik Titik Manggihan Diri
                 </h2>
                 <p class="text-gray-750 leading-relaxed text-sm md:text-base">
-                    GAMBAR adalah berupa coretan tangan, baik berbentuk maupun abstrak. Di dalamnya terdapat banyak unsur, di antaranya titik dan garis. Rangkaian components ini dapat dianalisis karena memiliki makna mendalam, meliputi sisi dalam maupun luar dari penggambar. 
+                    GAMBAR adalah berupa coretan tangan, baik berbentuk maupun abstrak. Di dalamnya terdapat banyak unsur, di antaranya titik dan garis. Rangkaian komponen ini dapat dianalisis karena memiliki makna mendalam, meliputi sisi dalam maupun luar dari penggambar. 
                 </p>
                 <p class="text-gray-750 leading-relaxed text-sm md:text-base">
                     Melalui <strong>Graphos Aesthetic Methods</strong>, TERABACA hadir berperan sebagai <em>precho-diagnostic</em> untuk membantu membedah kandungan gambar atau coretan benang kusut/tanda tangan guna menyajikan informasi psikologis yang holistik, komprehensif, serta memberikan solusi terbaik bagi pengembangan diri Anda.
@@ -99,19 +99,36 @@
                 </p>
             </section>
 
-            <!-- ================= SECTION 4: PROGRAM LAYANAN & PAKET ================= -->
+            <!-- ================= SECTION 4: PROGRAM LAYANAN & PAKET (WITH TOGGLE) ================= -->
             <section id="paket" class="space-y-6">
-                <h2 class="text-xl font-extrabold text-blue-950 border-l-4 border-red-650 pl-3">
-                    Pilihan Paket Terabaca
-                </h2>
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-l-4 border-red-650 pl-3">
+                    <h2 class="text-xl font-extrabold text-blue-950">
+                        Pilihan Paket Terabaca
+                    </h2>
+                    <!-- Toggle Switch Personal / Lembaga -->
+                    <div class="inline-flex bg-gray-200 p-1 rounded-full text-xs font-bold self-start sm:self-auto">
+                        <button id="btn-personal" onclick="switchKategori('personal')" class="px-4 py-1.5 rounded-full bg-blue-900 text-white transition-all duration-350 cursor-pointer">
+                            Personal
+                        </button>
+                        <button id="btn-lembaga" onclick="switchKategori('lembaga')" class="px-4 py-1.5 rounded-full text-gray-650 hover:text-blue-900 transition-all duration-350 cursor-pointer">
+                            Lembaga (MoU)
+                        </button>
+                    </div>
+                </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     
                     <!-- 1. PAKET BASIC -->
                     <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs flex flex-col justify-between">
                         <div>
-                            <span class="text-[10px] font-bold text-blue-800 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded">Paket 01</span>
-                            <h3 class="text-lg font-extrabold text-blue-950 mt-2">BASIC</h3>
+                            <div class="flex justify-between items-start">
+                                <span class="text-[10px] font-bold text-blue-800 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded">Paket 01</span>
+                                <div class="text-right">
+                                    <span id="price-basic" class="text-lg font-black text-blue-950">Rp 350.000</span>
+                                    <p class="text-[9px] text-gray-400 font-medium" id="label-basic">Kategori Personal</p>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-extrabold text-blue-950 mt-1">BASIC</h3>
                             <div class="mt-4 space-y-3">
                                 <div>
                                     <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Menggali:</h4>
@@ -127,13 +144,22 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="mt-5 pt-2">
+                            <a id="lnk-basic" href="https://wa.me/6281324262633?text=Halo%20TERABACA,%20saya%20tertarik%20berkonsultasi%20mengenai%20Paket%20BASIC%20untuk%20kategori%20Personal." target="_blank" class="block text-center bg-blue-900 hover:bg-blue-950 text-white font-bold py-2 rounded-xl text-xs transition">Pilih Paket</a>
+                        </div>
                     </div>
 
                     <!-- 2. PAKET PARENT -->
                     <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs flex flex-col justify-between">
                         <div>
-                            <span class="text-[10px] font-bold text-blue-800 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded">Paket 02</span>
-                            <h3 class="text-lg font-extrabold text-blue-950 mt-2">PARENT</h3>
+                            <div class="flex justify-between items-start">
+                                <span class="text-[10px] font-bold text-blue-800 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded">Paket 02</span>
+                                <div class="text-right">
+                                    <span id="price-parent" class="text-lg font-black text-blue-950">Rp 350.000</span>
+                                    <p class="text-[9px] text-gray-400 font-medium" id="label-parent">Kategori Personal</p>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-extrabold text-blue-950 mt-1">PARENT</h3>
                             <div class="mt-4 space-y-3">
                                 <div>
                                     <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Menggali:</h4>
@@ -149,13 +175,22 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="mt-5 pt-2">
+                            <a id="lnk-parent" href="https://wa.me/6281324262633?text=Halo%20TERABACA,%20saya%20tertarik%20berkonsultasi%20mengenai%20Paket%20PARENT%20untuk%20kategori%20Personal." target="_blank" class="block text-center bg-blue-900 hover:bg-blue-950 text-white font-bold py-2 rounded-xl text-xs transition">Pilih Paket</a>
+                        </div>
                     </div>
 
                     <!-- 3. PAKET TALENT -->
                     <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs flex flex-col justify-between">
                         <div>
-                            <span class="text-[10px] font-bold text-blue-800 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded">Paket 03</span>
-                            <h3 class="text-lg font-extrabold text-blue-950 mt-2">TALENT</h3>
+                            <div class="flex justify-between items-start">
+                                <span class="text-[10px] font-bold text-blue-800 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded">Paket 03</span>
+                                <div class="text-right">
+                                    <span id="price-talent" class="text-lg font-black text-blue-950">Rp 600.000</span>
+                                    <p class="text-[9px] text-gray-400 font-medium" id="label-talent">Kategori Personal</p>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-extrabold text-blue-950 mt-1">TALENT</h3>
                             <div class="mt-4 space-y-3">
                                 <div>
                                     <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Menggali:</h4>
@@ -175,13 +210,22 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="mt-5 pt-2">
+                            <a id="lnk-talent" href="https://wa.me/6281324262633?text=Halo%20TERABACA,%20saya%20tertarik%20berkonsultasi%20mengenai%20Paket%20TALENT%20untuk%20kategori%20Personal." target="_blank" class="block text-center bg-blue-900 hover:bg-blue-950 text-white font-bold py-2 rounded-xl text-xs transition">Pilih Paket</a>
+                        </div>
                     </div>
 
                     <!-- 4. PAKET BRAINWAVE -->
                     <div class="bg-white p-6 rounded-2xl border border-red-200 shadow-xs flex flex-col justify-between bg-gradient-to-b from-white to-red-50/20">
                         <div>
-                            <span class="text-[10px] font-bold text-red-700 uppercase tracking-widest bg-red-50 px-2 py-0.5 rounded">Paket Eksklusif 04</span>
-                            <h3 class="text-lg font-extrabold text-blue-950 mt-2">BRAINWAVE</h3>
+                            <div class="flex justify-between items-start">
+                                <span class="text-[10px] font-bold text-red-700 uppercase tracking-widest bg-red-50 px-2 py-0.5 rounded">Paket Eksklusif 04</span>
+                                <div class="text-right">
+                                    <span class="text-xs font-black text-red-700 uppercase tracking-wide">Hubungi Admin</span>
+                                    <p class="text-[9px] text-gray-400 font-medium">Berdasarkan Konsultasi</p>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-extrabold text-blue-950 mt-1">BRAINWAVE</h3>
                             <div class="mt-4 space-y-3">
                                 <div>
                                     <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Menggali Secara Komprehensif:</h4>
@@ -213,6 +257,9 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="mt-5 pt-2">
+                            <a id="lnk-brainwave" href="https://wa.me/6281324262633?text=Halo%20TERABACA,%20saya%20tertarik%20berkonsultasi%20khusus%20mengenai%20Paket%20Eksklusif%20BRAINWAVE." target="_blank" class="block text-center bg-red-650 hover:bg-red-700 text-white font-bold py-2 rounded-xl text-xs transition">Konsultasi Khusus</a>
+                        </div>
                     </div>
 
                 </div>
@@ -241,7 +288,7 @@
         </footer>
     </div>
 
-    <!-- ================= LOGIKA JAVASCRIPT TRANSISI ================= -->
+    <!-- ================= LOGIKA JAVASCRIPT TRANSISI & TOGGLE HARGA ================= -->
     <script>
         function bukaDashboard() {
             const landing = document.getElementById('landing-page');
@@ -268,6 +315,64 @@
                 dashboard.classList.add('hidden');
                 landing.classList.remove('hidden');
             }, 300);
+        }
+
+        // Fungsi Sakelar Harga Dinamis
+        function switchKategori(kategori) {
+            const btnPersonal = document.getElementById('btn-personal');
+            const btnLembaga = document.getElementById('btn-lembaga');
+            
+            // Elemen Harga & Label
+            const priceBasic = document.getElementById('price-basic');
+            const labelBasic = document.getElementById('label-basic');
+            const priceParent = document.getElementById('price-parent');
+            const labelParent = document.getElementById('label-parent');
+            const priceTalent = document.getElementById('price-talent');
+            const labelTalent = document.getElementById('label-talent');
+            
+            // Elemen Tautan WhatsApp
+            const lnkBasic = document.getElementById('lnk-basic');
+            const lnkParent = document.getElementById('lnk-parent');
+            const lnkTalent = document.getElementById('lnk-talent');
+            const lnkBrainwave = document.getElementById('lnk-brainwave');
+
+            if (kategori === 'personal') {
+                // Style Tombol
+                btnPersonal.className = "px-4 py-1.5 rounded-full bg-blue-900 text-white transition-all duration-350 cursor-pointer";
+                btnLembaga.className = "px-4 py-1.5 rounded-full text-gray-650 hover:text-blue-900 transition-all duration-350 cursor-pointer";
+                
+                // Set Nominal Personal
+                priceBasic.innerText = "Rp 350.000";
+                labelBasic.innerText = "Kategori Personal";
+                priceParent.innerText = "Rp 350.000";
+                labelParent.innerText = "Kategori Personal";
+                priceTalent.innerText = "Rp 600.000";
+                labelTalent.innerText = "Kategori Personal";
+
+                // Update Link WhatsApp Personal
+                lnkBasic.href = "https://wa.me/6281324262633?text=Halo%20TERABACA,%20saya%20tertarik%20berkonsultasi%20mengenai%20Paket%20BASIC%20untuk%20kategori%20Personal.";
+                lnkParent.href = "https://wa.me/6281324262633?text=Halo%20TERABACA,%20saya%20tertarik%20berkonsultasi%20mengenai%20Paket%20PARENT%20untuk%20kategori%20Personal.";
+                lnkTalent.href = "https://wa.me/6281324262633?text=Halo%20TERABACA,%20saya%20tertarik%20berkonsultasi%20mengenai%20Paket%20TALENT%20untuk%20kategori%20Personal.";
+                lnkBrainwave.href = "https://wa.me/6281324262633?text=Halo%20TERABACA,%20saya%20tertarik%20berkonsultasi%20khusus%20mengenai%20Paket%20Eksklusif%20BRAINWAVE%20(Personal).";
+            } else {
+                // Style Tombol
+                btnLembaga.className = "px-4 py-1.5 rounded-full bg-blue-900 text-white transition-all duration-350 cursor-pointer";
+                btnPersonal.className = "px-4 py-1.5 rounded-full text-gray-650 hover:text-blue-900 transition-all duration-350 cursor-pointer";
+                
+                // Set Nominal Lembaga
+                priceBasic.innerText = "Rp 165.000";
+                labelBasic.innerText = "Tarif Khusus MoU";
+                priceParent.innerText = "Rp 250.000";
+                labelParent.innerText = "Tarif Khusus MoU";
+                priceTalent.innerText = "Rp 450.000";
+                labelTalent.innerText = "Tarif Khusus MoU";
+
+                // Update Link WhatsApp Lembaga
+                lnkBasic.href = "https://wa.me/6281324262633?text=Halo%20TERABACA,%20saya%20tertarik%20berkonsultasi%20mengenai%20Paket%20BASIC%20untuk%20kategori%20Lembaga%20yang%20sudah%20MoU.";
+                lnkParent.href = "https://wa.me/6281324262633?text=Halo%20TERABACA,%20saya%20tertarik%20berkonsultasi%20mengenai%20Paket%20PARENT%20untuk%20kategori%20Lembaga%20yang%20sudah%20MoU.";
+                lnkTalent.href = "https://wa.me/6281324262633?text=Halo%20TERABACA,%20saya%20tertarik%20berkonsultasi%20mengenai%20Paket%20TALENT%20untuk%20kategori%20Lembaga%20yang%20sudah%20MoU.";
+                lnkBrainwave.href = "https://wa.me/6281324262633?text=Halo%20TERABACA,%20saya%20tertarik%20berkonsultasi%20khusus%20mengenai%20Paket%20Eksklusif%20BRAINWAVE%20untuk%20Instansi/Lembaga.";
+            }
         }
     </script>
 </body>
