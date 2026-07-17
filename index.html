@@ -123,17 +123,27 @@
                     </div>
                 </div>
 
-                <!-- FORM INPUT NAMA DI ATAS PRICELIST -->
-                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-xs max-w-md space-y-3">
-                    <div>
-                        <label class="block text-xs font-bold text-blue-950 mb-1" id="label-input-nama">Nama Lengkap Anda:</label>
-                        <input type="text" id="klien-name" oninput="updateAllWhatsAppLinks()" placeholder="Ketik nama di sini..." class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 bg-slate-50 focus:outline-hidden focus:border-blue-900 transition font-medium">
+                <!-- BOX INPUT DATA KLIEN & FASILITAS TANYA UMUM -->
+                <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-xs max-w-xl mx-auto space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-blue-950 mb-1" id="label-input-nama">Nama Lengkap Anda:</label>
+                            <input type="text" id="klien-name" oninput="updateAllWhatsAppLinks()" placeholder="Ketik nama di sini..." class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 bg-slate-50 focus:outline-hidden focus:border-blue-900 transition font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-blue-950 mb-1">Pilih Kota / Cabang Terdekat:</label>
+                            <select id="klien-cabang" onchange="updateAllWhatsAppLinks()" class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 bg-slate-50 focus:outline-hidden focus:border-blue-900 transition font-bold text-blue-900">
+                                <option value="pusat">TERABACA Pusat</option>
+                            </select>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-blue-950 mb-1">Pilih Kota / Cabang Terdekat:</label>
-                        <select id="klien-cabang" onchange="updateAllWhatsAppLinks()" class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 bg-slate-50 focus:outline-hidden focus:border-blue-900 transition font-bold text-blue-900">
-                            <option value="pusat">TERABACA Pusat</option>
-                        </select>
+                    
+                    <!-- TOMBOL TANYA-TANYA DULU (KEMBALI DIHINDARKAN DARI KATA HILANG) -->
+                    <div class="border-t border-gray-100 pt-3 text-center">
+                        <p class="text-[11px] text-gray-500 mb-2">Masih bingung memilih paket atau ingin berkonsultasi terlebih dahulu?</p>
+                        <a id="lnk-tanya" href="#" target="_blank" class="inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-xl text-xs transition space-x-2 shadow-xs">
+                            <span>💬 Hubungi Kami (Tanya-Tanya Dulu)</span>
+                        </a>
                     </div>
                 </div>
                 
@@ -230,7 +240,7 @@
                             </div>
                         </div>
                         <div class="mt-5 pt-2">
-                            <a id="lnk-brainwave" href="#" target="_blank" class="block text-center bg-red-650 hover:bg-red-700 text-white font-bold py-2 rounded-xl text-xs transition">Konsultasi Khusus</a>
+                            <a id="lnk-brainwave" href="#" target="_blank" class="block text-center bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-xl text-xs transition">Konsultasi Khusus</a>
                         </div>
                     </div>
 
@@ -323,11 +333,15 @@
             const tipeText = currentKategori === 'personal' ? "Personal" : "Lembaga/Instansi yang sudah MoU";
             const identitasLabel = currentKategori === 'personal' ? "Nama" : "Nama Lembaga";
 
+            // Teks untuk tombol tanya umum
+            const txtTanya = `Halo ${namaCabangTeks}, saya ${namaKlien} ingin bertanya-tanya terlebih dahulu mengenai layanan analisis coretan tangan di TERABACA.`;
+            
             const txtBasic = `Halo ${namaCabangTeks}, saya ingin mendaftar Paket BASIC.\n\nDetail Klien:\n- Kategori: ${tipeText}\n- ${identitasLabel}: ${namaKlien}\n\nSaya sudah membaca panduan alur tes di website dan siap menerima instruksi selanjutnya.`;
             const txtParent = `Halo ${namaCabangTeks}, saya ingin mendaftar Paket PARENT.\n\nDetail Klien:\n- Kategori: ${tipeText}\n- ${identitasLabel}: ${namaKlien}\n\nSaya sudah membaca panduan alur tes di website dan siap menerima instruksi selanjutnya.`;
             const txtTalent = `Halo ${namaCabangTeks}, saya ingin mendaftar Paket TALENT.\n\nDetail Klien:\n- Kategori: ${tipeText}\n- ${identitasLabel}: ${namaKlien}\n\nSaya sudah membaca panduan alur tes di website dan siap menerima instruksi selanjutnya.`;
             const txtBrainwave = `Halo ${namaCabangTeks}, saya ingin mendaftar Paket Eksklusif BRAINWAVE.\n\nDetail Klien:\n- Kategori: ${tipeText}\n- ${identitasLabel}: ${namaKlien}\n\nMohon informasi penjadwalan konsultasi khusus.`;
 
+            document.getElementById('lnk-tanya').href = `https://wa.me/${nomorTujuan}?text=${encodeURIComponent(txtTanya)}`;
             document.getElementById('lnk-basic').href = `https://wa.me/${nomorTujuan}?text=${encodeURIComponent(txtBasic)}`;
             document.getElementById('lnk-parent').href = `https://wa.me/${nomorTujuan}?text=${encodeURIComponent(txtParent)}`;
             document.getElementById('lnk-talent').href = `https://wa.me/${nomorTujuan}?text=${encodeURIComponent(txtTalent)}`;
