@@ -7,36 +7,36 @@
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
-        /* Efek latar belakang ornamen tipis agar mirip contoh gambar */
-        .bg-ornamen {
-            background-color: #ffffff;
-            background-image: radial-gradient(#e5e7eb 1px, transparent 1px), radial-gradient(#e5e7eb 1px, #ffffff 1px);
-            background-size: 40px 40px;
-            background-position: 0 0, 20px 20px;
+        /* Mengunci scroll halaman depan agar fokus dan rapi */
+        .no-scroll {
+            overflow: hidden;
+            height: 100vh;
+        }
+        /* Mengatur gambar ornamen Anda sebagai background penuh */
+        .bg-terabaca-custom {
+            background-image: url('bg-batik.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }
     </style>
 </head>
-<body class="bg-ornamen font-sans text-gray-800 antialiased min-h-screen">
+<body class="bg-white font-sans text-gray-800 antialiased min-h-screen no-scroll" id="body-layout">
 
-    <!-- ================= HALAMAN AWAL (LANDING / SPLASH) ================= -->
-    <div id="landing-page" class="flex flex-col items-center justify-center min-h-screen p-4 transition-all duration-500">
-        <div class="text-center max-w-2xl cursor-pointer group" onclick="bukaDashboard()">
-            <!-- Logo Box (Tempatkan file gambar logo Anda nanti dengan nama logo.jpg) -->
-            <div class="overflow-hidden rounded-xl transition-transform duration-300 group-hover:scale-105 active:scale-95 shadow-sm group-hover:shadow-md bg-white p-6">
-                <!-- Gantilah src="logo.jpg" dengan path logo TERABACA Anda -->
-                <img src="logo.png" alt="TERABACA" class="w-full h-auto mx-auto max-w-lg object-contain fallback-image" onerror="this.src='https://placehold.co/600x300/ffffff/003366?text=TERABACA+LOGO'">
-            </div>
-            <!-- Slogan -->
-            <p class="mt-6 text-xl md:text-2xl italic font-bold text-red-650 tracking-wide transition-colors group-hover:text-red-750">
-                "Nalungtik Titik Manggihan Diri"
-            </p>
-            <p class="mt-2 text-sm text-gray-400 font-medium animate-pulse">
-                Klik logo untuk masuk ke portal informasi
+    <!-- ================= HALAMAN AWAL (MENGGUNAKAN BG-BATIK.PNG) ================= -->
+    <div id="landing-page" class="flex items-center justify-center min-h-screen w-full bg-terabaca-custom cursor-pointer transition-all duration-500 p-4" onclick="bukaDashboard()">
+        <div class="w-full max-w-2xl mx-auto text-center animate-fade-in">
+            <!-- Tempatkan LOGO UTAMA Anda di sini (tanpa background bawaan) -->
+            <img src="logo.png" alt="TERABACA" class="w-full h-auto mx-auto object-contain max-w-lg transition-transform duration-350 hover:scale-102 active:scale-98">
+            
+            <!-- Petunjuk ketuk halus di bawah gambar -->
+            <p class="mt-8 text-xs text-gray-400 font-medium tracking-widest uppercase animate-pulse">
+                Ketuk layar untuk masuk ke portal informasi
             </p>
         </div>
     </div>
 
-    <!-- ================= HALAMAN DASHBOARD (DISEMBUNYIKAN DI AWAL) ================= -->
+    <!-- ================= HALAMAN DASHBOARD ================= -->
     <div id="dashboard-page" class="hidden opacity-0 transition-opacity duration-700 min-h-screen bg-slate-50">
         
         <!-- Navbar Atas -->
@@ -45,49 +45,49 @@
                 <div class="flex items-center space-x-2 cursor-pointer" onclick="kembaliKeLanding()">
                     <span class="font-black text-xl text-blue-900 tracking-wider">TERA<span class="text-red-600">BACA</span></span>
                 </div>
-                <nav class="hidden md:flex space-x-6 font-medium text-sm text-gray-600">
+                <nav class="flex space-x-4 font-medium text-xs text-gray-650">
                     <a href="#tentang" class="hover:text-blue-900 transition">Tentang</a>
-                    <a href="#paket" class="hover:text-blue-900 transition">Paket Layanan</a>
-                    <a href="#daftar" class="bg-red-600 text-white px-4 py-1.5 rounded-full hover:bg-red-700 transition">Ikut Tes</a>
+                    <a href="#paket" class="hover:text-blue-900 transition">Paket</a>
+                    <a href="#daftar" class="bg-red-650 text-white px-3 py-1 rounded-full hover:bg-red-700 transition">Ikut Tes</a>
                 </nav>
             </div>
         </header>
 
         <!-- Konten Utama Dashboard -->
-        <main class="max-w-4xl mx-auto px-4 py-12 space-y-16">
+        <main class="max-w-4xl mx-auto px-4 py-8 space-y-12">
             
-            <!-- Section 1: Pengenalan / Pengetahuan Dasar -->
-            <section id="tentang" class="bg-white p-8 rounded-2xl shadow-xs border border-gray-100">
-                <h2 class="text-2xl font-extrabold text-blue-950 mb-4 border-l-4 border-red-600 pl-3">
+            <!-- Section 1: Pengenalan -->
+            <section id="tentang" class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100">
+                <h2 class="text-xl font-extrabold text-blue-950 mb-3 border-l-4 border-red-650 pl-3">
                     Apa itu TERABACA?
                 </h2>
-                <p class="text-gray-750 leading-relaxed text-base md:text-lg">
+                <p class="text-gray-700 leading-relaxed text-sm md:text-base">
                     <strong>TERABACA</strong> (Tes Rahasia Bahasa Coretan Anda) adalah sebuah metode analisis profesional yang dirancang untuk mengungkap potensi tersembunyi, dinamika psikologis, kepribadian, hingga hambatan diri seseorang melalui media tulisan serta coretan tangan (Grafologi). 
                 </p>
-                <p class="mt-4 text-gray-750 leading-relaxed text-base md:text-lg">
-                    Sesuai dengan filosofi kami, <em>"Nalungtik Titik Manggihan Diri"</em>, kami membantu Anda meneliti setiap goresan kecil yang Anda buat guna menemukan jati diri dan jalan terbaik menuju pengembangan potensi diri yang maksimal.
+                <p class="mt-3 text-gray-750 leading-relaxed text-sm md:text-base">
+                    Sesuai dengan filosofi kami, <em class="text-red-650 font-semibold">"Nalungtik Titik Manggihan Diri"</em>, kami membantu Anda meneliti setiap goresan kecil yang Anda buat guna menemukan jati diri dan jalan terbaik menuju pengembangan potensi diri yang maksimal.
                 </p>
             </section>
 
             <!-- Section 2: Program Paket Layanan -->
-            <section id="paket" class="space-y-6">
-                <h2 class="text-2xl font-extrabold text-blue-950 border-l-4 border-red-600 pl-3">
+            <section id="paket" class="space-y-4">
+                <h2 class="text-xl font-extrabold text-blue-950 border-l-4 border-red-650 pl-3">
                     Program Paket Layanan
                 </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 gap-4">
                     <!-- Kartu Paket 1 -->
-                    <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100 hover:shadow-md transition duration-300">
-                        <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-950 font-bold mb-4">01</div>
-                        <h3 class="text-lg font-bold text-blue-950">Paket Evaluasi Mandiri</h3>
-                        <p class="text-gray-600 text-sm mt-2 leading-relaxed">
+                    <div class="bg-white p-5 rounded-2xl shadow-xs border border-gray-100">
+                        <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-950 font-bold mb-3">01</div>
+                        <h3 class="text-base font-bold text-blue-950">Paket Evaluasi Mandiri</h3>
+                        <p class="text-gray-600 text-xs mt-1 leading-relaxed">
                             Analisis menyeluruh untuk memetakan kepribadian diri, kekuatan terpendam, serta area yang perlu dikembangkan secara personal.
                         </p>
                     </div>
                     <!-- Kartu Paket 2 -->
-                    <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100 hover:shadow-md transition duration-300">
-                        <div class="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center text-red-600 font-bold mb-4">02</div>
-                        <h3 class="text-lg font-bold text-blue-950">Paket Arah Karier & Bisnis</h3>
-                        <p class="text-gray-600 text-sm mt-2 leading-relaxed">
+                    <div class="bg-white p-5 rounded-2xl shadow-xs border border-gray-100">
+                        <div class="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center text-red-650 font-bold mb-3">02</div>
+                        <h3 class="text-base font-bold text-blue-950">Paket Arah Karier & Bisnis</h3>
+                        <p class="text-gray-600 text-xs mt-1 leading-relaxed">
                             Rekomendasi profesional berbasis coretan tangan untuk menentukan kecocokan jenis pekerjaan, gaya kepemimpinan, dan produktivitas kerja.
                         </p>
                     </div>
@@ -95,16 +95,15 @@
             </section>
 
             <!-- Section 3: Tombol Aksi Akhir (CTA) -->
-            <section id="daftar" class="bg-gradient-to-br from-blue-950 to-blue-900 text-white p-8 md:p-12 rounded-3xl text-center shadow-lg space-y-6">
-                <h2 class="text-2xl md:text-3xl font-black tracking-wide">Siap Mengenali Diri Anda Lebih Dalam?</h2>
-                <p class="text-blue-100 max-w-xl mx-auto text-sm md:text-base">
-                    Segera ambil langkah nyata untuk meneliti lembaran coretan Anda bersama TERABACA. Pendaftaran tes dapat dilakukan langsung secara praktis.
+            <section id="daftar" class="bg-gradient-to-br from-blue-950 to-blue-900 text-white p-6 rounded-2xl text-center space-y-4 shadow-md">
+                <h2 class="text-xl font-black tracking-wide">Siap Mengenali Diri Anda Lebih Dalam?</h2>
+                <p class="text-blue-100 text-xs max-w-xs mx-auto">
+                    Segera ambil langkah nyata untuk meneliti lembaran coretan Anda bersama TERABACA.
                 </p>
-                <div class="pt-4">
-                    <!-- Link WhatsApp Aksi (Ganti nomor WA sesuai kebutuhan Anda) -->
+                <div class="pt-2">
                     <a href="https://wa.me/6281234567890?text=Halo%20Terabaca,%20saya%20tertarik%20ingin%20mengikuti%20tes" 
                        target="_blank" 
-                       class="inline-block bg-red-650 hover:bg-red-700 text-white font-extrabold px-10 py-4 rounded-full text-lg shadow-md hover:shadow-xl transition duration-300 transform hover:-translate-y-0.5">
+                       class="inline-block bg-red-650 hover:bg-red-700 text-white font-extrabold px-8 py-3 rounded-full text-sm shadow-md transition duration-300">
                         Ikuti Tes Sekarang
                     </a>
                 </div>
@@ -113,8 +112,8 @@
         </main>
 
         <!-- Footer -->
-        <footer class="bg-white border-t border-gray-200 py-6 mt-12 text-center text-xs text-gray-400">
-            &copy; 2026 TERABACA. All Rights Reserved. "Nalungtik Titik Manggihan Diri"
+        <footer class="bg-white border-t border-gray-200 py-4 mt-8 text-center text-[10px] text-gray-400">
+            &copy; 2026 TERABACA. "Nalungtik Titik Manggihan Diri"
         </footer>
     </div>
 
@@ -123,25 +122,24 @@
         function bukaDashboard() {
             const landing = document.getElementById('landing-page');
             const dashboard = document.getElementById('dashboard-page');
-
-            // Sembunyikan Halaman Awal dengan efek transisi
-            landing.classList.add('hidden');
+            const body = document.getElementById('body-layout');
             
-            // Tampilkan Dashboard
+            landing.classList.add('hidden');
             dashboard.classList.remove('hidden');
-            setTimeout(() => {
-                dashboard.classList.remove('opacity-0');
-            }, 50);
-
-            // Otomatis scroll ke bagian paling atas dashboard
+            body.classList.remove('no-scroll'); 
+            
+            setTimeout(() => { dashboard.classList.remove('opacity-0'); }, 50);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function kembaliKeLanding() {
             const landing = document.getElementById('landing-page');
             const dashboard = document.getElementById('dashboard-page');
-
+            const body = document.getElementById('body-layout');
+            
             dashboard.classList.add('opacity-0');
+            body.classList.add('no-scroll'); 
+            
             setTimeout(() => {
                 dashboard.classList.add('hidden');
                 landing.classList.remove('hidden');
