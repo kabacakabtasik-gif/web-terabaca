@@ -1,112 +1,70 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unggah Hasil Tes - TERABACA</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-    </style>
-</head>
-<body class="bg-slate-50 min-h-screen flex flex-col justify-between">
-
-    <!-- Header / Navbar -->
-    <header class="bg-white shadow-sm py-4 px-6">
-        <div class="max-w-xl mx-auto flex items-center justify-between">
-            <span class="font-bold text-xl text-emerald-700 tracking-wide">TERABACA</span>
-            <span class="text-xs bg-emerald-100 text-emerald-800 font-semibold px-3 py-1 rounded-full">Portal Eksklusif Klien</span>
-        </div>
-    </header>
-
-    <!-- Konten Utama Form Upload -->
-    <main class="max-w-xl mx-auto p-4 sm:p-6 w-full flex-grow">
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
-            
-            <div class="mb-6">
-                <h1 class="text-xl sm:text-2xl font-bold text-slate-800">Unggah Lembar Kerja Coretan</h1>
-                <p class="text-sm text-slate-500 mt-1">Silakan isi data diri Anda dan unggah hasil lembar tes coretan TERABACA yang telah dikerjakan.</p>
-            </div>
-
-            <!-- Form -->
-            <form id="uploadForm" class="space-y-4">
-                
-                <!-- Nama Lengkap -->
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">Nama Lengkap Testee</label>
-                    <input type="text" id="nama" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="Sesuai data pendaftaran">
-                </div>
-
-                <!-- Nomor WhatsApp -->
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">Nomor WhatsApp Aktif</label>
-                    <input type="tel" id="whatsapp" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="Contoh: 081234567890">
-                </div>
-
-                <!-- Pilihan Paket -->
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">Paket TERABACA yang Diambil</label>
-                    <select id="paket" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white">
-                        <option value="">-- Pilih Paket --</option>
-                        <option value="Basic">Paket Basic</option>
-                        <option value="Talent">Paket Talent</option>
-                        <option value="Parent">Paket Parent</option>
-                        <option value="Holistic Premium">Paket Holistic Premium</option>
-                    </select>
-                </div>
-
-                <!-- Pilihan Cabang Tujuan -->
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">Cabang / Praktisi Tempat Mendaftar</label>
-                    <input type="text" id="cabang" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="Contoh: Tasikmalaya Kota">
-                </div>
-
-                <!-- File Upload Box -->
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">File Hasil Coretan (Foto / Scan / PDF)</label>
-                    <div class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:border-emerald-500 transition cursor-pointer bg-slate-50 relative">
-                        <input type="file" id="fileInput" required accept="image/*,application/pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                        <div class="space-y-2">
-                            <svg class="w-8 h-8 mx-auto text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-                            <p class="text-sm text-slate-600 font-medium" id="fileLabelText">Ketuk untuk memilih file atau foto</p>
-                            <p class="text-xs text-slate-400">Pastikan gambar/tulisan terlihat jelas & tidak blur</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tombol Submit -->
-                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3.5 rounded-xl transition shadow-lg shadow-emerald-600/20 text-sm mt-2">
-                    Kirim Hasil Tes
-                </button>
-
-            </form>
-        </div>
-    </main>
-
-    <!-- Footer -->
-    <footer class="text-center py-6 text-xs text-slate-400">
-        &copy; 2026 Program TERABACA. All rights reserved.
-    </footer>
-
-    <!-- Script Sederhana -->
+<!-- Script untuk kirim data ke Google Apps Script / Drive -->
     <script>
         const fileInput = document.getElementById('fileInput');
         const fileLabelText = document.getElementById('fileLabelText');
+        let selectedFileBase64 = "";
+        let selectedFileName = "";
+        let selectedFileMime = "";
 
+        // Ubah file ke base64 agar bisa dibaca dan dikirim via Apps Script
         fileInput.addEventListener('change', function(e) {
-            if(e.target.files.length > 0) {
-                fileLabelText.textContent = "File terpilih: " + e.target.files[0].name;
+            const file = e.target.files[0];
+            if(file) {
+                selectedFileName = file.name;
+                selectedFileMime = file.type;
+                fileLabelText.textContent = "File terpilih: " + file.name;
                 fileLabelText.classList.add("text-emerald-600", "font-bold");
+
+                const reader = new FileReader();
+                reader.onload = function(uploadEvent) {
+                    selectedFileBase64 = uploadEvent.target.result.split(',')[1];
+                };
+                reader.readAsDataURL(file);
             }
         });
 
-        // Contoh simulasi aksi saat tombol dikirim
+        // Aksi saat tombol submit ditekan
         document.getElementById('uploadForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            alert("Terima kasih! File berhasil disiapkan. (Silakan sesuaikan skema penyimpanan atau pengiriman datanya ke sistem pusat/Gform selanjutnya).");
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.textContent = "Sedang Mengirim File...";
+            submitBtn.disabled = true;
+
+            // Tempel URL Web App Apps Script Anda di dalam tanda kutip di bawah ini:
+            const scriptURL = 'MASUKKAN_URL_WEB_APP_ANDA_DISINI'; 
+
+            const formData = {
+                nama: document.getElementById('nama').value,
+                whatsapp: document.getElementById('whatsapp').value,
+                paket: document.getElementById('paket').value,
+                cabang: document.getElementById('cabang').value,
+                fileData: selectedFileBase64,
+                fileName: selectedFileName,
+                fileMimeType: selectedFileMime
+            };
+
+            fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams(formData)
+            })
+            .then(() => {
+                alert("Alhamdulillah! Hasil tes berhasil dikirim dan tersimpan di pusat.");
+                document.getElementById('uploadForm').reset();
+                fileLabelText.textContent = "Ketuk untuk memilih file atau foto";
+                fileLabelText.classList.remove("text-emerald-600", "font-bold");
+                submitBtn.textContent = "Kirim Hasil Tes";
+                submitBtn.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error!', error.message);
+                alert("Terjadi kendala saat mengirim. Silakan coba lagi.");
+                submitBtn.textContent = "Kirim Hasil Tes";
+                submitBtn.disabled = false;
+            });
         });
     </script>
-</body>
-</html>
