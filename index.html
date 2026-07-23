@@ -313,7 +313,7 @@
                             <select id="klien-cabang" onchange="updateAllWhatsAppLinks()" class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 bg-slate-50 focus:outline-hidden focus:border-blue-900 transition font-bold text-blue-900">
                                 <option value="pusat">TERABACA Pusat</option>
                                 <option value="tasikmalaya">Cabang Kab. Tasikmalaya</option>
-                                <option value="depo">Cabang Kota. Depok</option>
+                                <option value="depok">Cabang Kota. Depok</option>
                             </select>
                         </div>
                     </div>
@@ -413,13 +413,15 @@
                                     <p class="text-[9px] text-gray-400 font-medium" id="label-brainwave">Kategori Personal</p>
                                 </div>
                             </div>
-                            <h3 class="text-lg font-extrabold text-red-700 mt-1">BRAINWAVE</h3>
-                            <div class="mt-4 space-y-3">
+                            <h3 class="text-lg font-extrabold text-blue-950 mt-1">BRAINWAVE</h3>
+                            <div class="mt-4 space-y-2">
                                 <ul class="text-xs text-gray-700 space-y-1 list-disc list-inside">
-                                    <li>Semua Fasilitas Paket Talent</li>
-                                    <li>Terapi Gelombang Otak Intensif</li>
-                                    <li>Sesi Konsultasi & Mentoring Khusus</li>
+                                    <li>Asesmen Mental & Frekuensi Otak</li>
+                                    <li>Konsultasi Eksklusif 1 On 1</li>
                                 </ul>
+                                <div class="bg-red-50 border border-red-100 p-1.5 rounded-lg text-[11px] text-red-800 font-semibold text-center">
+                                    ⚡ Treatment Intensif & Pemulihan
+                                </div>
                             </div>
                         </div>
                         <div class="mt-5 pt-2">
@@ -431,93 +433,137 @@
             </section>
 
         </main>
-
-        <!-- Footer -->
-        <footer class="bg-white border-t border-gray-200 mt-12 py-6 text-center text-xs text-gray-500">
-            <p>&copy; 2026 TERABACA - KABACA Pro. All Rights Reserved.</p>
+        
+        <!-- Footer Sederhana -->
+        <footer class="bg-white border-t border-gray-200 py-6 mt-16 text-center text-xs text-gray-500">
+            <p>&copy; 2026 TERABACA - KABACA Pro. All rights reserved.</p>
         </footer>
-
     </div>
 
-    <!-- Script JavaScript Pendukung Navigasi & Integrasi WA -->
+    <!-- Script JavaScript -->
     <script>
-        let currentKategori = 'personal';
-
-        const waNumbers = {
-            pusat: "6281324509437",      // Ganti dengan nomor WhatsApp Pusat Anda
-            tasikmalaya: "6281234567890", // Ganti dengan nomor WhatsApp Cabang Tasikmalaya
-            depok: "6281317339098" // Ganti dengan nomor WhatsApp Cabang Depok
+        // Mapping Nomor WhatsApp Cabang (Ganti dengan nomor WhatsApp aslimu, format: kode negara + nomor, tanpa spasi/tanda plus)
+        const nomorCabang = {
+            "pusat": "6281324509437",       // Contoh nomor TERABACA Pusat
+            "tasikmalaya": "6281324262633", // Contoh nomor Cabang Kab. Tasikmalaya
+            "depo": "6281317339098"         // Contoh nomor Cabang Kota. Depok
         };
 
-        function bukaDashboard() {
-            document.getElementById('landing-page').classList.add('hidden');
-            const dash = document.getElementById('dashboard-page');
-            dash.classList.remove('hidden');
-            setTimeout(() => {
-                dash.classList.remove('opacity-0');
-            }, 50);
-            document.getElementById('body-layout').classList.remove('no-scroll');
-            updateAllWhatsAppLinks();
-        }
+        let currentKategori = 'personal';
 
-        function kembaliKeLanding() {
-            const dash = document.getElementById('dashboard-page');
-            dash.classList.add('opacity-0');
+        function bukaDashboard() {
+            const landing = document.getElementById('landing-page');
+            const dashboard = document.getElementById('dashboard-page');
+            const body = document.getElementById('body-layout');
+
+            landing.style.opacity = '0';
             setTimeout(() => {
-                dash.classList.add('hidden');
-                document.getElementById('landing-page').classList.remove('hidden');
-                document.getElementById('body-layout').classList.add('no-scroll');
+                landing.classList.add('hidden');
+                dashboard.classList.remove('hidden');
+                setTimeout(() => {
+                    dashboard.classList.remove('opacity-0');
+                    body.classList.remove('no-scroll');
+                    window.scrollTo(0, 0);
+                    updateAllWhatsAppLinks(); // Update link saat dashboard dibuka
+                }, 50);
             }, 500);
         }
 
-        function switchKategori(kat) {
-            currentKategori = kat;
+        function kembaliKeLanding() {
+            const landing = document.getElementById('landing-page');
+            const dashboard = document.getElementById('dashboard-page');
+            const body = document.getElementById('body-layout');
+
+            body.classList.add('no-scroll');
+            dashboard.classList.add('opacity-0');
+            setTimeout(() => {
+                dashboard.classList.add('hidden');
+                landing.classList.remove('hidden');
+                setTimeout(() => {
+                    landing.style.opacity = '1';
+                    window.scrollTo(0, 0);
+                }, 50);
+            }, 700);
+        }
+
+        function switchKategori(kategori) {
+            currentKategori = kategori;
             const btnPersonal = document.getElementById('btn-personal');
             const btnLembaga = document.getElementById('btn-lembaga');
+            const labelInputNama = document.getElementById('label-input-nama');
 
-            if (kat === 'personal') {
+            if (kategori === 'personal') {
                 btnPersonal.className = "px-4 py-1.5 rounded-full bg-blue-900 text-white transition-all duration-300 cursor-pointer";
                 btnLembaga.className = "px-4 py-1.5 rounded-full text-gray-600 hover:text-blue-900 transition-all duration-300 cursor-pointer";
+                labelInputNama.innerText = "Nama Lengkap Anda:";
                 
                 document.getElementById('price-basic').innerText = "Rp 350.000";
-                document.getElementById('price-parent').innerText = "Rp 350.000";
-                document.getElementById('price-talent').innerText = "Rp 600.000";
-                document.getElementById('price-brainwave').innerText = "Rp 14.000.000";
-
                 document.getElementById('label-basic').innerText = "Kategori Personal";
+                document.getElementById('price-parent').innerText = "Rp 350.000";
                 document.getElementById('label-parent').innerText = "Kategori Personal";
+                document.getElementById('price-talent').innerText = "Rp 600.000";
                 document.getElementById('label-talent').innerText = "Kategori Personal";
+                document.getElementById('price-brainwave').innerText = "Rp 14.000.000";
                 document.getElementById('label-brainwave').innerText = "Kategori Personal";
             } else {
                 btnLembaga.className = "px-4 py-1.5 rounded-full bg-blue-900 text-white transition-all duration-300 cursor-pointer";
                 btnPersonal.className = "px-4 py-1.5 rounded-full text-gray-600 hover:text-blue-900 transition-all duration-300 cursor-pointer";
+                labelInputNama.innerText = "Nama PIC / Lembaga / Sekolah:";
 
                 document.getElementById('price-basic').innerText = "Hubungi Admin";
-                document.getElementById('price-parent').innerText = "Hubungi Admin";
-                document.getElementById('price-talent').innerText = "Hubungi Admin";
-                document.getElementById('price-brainwave').innerText = "Hubungi Admin";
-
                 document.getElementById('label-basic').innerText = "Kategori Lembaga (MoU)";
+                document.getElementById('price-parent').innerText = "Hubungi Admin";
                 document.getElementById('label-parent').innerText = "Kategori Lembaga (MoU)";
+                document.getElementById('price-talent').innerText = "Hubungi Admin";
                 document.getElementById('label-talent').innerText = "Kategori Lembaga (MoU)";
+                document.getElementById('price-brainwave').innerText = "Hubungi Admin";
                 document.getElementById('label-brainwave').innerText = "Kategori Lembaga (MoU)";
             }
             updateAllWhatsAppLinks();
         }
 
         function updateAllWhatsAppLinks() {
-            const nama = document.getElementById('klien-name').value.trim() || 'Pengunjung';
-            const cabangKey = document.getElementById('klien-cabang').value;
-            const targetWa = waNumbers[cabangKey] || waNumbers.pusat;
+            const namaInput = document.getElementById('klien-name').value.trim();
+            const nama = namaInput !== "" ? namaInput : "Klien";
+            const cabangSelect = document.getElementById('klien-cabang').value;
+            const nomorWa = nomorCabang[cabangSelect] || nomorCabang["pusat"];
 
-            const makeUrl = (text) => `https://wa.me/${targetWa}?text=${encodeURIComponent(text)}`;
+            // 1. Format Pesan untuk Tombol "Hubungi Kami (Tanya-Tanya Dulu)"
+            const pesanTanya = `Halo Admin TERABACA (${cabangSelect.toUpperCase()}), perkenalkan nama saya ${nama}. Saya ingin bertanya-tanya terlebih dahulu mengenai layanan TERABACA. Mohon informasinya, terima kasih.`;
+            const lnkTanya = document.getElementById('lnk-tanya');
+            if (lnkTanya) {
+                lnkTanya.href = `https://wa.me/${nomorWa}?text=${encodeURIComponent(pesanTanya)}`;
+            }
 
-            document.getElementById('lnk-tanya').href = makeUrl(`Halo Admin TERABACA, nama saya ${nama}. Saya ingin bertanya-tanya terlebih dahulu mengenai layanan TERABACA.`);
-            document.getElementById('lnk-basic').href = makeUrl(`Halo Admin TERABACA, nama saya ${nama}. Saya berminat untuk memesan Paket BASIC (${currentKategori.toUpperCase()}).`);
-            document.getElementById('lnk-parent').href = makeUrl(`Halo Admin TERABACA, nama saya ${nama}. Saya berminat untuk memesan Paket PARENT (${currentKategori.toUpperCase()}).`);
-            document.getElementById('lnk-talent').href = makeUrl(`Halo Admin TERABACA, nama saya ${nama}. Saya berminat untuk memesan Paket TALENT (${currentKategori.toUpperCase()}).`);
-            document.getElementById('lnk-brainwave').href = makeUrl(`Halo Admin TERABACA, nama saya ${nama}. Saya berminat untuk memesan Paket BRAINWAVE (${currentKategori.toUpperCase()}).`);
+            // 2. Format Pesan untuk Masing-Masing Paket
+            const listPaket = [
+                { id: 'lnk-basic', nama Paket: 'BASIC' },
+                { id: 'lnk-parent', nama Paket: 'PARENT' },
+                { id: 'lnk-talent', nama Paket: 'TALENT' },
+                { id: 'lnk-brainwave', nama Paket: 'BRAINWAVE' }
+            ];
+
+            // Update link untuk setiap paket
+            const paketElements = [
+                { id: 'lnk-basic', name: 'BASIC' },
+                { id: 'lnk-parent', name: 'PARENT' },
+                { id: 'lnk-talent', name: 'TALENT' },
+                { id: 'lnk-brainwave', name: 'BRAINWAVE' }
+            ];
+
+            paketElements.forEach(paket => {
+                const el = document.getElementById(paket.id);
+                if (el) {
+                    let pesanPaket = `Halo Admin TERABACA (${cabangSelect.toUpperCase()}), perkenalkan nama saya ${nama}. Saya ingin mendaftar untuk Paket ${paket.name} (${currentKategori.toUpperCase()}). Mohon panduan selanjutnya, terima kasih.`;
+                    el.href = `https://wa.me/${nomorWa}?text=${encodeURIComponent(pesanPaket)}`;
+                }
+            });
         }
+
+        // Jalankan saat pertama kali halaman termuat
+        window.onload = function() {
+            updateAllWhatsAppLinks();
+        };
     </script>
 </body>
 </html>
