@@ -1,18 +1,29 @@
 <!DOCTYPE html>
 <html lang="id">
 <script>
-    // Tentukan password admin rahasia Anda di sini (misal: "terabaca2026" atau terserah Anda)
+    // Tentukan password admin rahasia Anda di sini
     const ADMIN_PASSWORD = "terabaca2026"; 
 
-    // Meminta password saat halaman dibuka
-    let pwd = prompt("Masukkan Password Akses Dashboard Pusat TERABACA:");
+    // Fungsi verifikasi password yang aman dan tidak bisa dibobol dengan cancel/kosong
+    function verifyAdmin() {
+        let pwd = prompt("Masukkan Password Akses Dashboard Pusat TERABACA:");
+        
+        // Jika user klik Cancel atau mengosongkan password
+        if (pwd === null || pwd.trim() === "") {
+            alert("Akses dibatalkan / kosong. Anda diarahkan kembali ke Portal Cabang.");
+            window.location.href = "upload.html";
+            return;
+        }
 
-    // Validasi ketat: Jika password salah atau kosong (dikosongkan / klik cancel)
-    if (pwd !== ADMIN_PASSWORD) {
-        alert("Akses Ditolak! Password salah atau kosong.");
-        // Alihkan paksa kembali ke halaman utama atau halaman lain agar tidak bisa dilihat
-        window.location.href = "upload.html"; 
+        // Jika password salah, ulangi prompt sampai benar
+        if (pwd !== ADMIN_PASSWORD) {
+            alert("Password salah! Silakan coba lagi.");
+            verifyAdmin(); 
+        }
     }
+
+    // Jalankan verifikasi saat halaman pertama kali dimuat
+    verifyAdmin();
 </script>
 <head>
     <meta charset="UTF-8">
@@ -32,9 +43,14 @@
                 <span class="font-bold text-xl tracking-wide text-emerald-400">TERABACA</span>
                 <span class="text-xs bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-full border border-emerald-500/30 font-medium">Dashboard Kendali Pusat</span>
             </div>
-            <button onclick="loadDataPeserta()" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded-lg border border-slate-700 transition">
-                🔄 Muat Ulang Data
-            </button>
+            <div class="flex items-center space-x-2">
+                <button onclick="loadDataPeserta()" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded-lg border border-slate-700 transition">
+                    🔄 Muat Ulang Data
+                </button>
+                <button onclick="logoutAdmin()" class="bg-rose-900/50 hover:bg-rose-800 text-rose-200 text-xs px-3 py-1.5 rounded-lg border border-rose-700/50 transition">
+                    🚪 Keluar
+                </button>
+            </div>
         </div>
     </header>
 
@@ -77,16 +93,22 @@
     <!-- Script Koneksi Supabase & Logika Dashboard -->
     <script>
         const SUPABASE_URL = 'https://zdealocdcweemecirdap.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkZWFsb2NkY3dlZW1lY2lyZGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5ODEyNTgsImV4cCI6MjA5NDU1NzI1OH0._fgstIY2k0s0zv-7_EnupEmFlExFsXRLZP7BAYHd_-c'; // Ganti dengan key anon Anda
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkZWFsb2NkY3dlZW1lY2lyZGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5ODEyNTgsImV4cCI6MjA5NDU1NzI1OH0._fgstIY2k0s0zv-7_EnupEmFlExFsXRLZP7BAYHd_-c';
         
         const { createClient } = supabase;
         const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Fungsi Keluar / Logout Admin
+        function logoutAdmin() {
+            if (confirm("Apakah Anda ingin keluar dari Dashboard Pusat?")) {
+                window.location.href = "upload.html";
+            }
+        }
 
         async function loadDataPeserta() {
             const tbody = document.getElementById('tabelData');
             tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400">Sedang menyinkronkan data...</td></tr>`;
 
-            // Ambil data dari tabel data_peserta urut dari yang terbaru
             const { data, error } = await _supabase
                 .from('data_peserta')
                 .select('*')
@@ -108,21 +130,30 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/60 transition";
 
-                // Format tanggal rapi
                 const tanggalInput = new Date(row.created_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
 
-                // Susun link file coretan (bisa lebih dari 1 file dipisah koma)
+                // Menangani link coretan (bisa berupa URL langsung dari Google Drive hasil input Excel)
                 let linkCoretanHTML = '<span class="text-xs text-slate-400">Tidak ada file</span>';
                 if (row.file_coretan_url) {
-                    const urls = row.file_coretan_url.split(', ');
-                    linkCoretanHTML = urls.map((url, idx) => `
-                        <a href="${url.trim()}" target="_blank" class="inline-block bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-medium px-2 py-1 rounded mr-1 mb-1 border border-emerald-200">
-                            📄 Hal ${idx + 1}
-                        </i></a>
-                    `).join('');
+                    const rawUrl = row.file_coretan_url.trim();
+                    // Cek jika link berupa URL Google Drive atau external link
+                    if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
+                        linkCoretanHTML = `
+                            <a href="${rawUrl}" target="_blank" class="inline-block bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-semibold px-2.5 py-1 rounded border border-indigo-200">
+                                🔗 Buka Link Drive
+                            </a>
+                        `;
+                    } else {
+                        // Jika berupa multi-file lama (split koma)
+                        const urls = rawUrl.split(', ');
+                        linkCoretanHTML = urls.map((url, idx) => `
+                            <a href="${url.trim()}" target="_blank" class="inline-block bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-medium px-2 py-1 rounded mr-1 mb-1 border border-emerald-200">
+                                📄 Hal ${idx + 1}
+                            </a>
+                        `).join('');
+                    }
                 }
 
-                // Cek status hasil analisa dari pusat
                 let analisaHTML = '';
                 if (row.hasil_analisa_url) {
                     analisaHTML = `
@@ -169,7 +200,6 @@
             });
         }
 
-        // Fungsi interaktif bagi pusat untuk mengunggah file hasil analisa
         async function unggahAnalisa(idData, namaTestee) {
             const input = document.createElement('input');
             input.type = 'file';
@@ -189,21 +219,18 @@
                 btn.disabled = true;
 
                 try {
-                    // 1. Upload ke Storage Bucket 'lembar-coretan' (atau buat bucket baru khusus analisa)
                     const { error: uploadError } = await _supabase.storage
                         .from('lembar-coretan')
                         .upload(filePath, file);
 
                     if (uploadError) throw uploadError;
 
-                    // 2. Ambil Public URL file analisa
                     const { data: publicURLData } = _supabase.storage
                         .from('lembar-coretan')
                         .getPublicUrl(filePath);
 
                     const analisaUrl = publicURLData.publicUrl;
 
-                    // 3. Update kolom hasil_analisa_url di database tabel data_peserta
                     const { error: dbError } = await _supabase
                         .from('data_peserta')
                         .update({ hasil_analisa_url: analisaUrl })
@@ -212,7 +239,7 @@
                     if (dbError) throw dbError;
 
                     alert(`Alhamdulillah! Hasil analisa untuk ${namaTestee} berhasil diunggah.`);
-                    loadDataPeserta(); // Refresh tabel
+                    loadDataPeserta();
 
                 } catch (err) {
                     console.error(err);
@@ -225,7 +252,6 @@
             input.click();
         }
 
-        // Jalankan saat halaman dibuka
         loadDataPeserta();
     </script>
 </body>
