@@ -31,6 +31,8 @@
     <title>Dashboard Pusat - TERABACA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Library SheetJS untuk fitur Download Rekap Excel di Admin -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
 </head>
@@ -38,12 +40,15 @@
 
     <!-- Header Pusat -->
     <header class="bg-slate-900 text-white shadow py-4 px-6">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
             <div class="flex items-center space-x-3">
                 <span class="font-bold text-xl tracking-wide text-emerald-400">TERABACA</span>
                 <span class="text-xs bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-full border border-emerald-500/30 font-medium">Dashboard Kendali Pusat</span>
             </div>
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center flex-wrap gap-2">
+                <button onclick="downloadRekapExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-lg transition font-semibold shadow-sm">
+                    📥 Unduh Rekap Excel
+                </button>
                 <button onclick="loadDataPeserta()" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded-lg border border-slate-700 transition">
                     🔄 Muat Ulang Data
                 </button>
@@ -105,6 +110,64 @@
             }
         }
 
+        // Fungsi Download Seluruh Rekap Data ke Excel
+        async function downloadRekapExcel() {
+            try {
+                const { data, error } = await _supabase
+                    .from('data_peserta')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                if (!data || data.length === 0) {
+                    alert("Belum ada data peserta yang masuk untuk diunduh.");
+                    return;
+                }
+
+                // Format data rapi untuk Excel
+                const formattedData = data.map((row, index) => ({
+                    No: index + 1,
+                    Waktu_Masuk: row.created_at,
+                    Cabang: row.cabang,
+                    Email_Cabang: row.email_cabang || '-',
+                    Nama_Penginput: row.nama_penginput || '-',
+                    WhatsApp: row.whatsapp_penginput || '-',
+                    Paket_Bayar: row.jenis_paket_bayar,
+                    Kerja_Sama: row.bentuk_kerjasama,
+                    Nama_Testee: row.nama_testee,
+                    No_Testee: row.no_testee || '-',
+                    Lembaga: row.lembaga_institusi,
+                    Tempat_Lahir: row.tempat_lahir,
+                    Tanggal_Lahir: row.tanggal_lahir,
+                    Usia: row.usia,
+                    Tanggal_Tes: row.tanggal_tes,
+                    Jenis_Kelamin: row.jenis_kelamin,
+                    Level_Pendidikan: row.level_pendidikan,
+                    Jurusan_SMA: row.jurusan_sma || '-',
+                    Jurusan_Terlintas: row.jurusan_terlintas,
+                    Bantuan_Gambar: row.bantuan_menggambar,
+                    Kondisi_Kertas: row.kondisi_kertas,
+                    Posisi_Kertas: row.posisi_kertas,
+                    Alat_Gambar: row.alat_gambar,
+                    Dominasi_Warna: row.dominasi_warna,
+                    Catatan_Gambar: row.catatan_gambar || '-',
+                    Catatan_Khusus: row.catatan_khusus || '-',
+                    Link_Coretan_Drive: row.file_coretan_url || '-',
+                    Bukti_Transfer: row.bukti_transfer_url || '-',
+                    Hasil_Analisa: row.hasil_analisa_url || '-'
+                }));
+
+                const worksheet = XLSX.utils.json_to_sheet(formattedData);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Data Peserta");
+
+                XLSX.writeFile(workbook, `Rekap_Data_Peserta_Terabaca_${Date.now()}.xlsx`);
+            } catch (err) {
+                console.error(err);
+                alert("Gagal mengunduh rekap Excel: " + err.message);
+            }
+        }
+
         async function loadDataPeserta() {
             const tbody = document.getElementById('tabelData');
             tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400">Sedang menyinkronkan data...</td></tr>`;
@@ -132,11 +195,9 @@
 
                 const tanggalInput = new Date(row.created_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
 
-                // Menangani link coretan (bisa berupa URL langsung dari Google Drive hasil input Excel)
                 let linkCoretanHTML = '<span class="text-xs text-slate-400">Tidak ada file</span>';
                 if (row.file_coretan_url) {
                     const rawUrl = row.file_coretan_url.trim();
-                    // Cek jika link berupa URL Google Drive atau external link
                     if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
                         linkCoretanHTML = `
                             <a href="${rawUrl}" target="_blank" class="inline-block bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-semibold px-2.5 py-1 rounded border border-indigo-200">
@@ -144,7 +205,6 @@
                             </a>
                         `;
                     } else {
-                        // Jika berupa multi-file lama (split koma)
                         const urls = rawUrl.split(', ');
                         linkCoretanHTML = urls.map((url, idx) => `
                             <a href="${url.trim()}" target="_blank" class="inline-block bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-medium px-2 py-1 rounded mr-1 mb-1 border border-emerald-200">
