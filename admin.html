@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="id">
 <script>
-    // Password rahasia khusus pusat (bisa diganti sesuai keinginan)
-    const ADMIN_PASSWORD = "terabaca-pusat-rahasia"; 
-    
-    let pass = prompt("Masukkan Password Khusus Tim Pusat:");
-    if (pass !== ADMIN_PASSWORD) {
-        alert("Akses Ditolak! Anda bukan tim pusat.");
-        document.body.innerHTML = "<h2 style='text-align:center; margin-top:20vh; font-family:sans-serif;'>Akses Ditolak. Silakan tutup halaman ini.</h2>";
-        throw new Error("Unauthorized");
+    // Tentukan password admin rahasia Anda di sini (misal: "terabaca2026" atau terserah Anda)
+    const ADMIN_PASSWORD = "terabaca2026"; 
+
+    // Meminta password saat halaman dibuka
+    let pwd = prompt("Masukkan Password Akses Dashboard Pusat TERABACA:");
+
+    // Validasi ketat: Jika password salah atau kosong (dikosongkan / klik cancel)
+    if (pwd !== ADMIN_PASSWORD) {
+        alert("Akses Ditolak! Password salah atau kosong.");
+        // Alihkan paksa kembali ke halaman utama atau halaman lain agar tidak bisa dilihat
+        window.location.href = "upload.html"; 
     }
 </script>
 <head>
