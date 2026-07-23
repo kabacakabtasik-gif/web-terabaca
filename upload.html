@@ -27,7 +27,7 @@
             
             <div class="mb-6">
                 <h1 class="text-xl sm:text-2xl font-bold text-slate-800">Unggah Lembar Kerja Coretan</h1>
-                <p class="text-sm text-slate-500 mt-1">Silakan isi data diri Anda dan unggah hasil lembar tes coretan TERABACA yang telah dikerjakan.</p>
+                <p class="text-sm text-slate-500 mt-1">Silakan isi data diri Anda dan unggah lembar tes coretan TERABACA (mendukung multi-halaman).</p>
             </div>
 
             <!-- Form -->
@@ -68,22 +68,25 @@
                     </select>
                 </div>
 
-                <!-- File Upload Box -->
+                <!-- File Upload Box (Multi-File Supported) -->
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">File Hasil Coretan (Foto / Scan / PDF)</label>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">File Hasil Coretan (Bisa Pilih Banyak: 3-5+ Halaman)</label>
                     <div class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:border-emerald-500 transition cursor-pointer bg-slate-50 relative">
-                        <input type="file" id="fileInput" required accept="image/*,.pdf,application/pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                        <div class="space-y-2">
+                        <!-- Tambahkan atribut multiple di sini -->
+                        <input type="file" id="fileInput" required multiple accept="image/*,.pdf,application/pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                        <div class="space-y-2 pointer-events-none">
                             <svg class="w-8 h-8 mx-auto text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-                            <p class="text-sm text-slate-600 font-medium" id="fileLabelText">Ketuk untuk memilih file atau foto</p>
-                            <p class="text-xs text-slate-400">Pastikan gambar/tulisan terlihat jelas & tidak blur</p>
+                            <p class="text-sm text-slate-600 font-medium" id="fileLabelText">Ketuk untuk memilih file atau foto (Bisa pilih banyak sekaligus)</p>
+                            <p class="text-xs text-slate-400">Format: JPG, PNG, atau PDF (Terlihat jelas & tidak blur)</p>
                         </div>
                     </div>
+                    <!-- Daftar Preview File Terpilih -->
+                    <div id="fileListPreview" class="mt-3 space-y-1.5"></div>
                 </div>
 
                 <!-- Tombol Submit -->
                 <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3.5 rounded-xl transition shadow-lg shadow-emerald-600/20 text-sm mt-2">
-                    Kirim Hasil Tes
+                    Kirim Semua Hasil Tes
                 </button>
 
             </form>
@@ -95,74 +98,107 @@
         &copy; 2026 Program TERABACA. All rights reserved.
     </footer>
 
-    <!-- Script untuk kirim data ke Google Apps Script / Drive -->
+    <!-- Script untuk Kirim Banyak File Sekaligus ke Google Apps Script -->
     <script>
         const fileInput = document.getElementById('fileInput');
         const fileLabelText = document.getElementById('fileLabelText');
-        let selectedFileBase64 = "";
-        let selectedFileName = "";
-        let selectedFileMime = "";
+        const fileListPreview = document.getElementById('fileListPreview');
+        
+        let selectedFiles = [];
 
-        // Ubah file ke base64 agar bisa dibaca dan dikirim via Apps Script
+        // Menangkap banyak file sekaligus
         fileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if(file) {
-                selectedFileName = file.name;
-                selectedFileMime = file.type;
-                fileLabelText.textContent = "File terpilih: " + file.name;
+            selectedFiles = Array.from(e.target.files);
+            fileListPreview.innerHTML = '';
+
+            if (selectedFiles.length > 0) {
+                fileLabelText.textContent = `Terpilih ${selectedFiles.length} file lembar kerja`;
                 fileLabelText.classList.add("text-emerald-600", "font-bold");
 
-                const reader = new FileReader();
-                reader.onload = function(uploadEvent) {
-                    selectedFileBase64 = uploadEvent.target.result.split(',')[1];
-                };
-                reader.readAsDataURL(file);
+                // Tampilkan list nama filenya di bawah kotak
+                selectedFiles.forEach((file, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'text-xs bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg flex justify-between items-center';
+                    item.innerHTML = `<span class="truncate max-w-[280px]">Hal ${index + 1}: ${file.name}</span><span class="text-slate-400">(${~~(file.size / 1024)} KB)</span>`;
+                    fileListPreview.appendChild(item);
+                });
             }
         });
 
         // Aksi saat tombol submit ditekan
-        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            if (selectedFiles.length === 0) {
+                alert("Silakan pilih minimal 1 file lembar coretan!");
+                return;
+            }
+
             const submitBtn = e.target.querySelector('button[type="submit"]');
-            submitBtn.textContent = "Sedang Mengirim File...";
             submitBtn.disabled = true;
 
             const scriptURL = 'https://script.google.com/macros/s/AKfycbzIYdYQxmnHCF_VIeNitznzomhreTlsCS4oIx6kWIePK2MU9tkLnD8N9up_nZWcWtBYKw/exec'; 
 
-            const formData = {
-                nama: document.getElementById('nama').value,
-                whatsapp: document.getElementById('whatsapp').value,
-                paket: document.getElementById('paket').value,
-                cabang: document.getElementById('cabang').value,
-                fileData: selectedFileBase64,
-                fileName: selectedFileName,
-                fileMimeType: selectedFileMime
-            };
+            const nama = document.getElementById('nama').value;
+            const whatsapp = document.getElementById('whatsapp').value;
+            const paket = document.getElementById('paket').value;
+            const cabang = document.getElementById('cabang').value;
 
-            fetch(scriptURL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams(formData)
-            })
-            .then(() => {
-                alert("Alhamdulillah! Hasil tes berhasil dikirim dan tersimpan di pusat.");
+            try {
+                // Lakukan perulangan (looping) untuk mengirim setiap halaman secara berurutan
+                for (let i = 0; i < selectedFiles.length; i++) {
+                    const file = selectedFiles[i];
+                    submitBtn.textContent = `Mengirim Halaman ${i + 1} dari ${selectedFiles.length}...`;
+
+                    const base64Data = await toBase64(file);
+                    const cleanBase64 = base64Data.split(',')[1];
+                    const ext = file.name.split('.').pop();
+                    const customFileName = `${nama} - Hal ${i + 1} (${Date.now()}.${ext})`;
+
+                    const formData = {
+                        nama: nama,
+                        whatsapp: whatsapp,
+                        paket: paket,
+                        cabang: cabang,
+                        fileData: cleanBase64,
+                        fileName: customFileName,
+                        fileMimeType: file.type
+                    };
+
+                    await fetch(scriptURL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams(formData)
+                    });
+                }
+
+                alert("Alhamdulillah! Seluruh lembar hasil tes berhasil dikirim dan tersimpan di sistem.");
                 document.getElementById('uploadForm').reset();
-                fileLabelText.textContent = "Ketuk untuk memilih file atau foto";
+                selectedFiles = [];
+                fileListPreview.innerHTML = '';
+                fileLabelText.textContent = "Ketuk untuk memilih file atau foto (Bisa pilih banyak sekaligus)";
                 fileLabelText.classList.remove("text-emerald-600", "font-bold");
-                submitBtn.textContent = "Kirim Hasil Tes";
-                submitBtn.disabled = false;
-            })
-            .catch(error => {
-                console.error('Error!', error.message);
+
+            } catch (error) {
+                console.error('Error!', error);
                 alert("Terjadi kendala saat mengirim. Silakan coba lagi.");
-                submitBtn.textContent = "Kirim Hasil Tes";
+            } finally {
+                submitBtn.textContent = "Kirim Semua Hasil Tes";
                 submitBtn.disabled = false;
-            });
+            }
         });
+
+        function toBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
     </script>
 </body>
 </html>
