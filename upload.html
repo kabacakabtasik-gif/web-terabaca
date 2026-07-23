@@ -97,7 +97,7 @@
         &copy; 2026 Program TERABACA. All rights reserved.
     </footer>
 
-    <!-- Script untuk Kirim Banyak File Sekaligus ke Google Apps Script via JSON -->
+    <!-- Script Menggunakan URLSearchParams agar Tembus ke Apps Script -->
     <script>
         const fileInput = document.getElementById('fileInput');
         const fileLabelText = document.getElementById('fileLabelText');
@@ -150,7 +150,7 @@
                     const ext = file.name.split('.').pop();
                     const customFileName = `${nama} - Hal ${i + 1} (${Date.now()}.${ext})`;
 
-                    const payload = {
+                    const formData = {
                         nama: nama,
                         whatsapp: whatsapp,
                         paket: paket,
@@ -162,7 +162,11 @@
 
                     await fetch(scriptURL, {
                         method: 'POST',
-                        body: JSON.stringify(payload)
+                        mode: 'no-cors',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams(formData)
                     });
                 }
 
