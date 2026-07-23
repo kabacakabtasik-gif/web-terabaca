@@ -1,5 +1,16 @@
 <!DOCTYPE html>
 <html lang="id">
+<script>
+    // Password rahasia khusus pusat (bisa diganti sesuai keinginan)
+    const ADMIN_PASSWORD = "terabaca-pusat-rahasia"; 
+    
+    let pass = prompt("Masukkan Password Khusus Tim Pusat:");
+    if (pass !== ADMIN_PASSWORD) {
+        alert("Akses Ditolak! Anda bukan tim pusat.");
+        document.body.innerHTML = "<h2 style='text-align:center; margin-top:20vh; font-family:sans-serif;'>Akses Ditolak. Silakan tutup halaman ini.</h2>";
+        throw new Error("Unauthorized");
+    }
+</script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
