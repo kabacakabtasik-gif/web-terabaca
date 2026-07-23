@@ -72,7 +72,6 @@
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-1">File Hasil Coretan (Bisa Pilih Banyak: 3-5+ Halaman)</label>
                     <div class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:border-emerald-500 transition cursor-pointer bg-slate-50 relative">
-                        <!-- Tambahkan atribut multiple di sini -->
                         <input type="file" id="fileInput" required multiple accept="image/*,.pdf,application/pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                         <div class="space-y-2 pointer-events-none">
                             <svg class="w-8 h-8 mx-auto text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
@@ -98,7 +97,7 @@
         &copy; 2026 Program TERABACA. All rights reserved.
     </footer>
 
-    <!-- Script untuk Kirim Banyak File Sekaligus ke Google Apps Script -->
+    <!-- Script untuk Kirim Banyak File Sekaligus ke Google Apps Script via JSON -->
     <script>
         const fileInput = document.getElementById('fileInput');
         const fileLabelText = document.getElementById('fileLabelText');
@@ -106,7 +105,6 @@
         
         let selectedFiles = [];
 
-        // Menangkap banyak file sekaligus
         fileInput.addEventListener('change', function(e) {
             selectedFiles = Array.from(e.target.files);
             fileListPreview.innerHTML = '';
@@ -115,7 +113,6 @@
                 fileLabelText.textContent = `Terpilih ${selectedFiles.length} file lembar kerja`;
                 fileLabelText.classList.add("text-emerald-600", "font-bold");
 
-                // Tampilkan list nama filenya di bawah kotak
                 selectedFiles.forEach((file, index) => {
                     const item = document.createElement('div');
                     item.className = 'text-xs bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg flex justify-between items-center';
@@ -125,7 +122,6 @@
             }
         });
 
-        // Aksi saat tombol submit ditekan
         document.getElementById('uploadForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -145,7 +141,6 @@
             const cabang = document.getElementById('cabang').value;
 
             try {
-                // Lakukan perulangan (looping) untuk mengirim setiap halaman secara berurutan
                 for (let i = 0; i < selectedFiles.length; i++) {
                     const file = selectedFiles[i];
                     submitBtn.textContent = `Mengirim Halaman ${i + 1} dari ${selectedFiles.length}...`;
@@ -155,7 +150,7 @@
                     const ext = file.name.split('.').pop();
                     const customFileName = `${nama} - Hal ${i + 1} (${Date.now()}.${ext})`;
 
-                    const formData = {
+                    const payload = {
                         nama: nama,
                         whatsapp: whatsapp,
                         paket: paket,
@@ -167,11 +162,7 @@
 
                     await fetch(scriptURL, {
                         method: 'POST',
-                        mode: 'no-cors',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: new URLSearchParams(formData)
+                        body: JSON.stringify(payload)
                     });
                 }
 
