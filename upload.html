@@ -252,8 +252,8 @@
                 <div class="bg-indigo-50 border border-indigo-100 p-5 rounded-xl space-y-3">
                     <h2 class="font-bold text-indigo-900 text-sm uppercase tracking-wider">Panduan Upload Massal (Excel)</h2>
                     <p class="text-xs text-indigo-700 leading-relaxed">
-                        Fitur ini dirancang untuk mengirim data 100+ atau 1000 testee sekaligus agar tidak perlu mengetik satu-satu. 
-                        Silakan download template Excel di bawah, isi datanya, lalu unggah kembali beserta banyak file gambar coretan sekaligus.
+                        Fitur ini dirancang untuk mengirim data 100+ atau 1000 testee sekaligus. 
+                        Silakan download template Excel di bawah, isi datanya beserta link Google Drive hasil coretan pada kolom terakhir, lalu unggah kembali file Excel tersebut.
                     </p>
                     <div>
                         <button type="button" onclick="downloadTemplateExcel()" class="inline-flex items-center text-xs font-semibold text-indigo-700 bg-indigo-100 hover:bg-indigo-200 px-3.5 py-2 rounded-lg transition shadow-sm">
@@ -277,12 +277,6 @@
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Upload File Excel (.xlsx / .csv) *</label>
                             <input type="file" id="excelFileInput" required accept=".xlsx, .xls, .csv" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-100 file:text-indigo-800 hover:file:bg-indigo-200 cursor-pointer">
                         </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Upload Semua Berkas Coretan Sekaligus (Multiple Files) *</label>
-                        <input type="file" id="excelCoretanFiles" required multiple accept="image/*,.pdf" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 cursor-pointer">
-                        <p class="text-[11px] text-slate-400 mt-1">Sistem akan mencocokkan file gambar dengan nama testee di dalam Excel secara otomatis.</p>
                     </div>
 
                     <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3.5 rounded-xl transition shadow-lg shadow-indigo-600/20 text-sm">
@@ -327,7 +321,7 @@
             }
         }
 
-        // Fungsi Download Template Excel Standar
+        // Fungsi Download Template Excel Standar (Dilengkapi kolom link_coretan_drive)
         function downloadTemplateExcel() {
             const templateData = [
                 {
@@ -347,7 +341,8 @@
                     posisi_kertas: "Potrait",
                     alat_gambar: "Pensil Warna",
                     dominasi_warna: "Hijau / Biru / Ungu",
-                    catatan_gambar: "Anak tampak antusias saat menggambar."
+                    catatan_gambar: "Anak tampak antusias saat menggambar.",
+                    link_coretan_drive: "https://drive.google.com/file/d/contoh_link_file_anda"
                 }
             ];
 
@@ -437,17 +432,16 @@
             }
         });
 
-        // 2. Submit Form Massal Excel
+        // 2. Submit Form Massal Excel (Membaca link Google Drive dari Excel)
         document.getElementById('excelUploadForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const submitBtn = e.target.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
-            submitBtn.textContent = "Membaca Excel & Mengunggah Berkas...";
+            submitBtn.textContent = "Membaca Data Excel...";
 
             try {
                 const cabang = document.getElementById('excel_cabang').value;
                 const excelFile = document.getElementById('excelFileInput').files[0];
-                const coretanFiles = document.getElementById('excelCoretanFiles').files;
 
                 if (!excelFile) throw new Error("File Excel belum dipilih!");
 
@@ -458,31 +452,11 @@
 
                 if (!rows || rows.length === 0) throw new Error("File Excel kosong atau format tidak sesuai!");
 
-                const fileMap = {};
-                for (let file of coretanFiles) {
-                    fileMap[file.name] = file;
-                }
-
                 let successCount = 0;
 
                 for (let row of rows) {
                     const namaTestee = row.nama_testee || row.Nama || 'Tanpa_Nama';
-                    const cleanName = namaTestee.toString().replace(/[^a-zA-Z0-9]/g, '_');
-
-                    let matchedFileUrls = [];
-                    for (let fileName in fileMap) {
-                        if (fileName.toLowerCase().includes(cleanName.toLowerCase())) {
-                            const file = fileMap[fileName];
-                            const ext = fileName.split('.').pop();
-                            const path = `${cabang}/${cleanName}_${Date.now()}.${ext}`;
-
-                            const { error: uploadErr } = await _supabase.storage.from('lembar-coretan').upload(path, file);
-                            if (!uploadErr) {
-                                const { data: pubData } = _supabase.storage.from('lembar-coretan').getPublicUrl(path);
-                                matchedFileUrls.push(pubData.publicUrl);
-                            }
-                        }
-                    }
+                    const linkDrive = row.link_coretan_drive || row.Link_Coretan_Drive || '';
 
                     const { error: insertErr } = await _supabase.from('data_peserta').insert([{
                         cabang: cabang,
@@ -503,7 +477,7 @@
                         alat_gambar: row.alat_gambar || 'Standard',
                         dominasi_warna: row.dominasi_warna || '',
                         catatan_gambar: row.catatan_gambar || '',
-                        file_coretan_url: matchedFileUrls.join(', ')
+                        file_coretan_url: linkDrive
                     }]);
 
                     if (!insertErr) successCount++;
