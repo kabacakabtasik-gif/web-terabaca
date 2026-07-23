@@ -6,6 +6,8 @@
     <title>Portal Unggah Cabang - TERABACA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Library SheetJS untuk membaca file Excel di browser -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
 </head>
@@ -23,11 +25,19 @@
     <main class="max-w-3xl mx-auto p-4 sm:p-6 w-full flex-grow">
         <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
             
-            <div class="mb-6 border-b border-slate-100 pb-4">
-                <h1 class="text-xl sm:text-2xl font-bold text-slate-800">Form Pengiriman Berkas & Data Tes</h1>
-                <p class="text-sm text-slate-500 mt-1">Silakan lengkapi data validasi, data testee, proses gambar, dan unggah berkas sesuai standar pusat.</p>
+            <div class="mb-6 border-b border-slate-100 pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold text-slate-800">Form Pengiriman Berkas & Data Tes</h1>
+                    <p class="text-sm text-slate-500 mt-1">Pilih metode pengiriman: Input Satuan atau Upload Massal via Excel.</p>
+                </div>
+                <!-- Pilihan Mode Input -->
+                <div class="flex bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+                    <button type="button" id="btnModeSatuan" onclick="switchMode('satuan')" class="px-4 py-2 rounded-lg bg-white text-emerald-700 shadow-sm transition">Input Satuan</button>
+                    <button type="button" id="btnModeExcel" onclick="switchMode('excel')" class="px-4 py-2 rounded-lg text-slate-600 transition">Upload Excel (Massal)</button>
+                </div>
             </div>
 
+            <!-- FORM 1: INPUT SATUAN (KODE LAMA ANDA) -->
             <form id="uploadForm" class="space-y-6">
                 
                 <!-- BAGIAN 1: Data Validasi Cabang -->
@@ -216,12 +226,12 @@
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Upload Bukti Transfer (Opsional/Jika Ada)</label>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Upload Bukti Transfer (Opsional)</label>
                             <input type="file" id="buktiTransferInput" accept="image/*,.pdf" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-100 file:text-emerald-800 hover:file:bg-emerald-200 cursor-pointer">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Upload Lembar Hasil Coretan (Bisa Pilih Banyak) *</label>
-                            <input type="file" id="fileCoretanInput" required multiple accept="image/*,.pdf" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-700 cursor-pointer">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Upload Lembar Coretan (Bisa Pilih Banyak) *</label>
+                            <input type="file" id="fileCoretanInput" multiple accept="image/*,.pdf" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-700 cursor-pointer">
                         </div>
                     </div>
                 </div>
@@ -231,12 +241,51 @@
                     <input type="text" id="catatan_khusus" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm bg-white" placeholder="Opsional...">
                 </div>
 
-                <!-- Tombol Submit -->
+                <!-- Tombol Submit Satuan -->
                 <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3.5 rounded-xl transition shadow-lg shadow-emerald-600/20 text-sm">
                     Kirim Seluruh Data & Berkas ke Pusat
                 </button>
-
             </form>
+
+            <!-- FORM 2: UPLOAD MASSAL VIA EXCEL (BARU) -->
+            <div id="sectionExcel" class="hidden space-y-6">
+                <div class="bg-indigo-50 border border-indigo-100 p-5 rounded-xl space-y-3">
+                    <h2 class="font-bold text-indigo-900 text-sm uppercase tracking-wider">Panduan Upload Massal (Excel)</h2>
+                    <p class="text-xs text-indigo-700 leading-relaxed">
+                        Fitur ini dirancang untuk mengirim data 100+ atau 1000 testee sekaligus agar tidak perlu mengetik satu-satu. 
+                        Silakan unggah file Excel rekap data peserta, lalu pilih folder/banyak file gambar coretan sekaligus. Pastikan penamaan file gambar sesuai dengan nama lengkap testee di Excel.
+                    </p>
+                </div>
+
+                <form id="excelUploadForm" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Pilih Cabang *</label>
+                            <select id="excel_cabang" required class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm bg-white">
+                                <option value="">-- Pilih Cabang --</option>
+                                <option value="Kab. Tasikmalaya">Kab. Tasikmalaya</option>
+                                <option value="Kota Depok">Kota Depok</option>
+                                <option value="Pusat">Pusat</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Upload File Excel (.xlsx / .csv) *</label>
+                            <input type="file" id="excelFileInput" required accept=".xlsx, .xls, .csv" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-100 file:text-indigo-800 hover:file:bg-indigo-200 cursor-pointer">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Upload Semua Berkas Coretan Sekaligus (Multiple Files) *</label>
+                        <input type="file" id="excelCoretanFiles" required multiple accept="image/*,.pdf" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 cursor-pointer">
+                        <p class="text-[11px] text-slate-400 mt-1">Sistem akan mencocokkan file gambar dengan nama testee di dalam Excel secara otomatis.</p>
+                    </div>
+
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3.5 rounded-xl transition shadow-lg shadow-indigo-600/20 text-sm">
+                        Proses & Kirim Semua Data Excel ke Pusat
+                    </button>
+                </form>
+            </div>
+
         </div>
     </main>
 
@@ -245,14 +294,35 @@
         &copy; 2026 Program TERABACA. All rights reserved.
     </footer>
 
-    <!-- Script Integrasi Supabase -->
+    <!-- Script Integrasi Supabase & Logika -->
     <script>
         const SUPABASE_URL = 'https://zdealocdcweemecirdap.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkZWFsb2NkY3dlZW1lY2lyZGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5ODEyNTgsImV4cCI6MjA5NDU1NzI1OH0._fgstIY2k0s0zv-7_EnupEmFlExFsXRLZP7BAYHd_-c'; // Masukkan key anon Anda
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkZWFsb2NkY3dlZW1lY2lyZGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5ODEyNTgsImV4cCI6MjA5NDU1NzI1OH0._fgstIY2k0s0zv-7_EnupEmFlExFsXRLZP7BAYHd_-c';
         
         const { createClient } = supabase;
         const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // Fungsi Ganti Mode Form (Satuan vs Excel)
+        function switchMode(mode) {
+            const formSatuan = document.getElementById('uploadForm');
+            const sectionExcel = document.getElementById('sectionExcel');
+            const btnSatuan = document.getElementById('btnModeSatuan');
+            const btnExcel = document.getElementById('btnModeExcel');
+
+            if (mode === 'satuan') {
+                formSatuan.classList.remove('hidden');
+                sectionExcel.classList.add('hidden');
+                btnSatuan.className = "px-4 py-2 rounded-lg bg-white text-emerald-700 shadow-sm transition";
+                btnExcel.className = "px-4 py-2 rounded-lg text-slate-600 transition";
+            } else {
+                formSatuan.classList.add('hidden');
+                sectionExcel.classList.remove('hidden');
+                btnExcel.className = "px-4 py-2 rounded-lg bg-white text-indigo-700 shadow-sm transition";
+                btnSatuan.className = "px-4 py-2 rounded-lg text-slate-600 transition";
+            }
+        }
+
+        // 1. Submit Form Satuan (Existing)
         document.getElementById('uploadForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const submitBtn = e.target.querySelector('button[type="submit"]');
@@ -264,7 +334,6 @@
                 const namaTestee = document.getElementById('nama_testee').value;
                 const cleanName = namaTestee.replace(/[^a-zA-Z0-9]/g, '_');
 
-                // 1. Upload Bukti Transfer (jika ada)
                 let buktiTransferUrl = '';
                 const transferFile = document.getElementById('buktiTransferInput').files[0];
                 if (transferFile) {
@@ -277,7 +346,6 @@
                     }
                 }
 
-                // 2. Upload Lembar Coretan (Multi-file digabung jadi satu string atau dipisahkan koma)
                 let listFileUrls = [];
                 const coretanFiles = document.getElementById('fileCoretanInput').files;
                 for (let i = 0; i < coretanFiles.length; i++) {
@@ -291,7 +359,6 @@
                     }
                 }
 
-                // 3. Simpan seluruh data teks ke tabel 'data_peserta'
                 const { error: dbError } = await _supabase.from('data_peserta').insert([{
                     email_cabang: document.getElementById('email_cabang').value,
                     nama_penginput: document.getElementById('nama_penginput').value,
@@ -300,7 +367,6 @@
                     jenis_paket_bayar: document.getElementById('jenis_paket_bayar').value,
                     bentuk_kerjasama: document.getElementById('bentuk_kerjasama').value,
                     catatan_khusus: document.getElementById('catatan_khusus').value,
-
                     nama_testee: namaTestee,
                     no_testee: document.getElementById('no_testee').value,
                     lembaga_institusi: document.getElementById('lembaga_institusi').value,
@@ -312,16 +378,14 @@
                     level_pendidikan: document.getElementById('level_pendidikan').value,
                     jurusan_sma: document.getElementById('jurusan_sma').value,
                     jurusan_terlintas: document.getElementById('jurusan_terlintas').value,
-
                     bantuan_menggambar: document.getElementById('bantuan_menggambar').value,
                     kondisi_kertas: document.getElementById('kondisi_kertas').value,
                     posisi_kertas: document.getElementById('posisi_kertas').value,
                     alat_gambar: document.getElementById('alat_gambar').value,
                     dominasi_warna: document.getElementById('dominasi_warna').value,
                     catatan_gambar: document.getElementById('catatan_gambar').value,
-
                     bukti_transfer_url: buktiTransferUrl,
-                    file_coretan_url: listFileUrls.join(', ') // Menyimpan banyak link file dipisah koma
+                    file_coretan_url: listFileUrls.join(', ')
                 }]);
 
                 if (dbError) throw dbError;
@@ -334,6 +398,95 @@
                 alert("Gagal mengirim data: " + error.message);
             } finally {
                 submitBtn.textContent = "Kirim Seluruh Data & Berkas ke Pusat";
+                submitBtn.disabled = false;
+            }
+        });
+
+        // 2. Submit Form Massal Excel (Baru)
+        document.getElementById('excelUploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Membaca Excel & Mengunggah Berkas...";
+
+            try {
+                const cabang = document.getElementById('excel_cabang').value;
+                const excelFile = document.getElementById('excelFileInput').files[0];
+                const coretanFiles = document.getElementById('excelCoretanFiles').files;
+
+                if (!excelFile) throw new Error("File Excel belum dipilih!");
+
+                // Baca isi file Excel menggunakan SheetJS
+                const dataBuffer = await excelFile.arrayBuffer();
+                const workbook = XLSX.read(dataBuffer, { type: 'array' });
+                const sheetName = workbook.SheetNames[0];
+                const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+                if (!rows || rows.length === 0) throw new Error("File Excel kosong atau format tidak sesuai!");
+
+                // Petakan file coretan berdasarkan nama file
+                const fileMap = {};
+                for (let file of coretanFiles) {
+                    fileMap[file.name] = file;
+                }
+
+                let successCount = 0;
+
+                // Loop setiap baris data di Excel
+                for (let row of rows) {
+                    const namaTestee = row.nama_testee || row.Nama || 'Tanpa_Nama';
+                    const cleanName = namaTestee.toString().replace(/[^a-zA-Z0-9]/g, '_');
+
+                    // Cari file gambar yang namanya mengandung nama testee
+                    let matchedFileUrls = [];
+                    for (let fileName in fileMap) {
+                        if (fileName.toLowerCase().includes(cleanName.toLowerCase())) {
+                            const file = fileMap[fileName];
+                            const ext = fileName.split('.').pop();
+                            const path = `${cabang}/${cleanName}_${Date.now()}.${ext}`;
+
+                            const { error: uploadErr } = await _supabase.storage.from('lembar-coretan').upload(path, file);
+                            if (!uploadErr) {
+                                const { data: pubData } = _supabase.storage.from('lembar-coretan').getPublicUrl(path);
+                                matchedFileUrls.push(pubData.publicUrl);
+                            }
+                        }
+                    }
+
+                    // Insert ke Supabase
+                    const { error: insertErr } = await _supabase.from('data_peserta').insert([{
+                        cabang: cabang,
+                        nama_testee: namaTestee,
+                        no_testee: row.no_testee || row.No_Testee || '',
+                        lembaga_institusi: row.lembaga_institusi || row.Lembaga || '-',
+                        tempat_lahir: row.tempat_lahir || '-',
+                        tanggal_lahir: row.tanggal_lahir || '',
+                        usia: row.usia ? row.usia.toString() : '',
+                        tanggal_tes: row.tanggal_tes || '',
+                        jenis_kelamin: row.jenis_kelamin || '',
+                        level_pendidikan: row.level_pendidikan || '',
+                        jurusan_sma: row.jurusan_sma || '',
+                        jurusan_terlintas: row.jurusan_terlintas || '-*',
+                        bantuan_menggambar: row.bantuan_menggambar || 'Mandiri',
+                        kondisi_kertas: row.kondisi_kertas || 'Normal',
+                        posisi_kertas: row.posisi_kertas || 'Potrait',
+                        alat_gambar: row.alat_gambar || 'Standard',
+                        dominasi_warna: row.dominasi_warna || '',
+                        catatan_gambar: row.catatan_gambar || '',
+                        file_coretan_url: matchedFileUrls.join(', ')
+                    }]);
+
+                    if (!insertErr) successCount++;
+                }
+
+                alert(`Alhamdulillah! Berhasil memproses dan mengirim ${successCount} dari ${rows.length} data peserta via Excel ke pusat.`);
+                document.getElementById('excelUploadForm').reset();
+
+            } catch (err) {
+                console.error(err);
+                alert("Gagal proses Excel: " + err.message);
+            } finally {
+                submitBtn.textContent = "Proses & Kirim Semua Data Excel ke Pusat";
                 submitBtn.disabled = false;
             }
         });
