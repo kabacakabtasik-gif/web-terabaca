@@ -8,21 +8,18 @@
     function verifyAdmin() {
         let pwd = prompt("Masukkan Password Akses Dashboard Pusat TERABACA:");
         
-        // Jika user klik Cancel atau mengosongkan password
         if (pwd === null || pwd.trim() === "") {
             alert("Akses dibatalkan / kosong. Anda diarahkan kembali ke Portal Cabang.");
             window.location.href = "upload.html";
             return;
         }
 
-        // Jika password salah, ulangi prompt sampai benar
         if (pwd !== ADMIN_PASSWORD) {
             alert("Password salah! Silakan coba lagi.");
             verifyAdmin(); 
         }
     }
 
-    // Jalankan verifikasi saat halaman pertama kali dimuat
     verifyAdmin();
 </script>
 <head>
@@ -31,7 +28,7 @@
     <title>Dashboard Pusat - TERABACA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Library SheetJS untuk fitur Download Rekap Excel di Admin -->
+    <!-- Library SheetJS untuk fitur Download Rekap Excel Lengkap di Admin -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
@@ -47,7 +44,7 @@
             </div>
             <div class="flex items-center flex-wrap gap-2">
                 <button onclick="downloadRekapExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-lg transition font-semibold shadow-sm">
-                    📥 Unduh Rekap Excel
+                    📥 Unduh Rekap Excel Lengkap
                 </button>
                 <button onclick="loadDataPeserta()" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded-lg border border-slate-700 transition">
                     🔄 Muat Ulang Data
@@ -63,8 +60,8 @@
     <main class="max-w-7xl mx-auto p-4 sm:p-6 w-full flex-grow">
         
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
-            <h1 class="text-xl font-bold text-slate-800">Rekapitulasi Data & Unggah Hasil Analisa</h1>
-            <p class="text-sm text-slate-500 mt-1">Kelola data masuk dari seluruh cabang, unduh berkas coretan testee, dan unggah laporan hasil analisa pusat.</p>
+            <h1 class="text-xl font-bold text-slate-800">Rekapitulasi Data Master & Unggah Hasil Analisa</h1>
+            <p class="text-sm text-slate-500 mt-1">Kelola data masuk dari seluruh cabang dan personal, unduh berkas coretan, serta unggah laporan hasil analisa pusat.</p>
         </div>
 
         <!-- Tabel Data Peserta -->
@@ -73,16 +70,17 @@
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-slate-50 text-slate-600 text-xs uppercase tracking-wider border-b border-slate-200">
-                            <th class="py-3 px-4">Waktu / Cabang</th>
-                            <th class="py-3 px-4">Data Testee</th>
-                            <th class="py-3 px-4">Info Tes & Paket</th>
-                            <th class="py-3 px-4">Berkas Coretan (Cabang)</th>
+                            <th class="py-3 px-4">Penginput & Cabang</th>
+                            <th class="py-3 px-4">Identitas Testee</th>
+                            <th class="py-3 px-4">Paket & Pendidikan</th>
+                            <th class="py-3 px-4">Catatan & Proses Gambar</th>
+                            <th class="py-3 px-4">Berkas (Coretan / Transfer)</th>
                             <th class="py-3 px-4">Hasil Analisa (Pusat)</th>
                         </tr>
                     </thead>
                     <tbody id="tabelData" class="divide-y divide-slate-100 text-sm text-slate-700">
                         <tr>
-                            <td colspan="5" class="text-center py-8 text-slate-400">Memuat data dari database pusat...</td>
+                            <td colspan="6" class="text-center py-8 text-slate-400">Memuat data dari database pusat...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -110,7 +108,7 @@
             }
         }
 
-        // Fungsi Download Seluruh Rekap Data ke Excel
+        // Fungsi Download Seluruh Rekap Data ke Excel secara Lengkap & Rinci
         async function downloadRekapExcel() {
             try {
                 const { data, error } = await _supabase
@@ -124,19 +122,20 @@
                     return;
                 }
 
-                // Format data rapi untuk Excel
+                // Format seluruh kolom data secara lengkap dan seragam
                 const formattedData = data.map((row, index) => ({
                     No: index + 1,
                     Waktu_Masuk: row.created_at,
-                    Cabang: row.cabang,
-                    Email_Cabang: row.email_cabang || '-',
+                    Cabang_Wilayah: row.cabang,
+                    Jenis_Layanan: row.jenis_layanan || 'Personal',
+                    Email_Penginput: row.email_cabang || '-',
                     Nama_Penginput: row.nama_penginput || '-',
-                    WhatsApp: row.whatsapp_penginput || '-',
-                    Paket_Bayar: row.jenis_paket_bayar,
-                    Kerja_Sama: row.bentuk_kerjasama,
+                    WhatsApp_Penginput: row.whatsapp_penginput || '-',
+                    Status_Bayar: row.jenis_paket_bayar,
                     Nama_Testee: row.nama_testee,
                     No_Testee: row.no_testee || '-',
-                    Lembaga: row.lembaga_institusi,
+                    Paket_Tes: row.paket_tes || '-',
+                    Lembaga_Institusi: row.lembaga_institusi,
                     Tempat_Lahir: row.tempat_lahir,
                     Tanggal_Lahir: row.tanggal_lahir,
                     Usia: row.usia,
@@ -144,24 +143,28 @@
                     Jenis_Kelamin: row.jenis_kelamin,
                     Level_Pendidikan: row.level_pendidikan,
                     Jurusan_SMA: row.jurusan_sma || '-',
-                    Jurusan_Terlintas: row.jurusan_terlintas,
-                    Bantuan_Gambar: row.bantuan_menggambar,
-                    Kondisi_Kertas: row.kondisi_kertas,
-                    Posisi_Kertas: row.posisi_kertas,
-                    Alat_Gambar: row.alat_gambar,
-                    Dominasi_Warna: row.dominasi_warna,
-                    Catatan_Gambar: row.catatan_gambar || '-',
-                    Catatan_Khusus: row.catatan_khusus || '-',
+                    Jurusan_Pilihan_Talent: row.jurusan_terlintas || '-',
+                    Anak_Ke: row.anak_ke || '-',
+                    Dari_Bersaudara: row.dari_bersaudara || '-',
+                    Dibantu_Ortu: row.dibantu_ortu || '-',
+                    Dibantu_Orang_Lain: row.dibantu_orang_lain || '-',
+                    Kondisi_Kertas_Sobek: row.kondisi_kertas || '-',
+                    Ganti_Kertas: row.ganti_kertas || '-',
+                    Posisi_Kertas: row.posisi_kertas || '-',
+                    Alat_Gambar: row.alat_gambar || '-',
+                    Dominasi_Warna: row.dominasi_warna || '-',
+                    Catatan_Temuan_Gambar: row.catatan_gambar || '-',
+                    Catatan_Khusus_Pusat: row.catatan_khusus || '-',
                     Link_Coretan_Drive: row.file_coretan_url || '-',
-                    Bukti_Transfer: row.bukti_transfer_url || '-',
-                    Hasil_Analisa: row.hasil_analisa_url || '-'
+                    Bukti_Transfer_URL: row.bukti_transfer_url || '-',
+                    Hasil_Analisa_URL: row.hasil_analisa_url || '-'
                 }));
 
                 const worksheet = XLSX.utils.json_to_sheet(formattedData);
                 const workbook = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Data Peserta");
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Master Terabaca");
 
-                XLSX.writeFile(workbook, `Rekap_Data_Peserta_Terabaca_${Date.now()}.xlsx`);
+                XLSX.writeFile(workbook, `Rekap_Master_Terabaca_${Date.now()}.xlsx`);
             } catch (err) {
                 console.error(err);
                 alert("Gagal mengunduh rekap Excel: " + err.message);
@@ -170,7 +173,7 @@
 
         async function loadDataPeserta() {
             const tbody = document.getElementById('tabelData');
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400">Sedang menyinkronkan data...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400">Sedang menyinkronkan data...</td></tr>`;
 
             const { data, error } = await _supabase
                 .from('data_peserta')
@@ -179,12 +182,12 @@
 
             if (error) {
                 console.error(error);
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
                 return;
             }
 
             if (!data || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400">Belum ada data peserta yang masuk dari cabang.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400">Belum ada data peserta yang masuk.</td></tr>`;
                 return;
             }
 
@@ -199,18 +202,10 @@
                 if (row.file_coretan_url) {
                     const rawUrl = row.file_coretan_url.trim();
                     if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
-                        linkCoretanHTML = `
-                            <a href="${rawUrl}" target="_blank" class="inline-block bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-semibold px-2.5 py-1 rounded border border-indigo-200">
-                                🔗 Buka Link Drive
-                            </a>
-                        `;
+                        linkCoretanHTML = `<a href="${rawUrl}" target="_blank" class="inline-block bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-semibold px-2 py-0.5 rounded border border-indigo-200">🔗 Buka Link Drive</a>`;
                     } else {
                         const urls = rawUrl.split(', ');
-                        linkCoretanHTML = urls.map((url, idx) => `
-                            <a href="${url.trim()}" target="_blank" class="inline-block bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-medium px-2 py-1 rounded mr-1 mb-1 border border-emerald-200">
-                                📄 Hal ${idx + 1}
-                            </a>
-                        `).join('');
+                        linkCoretanHTML = urls.map((url, idx) => `<a href="${url.trim()}" target="_blank" class="inline-block bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs px-2 py-0.5 rounded mr-1 mb-1 border border-emerald-200">📄 Hal ${idx + 1}</a>`).join('');
                     }
                 }
 
@@ -218,41 +213,46 @@
                 if (row.hasil_analisa_url) {
                     analisaHTML = `
                         <div class="space-y-1">
-                            <a href="${row.hasil_analisa_url}" target="_blank" class="block bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-semibold px-2.5 py-1 rounded border border-blue-200 text-center">
-                                📥 Unduh Hasil Analisa
-                            </a>
+                            <a href="${row.hasil_analisa_url}" target="_blank" class="block bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-semibold px-2.5 py-1 rounded border border-blue-200 text-center">📥 Unduh Analisa</a>
                             <button onclick="unggahAnalisa(${row.id}, '${row.nama_testee}')" class="text-xs text-slate-500 hover:text-slate-700 underline block text-center w-full">Ganti File</button>
                         </div>
                     `;
                 } else {
-                    analisaHTML = `
-                        <button onclick="unggahAnalisa(${row.id}, '${row.nama_testee}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm transition w-full">
-                            ⬆️ Upload Analisa
-                        </button>
-                    `;
+                    analisaHTML = `<button onclick="unggahAnalisa(${row.id}, '${row.nama_testee}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm transition w-full">⬆️ Upload Analisa</button>`;
                 }
 
                 tr.innerHTML = `
                     <td class="py-4 px-4 align-top">
-                        <div class="font-semibold text-slate-800">${row.cabang || 'Pusat'}</div>
+                        <div class="font-semibold text-slate-800">${row.cabang || 'Pusat'} <span class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-600 ml-1">${row.jenis_layanan || 'Personal'}</span></div>
                         <div class="text-xs text-slate-400 mt-0.5">${tanggalInput}</div>
                         <div class="text-xs text-slate-500 mt-1">Penginput: ${row.nama_penginput || '-'}</div>
+                        <div class="text-[11px] text-slate-400">${row.whatsapp_penginput || ''}</div>
                     </td>
                     <td class="py-4 px-4 align-top">
-                        <div class="font-bold text-slate-900">${row.nama_testee}</div>
-                        <div class="text-xs text-slate-500">Lembaga: ${row.lembaga_institusi || '-'}</div>
-                        <div class="text-xs text-slate-500">Usia: ${row.usia || '-'} | ${row.jenis_kelamin || ''}</div>
+                        <div class="font-bold text-slate-900">${row.nama_testee} <span class="text-xs font-normal text-slate-500">(No: ${row.no_testee || '-'})</span></div>
+                        <div class="text-xs text-slate-600 mt-0.5">Lembaga: ${row.lembaga_institusi || '-'}</div>
+                        <div class="text-xs text-slate-500">TTL: ${row.tempat_lahir || '-'}, ${row.tanggal_lahir || '-'}</div>
+                        <div class="text-xs text-slate-500">Usia: ${row.usia || '-'} | ${row.jenis_kelamin || '-'}</div>
                     </td>
                     <td class="py-4 px-4 align-top">
-                        <div class="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded inline-block font-semibold mb-1">Paket: ${row.jenis_paket_bayar || 'Standard'}</div>
-                        <div class="text-xs text-slate-500">Level: ${row.level_pendidikan || '-'}</div>
-                        <div class="text-xs text-slate-500">Jurusan: ${row.jurusan_terlintas || '-'}</div>
+                        <div class="text-xs bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded inline-block font-bold mb-1">Paket: ${row.paket_tes || 'Basic'} (${row.jenis_paket_bayar || '-'})</div>
+                        <div class="text-xs text-slate-600">Level: ${row.level_pendidikan || '-'}</div>
+                        ${row.jurusan_sma ? `<div class="text-xs text-slate-500">Jurusan: ${row.jurusan_sma}</div>` : ''}
+                        ${row.jurusan_terlintas ? `<div class="text-xs text-slate-500">Pilihan Talent: ${row.jurusan_terlintas}</div>` : ''}
+                        <div class="text-xs text-slate-400 mt-1">Anak ke-${row.anak_ke || '-'} dari ${row.dari_bersaudara || '-'} bersaudara</div>
+                    </td>
+                    <td class="py-4 px-4 align-top text-xs text-slate-600 space-y-0.5">
+                        <div>Bantuan Ortu/Lain: <b>${row.dibantu_ortu || 'tidak'} / ${row.dibantu_orang_lain || 'tidak'}</b></div>
+                        <div>Kertas Sobek/Ganti: <b>${row.kondisi_kertas || 'tidak'} / ${row.ganti_kertas || 'tidak'}</b></div>
+                        <div>Posisi / Alat: <b>${row.posisi_kertas || '-'} / ${row.alat_gambar || '-'}</b></div>
+                        <div>Dominasi Warna: <b>${row.dominasi_warna || '-'}</b></div>
+                        ${row.catatan_gambar ? `<div class="text-slate-500 italic mt-1">Temuan: "${row.catatan_gambar}"</div>` : ''}
                     </td>
                     <td class="py-4 px-4 align-top">
-                        <div class="max-w-[200px]">${linkCoretanHTML}</div>
-                        ${row.bukti_transfer_url ? `<a href="${row.bukti_transfer_url}" target="_blank" class="text-xs text-indigo-600 hover:underline block mt-2">📎 Lihat Bukti Transfer</a>` : ''}
+                        <div class="max-w-[180px] space-y-1">${linkCoretanHTML}</div>
+                        ${row.bukti_transfer_url ? `<a href="${row.bukti_transfer_url}" target="_blank" class="text-xs text-indigo-600 hover:underline block mt-2">📎 Bukti Transfer</a>` : ''}
                     </td>
-                    <td class="py-4 px-4 align-top w-44">
+                    <td class="py-4 px-4 align-top w-40">
                         ${analisaHTML}
                     </td>
                 `;
