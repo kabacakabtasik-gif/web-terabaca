@@ -1,464 +1,560 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TERABACA - Asesmen Pra-Diagnostik Tulis & Coretan Anak</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TERABACA - Nalungtik Titik Manggih Diri</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        .no-scroll {
+            overflow: hidden;
+            height: 100vh;
+        }
+        .bg-terabaca-custom {
+            background-image: url('bg-batik.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+    </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
+<body class="bg-white font-sans text-gray-800 antialiased min-h-screen no-scroll" id="body-layout">
 
-  <!-- HEADER / NAVBAR ASLI -->
-  <header class="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100 shadow-sm">
-    <div class="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <span class="font-extrabold text-xl tracking-wider text-blue-900">TERABACA</span>
-      </div>
-      <nav class="flex items-center gap-4 text-xs font-semibold text-slate-600">
-        <button onclick="scrollToSection('tentang')" class="hover:text-blue-900 transition">Tentang</button>
-        <button onclick="scrollToSection('metode')" class="hover:text-blue-900 transition">Metode</button>
-        <button onclick="scrollToSection('keilmuan')" class="hover:text-blue-900 transition">Keilmuan</button>
-        <button onclick="scrollToSection('cekStatus')" class="hover:text-blue-900 transition">Cek Status</button>
-        <button onclick="scrollToSection('formDaftar')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full transition shadow-sm">
-          Pilih Paket / Daftar
-        </button>
-      </nav>
+    <!-- ================= HALAMAN AWAL (LANDING/SPLASH) ================= -->
+    <div id="landing-page" class="flex items-center justify-center min-h-screen w-full bg-terabaca-custom cursor-pointer transition-all duration-500 p-4" onclick="bukaDashboard()">
+        <div class="w-full max-w-2xl mx-auto text-center animate-fade-in">
+            <img src="logo.png" alt="TERABACA" class="w-full h-auto mx-auto object-contain max-w-lg transition-transform duration-350 hover:scale-[1.02] active:scale-[0.98]">
+            <p class="mt-8 text-xs text-gray-400 font-medium tracking-widest uppercase animate-pulse">
+                Ketuk layar untuk masuk ke portal informasi
+            </p>
+        </div>
     </div>
-  </header>
 
-  <!-- CONTAINER LANDING PAGE (GAMBAR 2 ASLI) -->
-  <main class="max-w-5xl mx-auto px-4 py-8 space-y-8 flex-grow">
-
-    <!-- SECTION 1: TENTANG TERABACA -->
-    <section id="tentang" class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-100">
-      <div class="border-l-4 border-blue-900 pl-4 mb-4">
-        <h2 class="text-xl font-extrabold text-blue-900 uppercase tracking-wide">TERABACA</h2>
-      </div>
-      <div class="text-xs md:text-sm text-slate-600 space-y-3 leading-relaxed">
-        <p>
-          <strong>TERABACA</strong> adalah perangkat asesmen pra-diagnostik (skrining awal) yang dikembangkan oleh KABACA Pro untuk membantu mengenali pola pikir, emosi, perilaku, potensi, kebutuhan pendampingan, serta dinamika relasi seseorang melalui analisis bahasa coretan dan gambar.
-        </p>
-        <p>
-          TERABACA bukan psikotes, bukan alat diagnosis medis, dan bukan alat untuk memberikan vonis. Hasil asesmen digunakan sebagai bahan pemetaan awal agar proses pendampingan, edukasi, maupun rujukan dapat dilakukan secara lebih tepat.
-        </p>
-        <p>
-          Pendekatan TERABACA mengintegrasikan berbagai keilmuan sehingga pembacaan dilakukan secara holistik, dengan mempertimbangkan simbol visual, grafologi, perkembangan individu, dinamika keluarga, komunikasi, serta aspek biologis, psikologis, sosial, dan spiritual.
-        </p>
-        <p>
-          Dalam praktiknya, TERABACA tidak hanya berfokus pada menemukan permasalahan, tetapi juga membantu mengidentifikasi kekuatan, potensi, area pengembangan, dan rekomendasi <em>treatment</em> yang dapat diterapkan sesuai kebutuhan individu.
-        </p>
-        <p class="text-[11px] text-slate-400 italic pt-2">
-          TERABACA merupakan perangkat asesmen milik KABACA Pro.
-        </p>
-      </div>
-    </section>
-
-    <!-- SECTION 2: APA SAJA YANG TERBACA -->
-    <section id="metode" class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-100">
-      <div class="border-l-4 border-blue-900 pl-4 mb-6">
-        <h2 class="text-xl font-extrabold text-blue-900 tracking-wide">Apa Saja yang Terbaca?</h2>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
-          <h3 class="font-bold text-xs text-blue-900 mb-1">8 Aspek Dasar Anak</h3>
-          <p class="text-xs text-slate-600 leading-relaxed">Memetakan motorik halus, motorik kasar, rasionalitas, komunikasi interpersonal & intrapersonal, manajemen, imajinasi, serta jiwa berprestasi anak.</p>
-        </div>
-        <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
-          <h3 class="font-bold text-xs text-blue-900 mb-1">8 Kebutuhan Peran Kebundaan (Motherly)</h3>
-          <p class="text-xs text-slate-600 leading-relaxed">Membaca tingkat <em>inner sensitivity</em>, ketangguhan (toughness), kesabaran, motherhood, pengembangan diri, tanggung jawab, serta <em>aware & belief system</em>.</p>
-        </div>
-        <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
-          <h3 class="font-bold text-xs text-blue-900 mb-1">Potensi, Emosi & Jendela Persepsi</h3>
-          <p class="text-xs text-slate-600 leading-relaxed">Mampu melihat persepsi anak ke 1 sampai ke 5 terhadap orang tuanya secara detail, memetakan potensi tersembunyi, hingga menyeimbangkan gaya belajar anak.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION 3: 12 KEILMUAN FONDASI -->
-    <section id="keilmuan" class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-100">
-      <div class="border-l-4 border-blue-900 pl-4 mb-2">
-        <h2 class="text-xl font-extrabold text-blue-900 tracking-wide">12 Keilmuan Fondasi</h2>
-      </div>
-      <p class="text-xs text-slate-500 mb-6">Berdasarkan petunjuk para ahli di TERABACA, pendekatan TERABACA dibangun dari integrasi berbagai keilmuan yang saling melengkapi.</p>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
-          <span class="font-bold text-blue-900 block mb-0.5">1. SENI RUPA (KESENIRUPAAN)</span>
-          <span class="text-slate-600 text-[11px]">Membaca pola pikir, emosi, perilaku, dan kecenderungan bawah sadar melalui coretan dan bentuk visual yang dihasilkan seseorang.</span>
-        </div>
-        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
-          <span class="font-bold text-blue-900 block mb-0.5">2. NEURO GRAFIKA ART</span>
-          <span class="text-slate-600 text-[11px]">Teknik menggambar berbasis neurografika untuk membantu membentuk koneksi berpikir baru dan mengubah respon terhadap suatu kondisi.</span>
-        </div>
-        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
-          <span class="font-bold text-blue-900 block mb-0.5">3. SEDONA METHOD</span>
-          <span class="text-slate-600 text-[11px]">Teknik melepaskan keterikatan emosi, pikiran, dan beban mental yang menghambat pertumbuhan diri.</span>
-        </div>
-        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
-          <span class="font-bold text-blue-900 block mb-0.5">4. SILVA METHOD</span>
-          <span class="text-slate-600 text-[11px]">Metode pengelolaan kondisi kesadaran dan gelombang otak untuk mengoptimalkan potensi pikiran dan intuisi.</span>
-        </div>
-        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
-          <span class="font-bold text-blue-900 block mb-0.5">5. NEURO-LINGUISTIC PROGRAMMING</span>
-          <span class="text-slate-600 text-[11px]">Keilmuan tentang bahasa, pola pikir, dan perilaku untuk membangun perubahan yang lebih efektif.</span>
-        </div>
-        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
-          <span class="font-bold text-blue-900 block mb-0.5">6. GRAFOLOGI</span>
-          <span class="text-slate-600 text-[11px]">Keilmuan membaca karakter, pola pikir, emosi, dan kecenderungan perilaku melalui tulisan tangan.</span>
-        </div>
-        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
-          <span class="font-bold text-blue-900 block mb-0.5">7. S.E.M</span>
-          <span class="text-slate-600 text-[11px]">Pendekatan energi untuk membantu menyeimbangkan kondisi fisik, mental, emosional, dan respon tubuh terhadap berbagai pengalaman hidup.</span>
-        </div>
-        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
-          <span class="font-bold text-blue-900 block mb-0.5">8. ARITMATIKA</span>
-          <span class="text-slate-600 text-[11px]">Pendekatan numerik untuk membaca pola, struktur berpikir, logika, dan kecenderungan pengambilan keputusan.</span>
-        </div>
-        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
-          <span class="font-bold text-blue-900 block mb-0.5">9. STRUKTUR FIBONACCI</span>
-          <span class="text-slate-600 text-[11px]">Keilmuan yang mempelajari pola pertumbuhan dan keteraturan alam sebagai acuan memahami struktur dan keseimbangan kehidupan.</span>
-        </div>
-        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
-          <span class="font-bold text-blue-900 block mb-0.5">10. AVASINOLOGI</span>
-          <span class="text-slate-600 text-[11px]">Pendekatan kesehatan holistik berbasis keilmuan Avasinologi untuk mendukung keseimbangan tubuh, pikiran, dan kualitas hidup.</span>
-        </div>
-        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
-          <span class="font-bold text-blue-900 block mb-0.5">11. ANALISIS HARMONIK GELOMBANG</span>
-          <span class="text-slate-600 text-[11px]">Analisis pola gelombang dan frekuensi untuk membantu memahami kecenderungan kondisi fisik, mental, dan emosional seseorang.</span>
-        </div>
-        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
-          <span class="font-bold text-blue-900 block mb-0.5">12. PERSAMAAN TRIGONOMETRI</span>
-          <span class="text-slate-600 text-[11px]">Pendekatan matematis untuk memahami hubungan, keteraturan, dan keseimbangan antar unsur dalam suatu sistem.</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION 4: FORM PENDAFTARAN SUPABASE + CLOUDINARY (GAMBAR 1) -->
-    <section id="formDaftar" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
-      <div class="border-b border-slate-100 pb-4 mb-6">
-        <h3 class="text-xl font-bold text-slate-900">Formulir Pendaftaran Client</h3>
-        <p class="text-xs text-slate-500 mt-1">Isi data calon murid dan sertakan sampel foto tulisan/coretan tangan anak.</p>
-      </div>
-
-      <form id="mainRegisterForm" onsubmit="handleRegistrationSubmit(event)" class="space-y-5">
+    <!-- ================= HALAMAN DASHBOARD PRINCIPAL ================= -->
+    <div id="dashboard-page" class="hidden opacity-0 transition-opacity duration-700 min-h-screen bg-slate-50">
         
-        <!-- Pilihan Cabang & Layanan -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Cabang TERABACA <span class="text-rose-500">*</span></label>
-            <select id="selectCabang" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none transition">
-              <option value="">-- Pilih Cabang Terdekat --</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Layanan / Kelas <span class="text-rose-500">*</span></label>
-            <select id="selectLayanan" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none transition">
-              <option value="">-- Pilih Jenis Layanan --</option>
-            </select>
-          </div>
-        </div>
+        <!-- Navbar Atas -->
+        <header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-xs">
+            <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
+                <div class="flex items-center cursor-pointer" onclick="kembaliKeLanding()">
+                    <img src="logo-terabaca.png" alt="TERABACA" class="h-9 w-auto object-contain">
+                </div>
+                <nav class="flex space-x-3 font-bold text-[11px] items-center sm:space-x-4 sm:text-xs">
+                    <a href="#tentang" class="text-gray-600 hover:text-blue-900 transition">Tentang</a>
+                    <a href="#metode" class="text-gray-600 hover:text-blue-900 transition">Metode</a>
+                    <a href="#terapi" class="text-gray-600 hover:text-blue-900 transition">Terapi</a>
+                    <a href="#paket" class="bg-red-600 text-white px-3 py-1 rounded-full hover:bg-red-700 transition">Pilih Paket</a>
+                </nav>
+            </div>
+        </header>
 
-        <hr class="border-slate-100">
+        <!-- Konten Utama Dashboard -->
+        <main class="max-w-4xl mx-auto px-4 py-8 space-y-10">
+            
+            <!-- Section 1: Filosofi & Pengenalan -->
+            <section id="tentang" class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100 space-y-4">
+                <h2 class="text-xl font-extrabold text-blue-900 border-l-4 border-red-600 pl-3">
+                    TERABACA
+                </h2>
+                <div class="text-gray-700 leading-relaxed text-sm md:text-base space-y-3">
+                    <p>
+                        TERABACA adalah perangkat asesmen pra-diagnostik (skrining awal) yang dikembangkan oleh KABACA Pro untuk membantu mengenali pola pikir, emosi, perilaku, potensi, kebutuhan pendampingan, serta dinamika relasi seseorang melalui analisis bahasa coretan dan gambar.
+                    </p>
+                    <p>
+                        TERABACA bukan psikotes, bukan alat diagnosis medis, dan bukan alat untuk memberikan vonis. Hasil asesmen digunakan sebagai bahan pemetaan awal agar proses pendampingan, edukasi, maupun rujukan dapat dilakukan secara lebih tepat.
+                    </p>
+                    <p>
+                        Pendekatan TERABACA mengintegrasikan berbagai keilmuan sehingga pembacaan dilakukan secara holistik, dengan mempertimbangkan simbol visual, grafologi, perkembangan individu, dinamika keluarga, komunikasi, serta aspek biologis, psikologis, sosial, dan spiritual.
+                    </p>
+                    <p>
+                        Dalam praktiknya, TERABACA tidak hanya berfokus pada menemukan permasalahan, tetapi juga membantu mengidentifikasi kekuatan, potensi, area pengembangan, dan rekomendasi <em>treatment</em> yang dapat diterapkan sesuai kebutuhan individu.
+                    </p>
+                    <p class="text-xs font-semibold text-gray-500 italic pt-2 border-t border-gray-100">
+                        TERABACA merupakan perangkat asesmen milik KABACA Pro.
+                    </p>
+                </div>
+            </section>
 
-        <!-- Data Anak -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nama Lengkap Anak <span class="text-rose-500">*</span></label>
-            <input type="text" id="inputNamaAnak" required placeholder="Contoh: Muhammad Rizky" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none transition">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Tanggal Lahir <span class="text-rose-500">*</span></label>
-            <input type="date" id="inputTglLahir" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none transition">
-          </div>
-        </div>
+            <!-- Section 2: Keunggulan Analisis -->
+            <section id="metode" class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100 space-y-6">
+                <h2 class="text-xl font-extrabold text-blue-900 border-l-4 border-red-600 pl-3">
+                    Apa Saja yang Terbaca?
+                </h2>
+                <div class="space-y-4 text-sm">
+                    <div class="border-b border-gray-100 pb-3">
+                        <h4 class="font-bold text-blue-900 mb-1">8 Aspek Dasar Anak</h4>
+                        <p class="text-gray-600">Memetakan motorik halus, motorik kasar, rasionalitas, komunikasi interpersonal & intrapersonal, manajemen, imajinasi, serta jiwa berprestasi anak.</p>
+                    </div>
+                    <div class="border-b border-gray-100 pb-3">
+                        <h4 class="font-bold text-blue-900 mb-1">8 Kebutuhan Peran Kebundaan (Motherly)</h4>
+                        <p class="text-gray-600">Membaca tingkat <em>inner sensitivity</em>, ketangguhan (<em>toughness</em>), kesabaran, <em>motherhood</em>, pengembangan diri, tanggung jawab, serta <em>aware & belief system</em>.</p>
+                    </div>
+                    <div class="border-b border-gray-100 pb-3">
+                        <h4 class="font-bold text-blue-900 mb-1">Potensi, Emosi & Jendela Persepsi</h4>
+                        <p class="text-gray-600">Mampu melihat persepsi anak ke-1 sampai ke-5 terhadap orang tuanya secara detail, memetakan potensi tersembunyi, hingga menyeimbangkan gaya belajar anak.</p>
+                    </div>
+                </div>
+            </section>
 
-        <!-- Data Orang Tua -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nama Orang Tua / Wali <span class="text-rose-500">*</span></label>
-            <input type="text" id="inputNamaOrtu" required placeholder="Contoh: Ibu Siti Rahma" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none transition">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nomor WhatsApp <span class="text-rose-500">*</span></label>
-            <input type="tel" id="inputWhatsapp" required placeholder="08123456789" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none transition">
-          </div>
-        </div>
+            <!-- SECTION 3: 12 KEILMUAN FONDASI -->
+            <section id="fondasi" class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100 space-y-6">
+                <div class="space-y-2 border-l-4 border-blue-900 pl-3">
+                    <h2 class="text-xl font-extrabold text-blue-900">12 Keilmuan Fondasi</h2>
+                    <p class="text-xs text-gray-500 leading-relaxed">Berdasarkan petunjuk para ahli di TERABACA, pendekatan TERABACA dibangun dari integrasi berbagai keilmuan yang saling melengkapi.</p>
+                </div>
 
-        <hr class="border-slate-100">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                    <!-- 1 -->
+                    <div class="p-3 bg-slate-50/70 rounded-xl border border-gray-200 space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-5 h-5 rounded-full bg-blue-900 text-white font-bold text-[10px] flex items-center justify-center">1</span>
+                            <h4 class="font-extrabold text-blue-950 uppercase tracking-wide">Seni Rupa (Kesenirupaan)</h4>
+                        </div>
+                        <p class="text-gray-600 pl-7 leading-tight">Membaca pola pikir, emosi, perilaku, dan kecenderungan bawah sadar melalui coretan dan bentuk visual yang dihasilkan seseorang.</p>
+                    </div>
+                    <!-- 2 -->
+                    <div class="p-3 bg-slate-50/70 rounded-xl border border-gray-200 space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-5 h-5 rounded-full bg-blue-900 text-white font-bold text-[10px] flex items-center justify-center">2</span>
+                            <h4 class="font-extrabold text-blue-950 uppercase tracking-wide">Neuro Grafika Art</h4>
+                        </div>
+                        <p class="text-gray-600 pl-7 leading-tight">Teknik menggambar berbasis neurografika untuk membantu membentuk koneksi berpikir baru dan mengubah respon terhadap suatu kondisi.</p>
+                    </div>
+                    <!-- 3 -->
+                    <div class="p-3 bg-slate-50/70 rounded-xl border border-gray-200 space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-5 h-5 rounded-full bg-blue-900 text-white font-bold text-[10px] flex items-center justify-center">3</span>
+                            <h4 class="font-extrabold text-blue-950 uppercase tracking-wide">Sedona Method</h4>
+                        </div>
+                        <p class="text-gray-600 pl-7 leading-tight">Teknik melepaskan keterikatan emosi, pikiran, dan beban mental yang menghambat pertumbuhan diri.</p>
+                    </div>
+                    <!-- 4 -->
+                    <div class="p-3 bg-slate-50/70 rounded-xl border border-gray-200 space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-5 h-5 rounded-full bg-blue-900 text-white font-bold text-[10px] flex items-center justify-center">4</span>
+                            <h4 class="font-extrabold text-blue-950 uppercase tracking-wide">Silva Method</h4>
+                        </div>
+                        <p class="text-gray-600 pl-7 leading-tight">Metode pengelolaan kondisi kesadaran dan gelombang otak untuk mengoptimalkan potensi pikiran dan intuisi.</p>
+                    </div>
+                    <!-- 5 -->
+                    <div class="p-3 bg-slate-50/70 rounded-xl border border-gray-200 space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-5 h-5 rounded-full bg-blue-900 text-white font-bold text-[10px] flex items-center justify-center">5</span>
+                            <h4 class="font-extrabold text-blue-950 uppercase tracking-wide">Neuro-Linguistic Programming</h4>
+                        </div>
+                        <p class="text-gray-600 pl-7 leading-tight">Keilmuan tentang bahasa, pola pikir, dan perilaku untuk membangun perubahan yang lebih efektif.</p>
+                    </div>
+                    <!-- 6 -->
+                    <div class="p-3 bg-slate-50/70 rounded-xl border border-gray-200 space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-5 h-5 rounded-full bg-blue-900 text-white font-bold text-[10px] flex items-center justify-center">6</span>
+                            <h4 class="font-extrabold text-blue-950 uppercase tracking-wide">Grafologi</h4>
+                        </div>
+                        <p class="text-gray-600 pl-7 leading-tight">Keilmuan membaca karakter, pola pikir, emosi, dan kecenderungan perilaku melalui tulisan tangan.</p>
+                    </div>
+                    <!-- 7 -->
+                    <div class="p-3 bg-slate-50/70 rounded-xl border border-gray-200 space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-5 h-5 rounded-full bg-blue-900 text-white font-bold text-[10px] flex items-center justify-center">7</span>
+                            <h4 class="font-extrabold text-blue-950 uppercase tracking-wide">S.E.M</h4>
+                        </div>
+                        <p class="text-gray-600 pl-7 leading-tight">Pendekatan energi untuk membantu menyeimbangkan kondisi fisik, mental, emosional, dan respon tubuh terhadap berbagai pengalaman hidup.</p>
+                    </div>
+                    <!-- 8 -->
+                    <div class="p-3 bg-slate-50/70 rounded-xl border border-gray-200 space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-5 h-5 rounded-full bg-blue-900 text-white font-bold text-[10px] flex items-center justify-center">8</span>
+                            <h4 class="font-extrabold text-blue-950 uppercase tracking-wide">Aritmatika</h4>
+                        </div>
+                        <p class="text-gray-600 pl-7 leading-tight">Pendekatan numerik untuk membaca pola, struktur berpikir, logika, dan kecenderungan pengambilan keputusan.</p>
+                    </div>
+                    <!-- 9 -->
+                    <div class="p-3 bg-slate-50/70 rounded-xl border border-gray-200 space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-5 h-5 rounded-full bg-blue-900 text-white font-bold text-[10px] flex items-center justify-center">9</span>
+                            <h4 class="font-extrabold text-blue-950 uppercase tracking-wide">Struktur Fibonacci</h4>
+                        </div>
+                        <p class="text-gray-600 pl-7 leading-tight">Keilmuan yang mempelajari pola pertumbuhan dan keteraturan alam sebagai acuan memahami struktur dan keseimbangan kehidupan.</p>
+                    </div>
+                    <!-- 10 -->
+                    <div class="p-3 bg-slate-50/70 rounded-xl border border-gray-200 space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-5 h-5 rounded-full bg-blue-900 text-white font-bold text-[10px] flex items-center justify-center">10</span>
+                            <h4 class="font-extrabold text-blue-950 uppercase tracking-wide">Avasinologi</h4>
+                        </div>
+                        <p class="text-gray-600 pl-7 leading-tight">Pendekatan kesehatan holistik berbasis keilmuan Avasinologi untuk mendukung keseimbangan tubuh, pikiran, dan kualitas hidup.</p>
+                    </div>
+                    <!-- 11 -->
+                    <div class="p-3 bg-slate-50/70 rounded-xl border border-gray-200 space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-5 h-5 rounded-full bg-blue-900 text-white font-bold text-[10px] flex items-center justify-center">11</span>
+                            <h4 class="font-extrabold text-blue-950 uppercase tracking-wide">Analisis Harmonik Gelombang</h4>
+                        </div>
+                        <p class="text-gray-600 pl-7 leading-tight">Analisis pola gelombang dan frekuensi untuk membantu memahami kecenderungan kondisi fisik, mental, dan emosional seseorang.</p>
+                    </div>
+                    <!-- 12 -->
+                    <div class="p-3 bg-slate-50/70 rounded-xl border border-gray-200 space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-5 h-5 rounded-full bg-blue-900 text-white font-bold text-[10px] flex items-center justify-center">12</span>
+                            <h4 class="font-extrabold text-blue-950 uppercase tracking-wide">Persamaan Trigonometri</h4>
+                        </div>
+                        <p class="text-gray-600 pl-7 leading-tight">Pendekatan matematis untuk memahami hubungan, keteraturan, dan keseimbangan antar unsur dalam suatu sistem.</p>
+                    </div>
+                </div>
+            </section>
 
-        <!-- Upload Foto Coretan / Hasil Tulis Tangan -->
-        <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Unggah Sampel Foto Coretan / Tulisan Tangan</label>
-          <p class="text-xs text-slate-500 mb-3">Pilih satu atau beberapa foto tulisan/coretan anak untuk dianalisis oleh tim TERABACA.</p>
-          
-          <div class="border-2 border-dashed border-slate-200 rounded-xl p-5 text-center hover:border-emerald-400 bg-slate-50/50 transition">
-            <input type="file" id="inputFotoFiles" multiple accept="image/*" class="hidden" onchange="handleFilePreview(event)">
-            <label for="inputFotoFiles" class="cursor-pointer flex flex-col items-center">
-              <svg class="w-10 h-10 text-emerald-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-              <span class="text-sm font-semibold text-slate-700">Pilih Foto dari Galeri / Kamera</span>
-              <span class="text-[11px] text-slate-400 mt-1">Bisa pilih lebih dari 1 foto (JPG, PNG)</span>
-            </label>
-          </div>
+            <!-- SECTION TERAPI TITIK SENTUH -->
+            <section id="terapi" class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100 space-y-6">
+                <div class="space-y-2 border-l-4 border-emerald-600 pl-3">
+                    <h2 class="text-xl font-extrabold text-blue-900">Apa itu Terapi Titik Sentuh?</h2>
+                    <p class="text-xs text-gray-500 leading-relaxed">Selain hasil asesmen, testee (peserta tes) akan mendapatkan treatment tambahan berupa terapi stimulasi khusus.</p>
+                </div>
 
-          <!-- Preview Container -->
-          <div id="imagePreviewContainer" class="space-y-3 mt-4"></div>
-        </div>
+                <!-- Konten Utama Terapi -->
+                <div class="bg-gradient-to-r from-blue-50/60 to-emerald-50/30 p-4 rounded-xl border border-blue-100 space-y-3">
+                    <div class="flex items-start space-x-3">
+                        <span class="text-xl pt-0.5">🧠</span>
+                        <p class="text-xs text-gray-700 leading-relaxed font-medium">
+                            <strong class="text-blue-950">Terapi Titik Sentuh</strong> merupakan terapi praktis sehari-hari yang didesain oleh tim ahli <span class="text-blue-900 font-bold">TERABACA</span> serta telah memiliki lisensi berdasarkan keilmuan <strong class="text-emerald-700">kedokteran Islam (avasinologi) Ibnu Ruman</strong> yang bertujuan untuk <span class="text-emerald-700 font-bold">meremajakan sel</span>.
+                        </p>
+                    </div>
+                </div>
 
-        <!-- Tombol Submit -->
-        <button type="submit" id="btnSubmitForm" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl text-sm transition duration-200 shadow-md mt-6 flex items-center justify-center gap-2">
-          <span>Kirim Pendaftaran</span>
-        </button>
-      </form>
-    </section>
+                <!-- Layout Dua Kolom -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
+                    <!-- Kolom Kiri: Peta Gambar Titik Sentuh (1-7) -->
+                    <div class="md:col-span-5 bg-slate-50 p-3 rounded-xl border border-gray-200 flex flex-col items-center justify-center space-y-2">
+                        <img src="1000688709.jpg" alt="Peta Terapi Titik Sentuh TERABACA" class="w-full max-w-[260px] h-auto object-contain rounded-lg shadow-xs">
+                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Peta Stimulasi Area Kepala (1-7)</span>
+                    </div>
 
-    <!-- SECTION 5: CEK STATUS PENDAFTARAN -->
-    <section id="cekStatus" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
-      <div class="border-b border-slate-100 pb-3 mb-5">
-        <h3 class="text-lg font-bold text-slate-900">Cek Status Pendaftaran</h3>
-        <p class="text-xs text-slate-500 mt-0.5">Masukkan Kode Registrasi atau Nomor WhatsApp untuk melihat status pendaftaran anak Anda.</p>
-      </div>
+                    <!-- Kolom Kanan: 3 Poin Kunci Penjelasan -->
+                    <div class="md:col-span-7 space-y-3 text-xs text-gray-700">
+                        <div class="flex items-start space-x-3 bg-slate-50/60 p-3 rounded-lg border border-gray-200">
+                            <span class="w-5 h-5 rounded-full bg-blue-900 text-white font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">1</span>
+                            <div>
+                                <h5 class="font-bold text-blue-950 mb-0.5">Penentuan Area Sentuh</h5>
+                                <p class="text-gray-600 leading-tight">Nomor bagian kepala/area sentuh kepala (Area 1 hingga 7 pada peta) yang didapatkan oleh peserta merupakan area spesifik yang wajib diremajakan selnya.</p>
+                            </div>
+                        </div>
 
-      <div class="flex gap-2">
-        <input type="text" id="inputSearchQuery" placeholder="Contoh: TRB-839201 atau 08123456789" class="flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:outline-none transition">
-        <button onclick="searchRegistrationStatus()" id="btnCekStatus" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold rounded-xl transition shadow-sm">
-          Cari Data
-        </button>
-      </div>
+                        <div class="flex items-start space-x-3 bg-slate-50/60 p-3 rounded-lg border border-gray-200">
+                            <span class="w-5 h-5 rounded-full bg-blue-900 text-white font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">2</span>
+                            <div>
+                                <h5 class="font-bold text-blue-950 mb-0.5">Durasi Program 21 Hari</h5>
+                                <p class="text-gray-600 leading-tight">Setelah peserta melakukan proses tes dan mendapatkan hasil, peserta secara mandiri mempraktikkan terapi stimulasi ini selama <strong class="text-blue-900">21 hari berturut-turut</strong> di rumah masing-masing.</p>
+                            </div>
+                        </div>
 
-      <div id="statusResultArea" class="mt-5 hidden"></div>
-    </section>
+                        <div class="flex items-start space-x-3 bg-slate-50/60 p-3 rounded-lg border border-gray-200">
+                            <span class="w-5 h-5 rounded-full bg-blue-900 text-white font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">3</span>
+                            <div>
+                                <h5 class="font-bold text-blue-950 mb-0.5">Pendampingan Praktisi</h5>
+                                <p class="text-gray-600 leading-tight">Peserta diberikan fasilitas penuh untuk dapat berkonsultasi secara intensif dengan praktisi resmi kami selama masa proses terapi berlangsung.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-  </main>
+                <!-- Badge Kredibilitas Bawah -->
+                <div class="bg-emerald-600 text-white text-center p-3 rounded-xl text-[11px] font-bold tracking-wide shadow-xs flex items-center justify-center space-x-2">
+                    <span>✨</span>
+                    <span>Terapi ini praktis, mudah dilakukan, aman, dan terbukti membantu meremajakan sel otak dan tubuh.</span>
+                </div>
+            </section>
 
-  <!-- FOOTER -->
-  <footer class="bg-white border-t border-slate-100 py-6 text-center text-xs text-slate-400">
-    <p>&copy; TERABACA - Layanan Analisis Diagnosa Tulis & Coretan Anak</p>
-  </footer>
+            <!-- SECTION PANDUAN FOTO CORETAN -->
+            <section id="panduan" class="bg-blue-950 text-white p-6 rounded-2xl shadow-xs space-y-6">
+                <div class="text-center space-y-2">
+                    <h2 class="text-xl font-extrabold tracking-wide text-red-400">3 Langkah Mudah Mengikuti Tes</h2>
+                    <p class="text-xs text-blue-200">Siapkan media tes Anda secara mandiri sebelum terhubung ke admin WhatsApp kami</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                    <div class="bg-blue-900/40 p-4 rounded-xl border border-blue-800/60 space-y-2">
+                        <div class="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center font-bold text-sm mx-auto shadow-xs">1</div>
+                        <h4 class="font-bold text-sm text-white">Media Kertas</h4>
+                        <p class="text-[11px] text-blue-100">Siapkan 4-5 lembar kertas A4 80 gsm polos berwarna putih bersih (jangan bergaris), siapkan juga krayon, spidol, pensil warna, atau cat air.</p>
+                    </div>
+                    <div class="bg-blue-900/40 p-4 rounded-xl border border-blue-800/60 space-y-2">
+                        <div class="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center font-bold text-sm mx-auto shadow-xs">2</div>
+                        <h4 class="font-bold text-sm text-white">Buat Coretan</h4>
+                        <p class="text-[11px] text-blue-100">Gambaran proses yang akan dipandu: Lembar 1: Benang kusut, Lembar 2: Lingkaran, Lembar 3: Gambar bebas, Lembar 4: Tanda tangan dan nama jelas.</p>
+                    </div>
+                    <div class="bg-blue-900/40 p-4 rounded-xl border border-blue-800/60 space-y-2">
+                        <div class="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center font-bold text-sm mx-auto shadow-xs">3</div>
+                        <h4 class="font-bold text-sm text-white">Foto & Kirim</h4>
+                        <p class="text-[11px] text-blue-100">Foto kertas secara tegak lurus (sejajar), pastikan tulisan tajam, terang, dan tanpa bayangan.</p>
+                    </div>
+                </div>
+            </section>
 
-  <!-- MODAL SUKSES -->
-  <div id="modalSuccess" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center shadow-xl border border-slate-100">
-      <div class="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
-        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-      </div>
-      <h3 class="text-lg font-bold text-slate-900 mb-1">Pendaftaran Berhasil!</h3>
-      <p class="text-xs text-slate-500 mb-4">Simpan Kode Registrasi di bawah ini untuk keperluan konfirmasi:</p>
+            <!-- SECTION 4: PROGRAM LAYANAN & PAKET -->
+            <section id="paket" class="space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-l-4 border-red-600 pl-3">
+                    <h2 class="text-xl font-extrabold text-blue-950">Pilihan Paket Terabaca</h2>
+                    <!-- Toggle Switch Personal / Lembaga -->
+                    <div class="inline-flex bg-gray-200 p-1 rounded-full text-xs font-bold self-start sm:self-auto">
+                        <button id="btn-personal" onclick="switchKategori('personal')" class="px-4 py-1.5 rounded-full bg-blue-900 text-white transition-all duration-300 cursor-pointer">Personal</button>
+                        <button id="btn-lembaga" onclick="switchKategori('lembaga')" class="px-4 py-1.5 rounded-full text-gray-600 hover:text-blue-900 transition-all duration-300 cursor-pointer">Lembaga (MoU)</button>
+                    </div>
+                </div>
 
-      <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl mb-5">
-        <span class="text-xs text-emerald-700 font-semibold uppercase block">Kode Registrasi</span>
-        <span id="modalNoRegistrasi" class="text-xl font-extrabold text-emerald-800 tracking-wider">TRB-XXXXXX</span>
-      </div>
+                <!-- BOX INPUT DATA KLIEN & FASILITAS TANYA UMUM -->
+                <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-xs max-w-xl mx-auto space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-blue-950 mb-1" id="label-input-nama">Nama Lengkap Anda:</label>
+                            <input type="text" id="klien-name" oninput="updateAllWhatsAppLinks()" placeholder="Ketik nama di sini..." class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 bg-slate-50 focus:outline-hidden focus:border-blue-900 transition font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-blue-950 mb-1">Pilih Kota / Cabang Terdekat:</label>
+                            <select id="klien-cabang" onchange="updateAllWhatsAppLinks()" class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 bg-slate-50 focus:outline-hidden focus:border-blue-900 transition font-bold text-blue-900">
+                                <option value="pusat">TERABACA Pusat</option>
+                                <option value="tasikmalaya">Cabang Kab. Tasikmalaya</option>
+                                <option value="depok">Cabang Kota. Depok</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- TOMBOL TANYA-TANYA DULU -->
+                    <div class="border-t border-gray-100 pt-3 text-center">
+                        <p class="text-[11px] text-gray-500 mb-2">Masih bingung memilih paket atau ingin berkonsultasi terlebih dahulu?</p>
+                        <a id="lnk-tanya" href="#" target="_blank" class="inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-xl text-xs transition space-x-2 shadow-xs">
+                            <span>💬 Hubungi Kami (Tanya-Tanya Dulu)</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- 1. PAKET BASIC -->
+                    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <span class="text-[10px] font-bold text-blue-800 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded">Paket 01</span>
+                                <div class="text-right">
+                                    <span id="price-basic" class="text-lg font-black text-blue-950">Rp 350.000</span>
+                                    <p class="text-[9px] text-gray-400 font-medium" id="label-basic">Kategori Personal</p>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-extrabold text-blue-950 mt-1">BASIC</h3>
+                            <div class="mt-4 space-y-3">
+                                <ul class="text-xs text-gray-700 space-y-1 list-disc list-inside">
+                                    <li>8 Aspek Dasar & 6 Aspek Emosi</li>
+                                    <li>Persepsi Terhadap Emosi Orangtua</li>
+                                    <li>Terapi Titik Sentuh Kepala Harian</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-5 pt-2">
+                            <a id="lnk-basic" href="#" target="_blank" class="block text-center bg-blue-900 hover:bg-blue-950 text-white font-bold py-2 rounded-xl text-xs transition">Pilih Paket</a>
+                        </div>
+                    </div>
 
-      <button onclick="closeSuccessModal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-xl text-xs transition">
-        Tutup & Selesai
-      </button>
+                    <!-- 2. PAKET PARENT -->
+                    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <span class="text-[10px] font-bold text-blue-800 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded">Paket 02</span>
+                                <div class="text-right">
+                                    <span id="price-parent" class="text-lg font-black text-blue-950">Rp 350.000</span>
+                                    <p class="text-[9px] text-gray-400 font-medium" id="label-parent">Kategori Personal</p>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-extrabold text-blue-950 mt-1">PARENT</h3>
+                            <div class="mt-4 space-y-3">
+                                <ul class="text-xs text-gray-700 space-y-1 list-disc list-inside">
+                                    <li>8 Aspek Dasar Motherly / Fatherly</li>
+                                    <li>6 Aspek Emosi & Persepsi Anak</li>
+                                    <li>Terapi Titik Sentuh Kepala Harian</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-5 pt-2">
+                            <a id="lnk-parent" href="#" target="_blank" class="block text-center bg-blue-900 hover:bg-blue-950 text-white font-bold py-2 rounded-xl text-xs transition">Pilih Paket</a>
+                        </div>
+                    </div>
+
+                    <!-- 3. PAKET TALENT -->
+                    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <span class="text-[10px] font-bold text-blue-800 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded">Paket 03</span>
+                                <div class="text-right">
+                                    <span id="price-talent" class="text-lg font-black text-blue-950">Rp 600.000</span>
+                                    <p class="text-[9px] text-gray-400 font-medium" id="label-talent">Kategori Personal</p>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-extrabold text-blue-950 mt-1">TALENT</h3>
+                            <div class="mt-4 space-y-2">
+                                <ul class="text-xs text-gray-700 space-y-1 list-disc list-inside">
+                                    <li>8 Aspek Dasar & 4 Modal Dasar</li>
+                                    <li>Unjuk Kerja & Gaya Belajar</li>
+                                </ul>
+                                <div class="bg-blue-50 border border-blue-100 p-1.5 rounded-lg text-[11px] text-blue-950 font-semibold text-center">
+                                    📍 Pemetaan JURUSAN & Karir
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-5 pt-2">
+                            <a id="lnk-talent" href="#" target="_blank" class="block text-center bg-blue-900 hover:bg-blue-950 text-white font-bold py-2 rounded-xl text-xs transition">Pilih Paket</a>
+                        </div>
+                    </div>
+
+                    <!-- 4. PAKET BRAINWAVE -->
+                    <div class="bg-white p-6 rounded-2xl border border-red-200 shadow-xs flex flex-col justify-between bg-gradient-to-b from-white to-red-50/20">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <span class="text-[10px] font-bold text-red-700 uppercase tracking-widest bg-red-50 px-2 py-0.5 rounded">Paket Eksklusif 04</span>
+                                <div class="text-right">
+                                    <span id="price-brainwave" class="text-lg font-black text-red-700">Rp 14.000.000</span>
+                                    <p class="text-[9px] text-gray-400 font-medium" id="label-brainwave">Kategori Personal</p>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-extrabold text-blue-950 mt-1">BRAINWAVE</h3>
+                            <div class="mt-4 space-y-2">
+                                <ul class="text-xs text-gray-700 space-y-1 list-disc list-inside">
+                                    <li>Asesmen Mental & Frekuensi Otak</li>
+                                    <li>Konsultasi Eksklusif 1 On 1</li>
+                                </ul>
+                                <div class="bg-red-50 border border-red-100 p-1.5 rounded-lg text-[11px] text-red-800 font-semibold text-center">
+                                    ⚡ Treatment Intensif & Pemulihan
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-5 pt-2">
+                            <a id="lnk-brainwave" href="#" target="_blank" class="block text-center bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-xl text-xs transition">Pilih Paket</a>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+        </main>
+        
+        <!-- Footer Sederhana -->
+        <footer class="bg-white border-t border-gray-200 py-6 mt-16 text-center text-xs text-gray-500">
+            <p>&copy; 2026 TERABACA - KABACA Pro. All rights reserved.</p>
+        </footer>
     </div>
-  </div>
 
-  <!-- SCRIPT INTEGRASI SUPABASE & CLOUDINARY -->
-  <script>
-    const SUPABASE_URL = 'https://zdealocdcweemecirdap.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkZWFsb2NkY3dlZW1lY2lyZGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAzODU4ODIsImV4cCI6MjA1NTk2MTzg4Mn0.u2QYhQ75yR4N_b_-36OQO9yMTh3-HwPjVqL_U3u5p-A';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    const CLOUD_NAME = 'dvxikrmx7';
-    const UPLOAD_PRESET = 'unsigned_preset';
-
-    let selectedFiles = [];
-
-    document.addEventListener('DOMContentLoaded', () => {
-      fetchCabangAndLayanan();
-    });
-
-    function scrollToSection(id) {
-      const el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    async function fetchCabangAndLayanan() {
-      try {
-        const { data: listCabang } = await supabaseClient.from('cabang').select('id, nama_cabang');
-        const selectCabang = document.getElementById('selectCabang');
-        if (listCabang && listCabang.length > 0) {
-          listCabang.forEach(c => {
-            const opt = document.createElement('option');
-            opt.value = c.id;
-            opt.textContent = c.nama_cabang;
-            selectCabang.appendChild(opt);
-          });
-        }
-
-        const { data: listLayanan } = await supabaseClient.from('layanan').select('id, nama_layanan');
-        const selectLayanan = document.getElementById('selectLayanan');
-        if (listLayanan && listLayanan.length > 0) {
-          listLayanan.forEach(l => {
-            const opt = document.createElement('option');
-            opt.value = l.id;
-            opt.textContent = l.nama_layanan;
-            selectLayanan.appendChild(opt);
-          });
-        }
-      } catch (err) {
-        console.error("Gagal load dropdown:", err);
-      }
-    }
-
-    function handleFilePreview(e) {
-      const files = Array.from(e.target.files);
-      selectedFiles = files;
-      const container = document.getElementById('imagePreviewContainer');
-      container.innerHTML = '';
-
-      files.forEach((file, idx) => {
-        const fileReader = new FileReader();
-        fileReader.onload = function(evt) {
-          const div = document.createElement('div');
-          div.className = "flex items-center gap-3 bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-xs";
-          div.innerHTML = `
-            <img src="${evt.target.result}" class="w-12 h-12 object-cover rounded-lg border border-slate-200">
-            <div class="flex-1 min-w-0">
-              <p class="font-semibold text-slate-700 truncate">${file.name}</p>
-              <input type="text" id="caption_${idx}" placeholder="Catatan foto (Opsional)" class="w-full mt-1 px-2.5 py-1 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-emerald-500">
-            </div>
-          `;
-          container.appendChild(div);
-        };
-        fileReader.readAsDataURL(file);
-      });
-    }
-
-    async function uploadToCloudinary(file) {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', UPLOAD_PRESET);
-
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-        method: 'POST',
-        body: formData
-      });
-
-      if (!res.ok) throw new Error('Gagal unggah foto ke Cloudinary.');
-      const data = await res.json();
-      return data.secure_url;
-    }
-
-    async function handleRegistrationSubmit(e) {
-      e.preventDefault();
-      const btn = document.getElementById('btnSubmitForm');
-      btn.disabled = true;
-
-      try {
-        btn.innerHTML = `<span>Mengunggah foto...</span>`;
-        let fotoArray = [];
-
-        for (let i = 0; i < selectedFiles.length; i++) {
-          const file = selectedFiles[i];
-          const url = await uploadToCloudinary(file);
-          const captionEl = document.getElementById(`caption_${i}`);
-          const caption = captionEl ? captionEl.value : '';
-          fotoArray.push({ url, caption });
-        }
-
-        btn.innerHTML = `<span>Menyimpan pendaftaran...</span>`;
-        const noPendaftaran = 'TRB-' + Date.now().toString().slice(-6);
-
-        const payload = {
-          no_pendaftaran: noPendaftaran,
-          nama_anak: document.getElementById('inputNamaAnak').value,
-          tanggal_lahir: document.getElementById('inputTglLahir').value,
-          nama_orang_tua: document.getElementById('inputNamaOrtu').value,
-          no_whatsapp: document.getElementById('inputWhatsapp').value,
-          foto_coretan: fotoArray,
-          status_pembayaran: 'pending',
-          cabang_id: document.getElementById('selectCabang').value || null,
-          layanan_id: document.getElementById('selectLayanan').value || null
+    <!-- Script JavaScript -->
+    <script>
+        const nomorCabang = {
+            "pusat": "6281324509437",       // Contoh nomor TERABACA Pusat
+            "tasikmalaya": "6281324262633", // Contoh nomor Cabang Kab. Tasikmalaya
+            "depok": "6281317339098"         // Contoh nomor Cabang Kota. Depok
         };
 
-        const { error } = await supabaseClient.from('pendaftar').insert([payload]);
-        if (error) throw error;
+        let currentKategori = 'personal';
 
-        document.getElementById('modalNoRegistrasi').textContent = noPendaftaran;
-        document.getElementById('modalSuccess').classList.remove('hidden');
+        function bukaDashboard() {
+            const landing = document.getElementById('landing-page');
+            const dashboard = document.getElementById('dashboard-page');
+            const body = document.getElementById('body-layout');
 
-        document.getElementById('mainRegisterForm').reset();
-        document.getElementById('imagePreviewContainer').innerHTML = '';
-        selectedFiles = [];
-
-      } catch (err) {
-        alert('Terjadi kesalahan: ' + err.message);
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = `<span>Kirim Pendaftaran</span>`;
-      }
-    }
-
-    function closeSuccessModal() {
-      document.getElementById('modalSuccess').classList.add('hidden');
-    }
-
-    async function searchRegistrationStatus() {
-      const query = document.getElementById('inputSearchQuery').value.trim();
-      const resultArea = document.getElementById('statusResultArea');
-      const btn = document.getElementById('btnCekStatus');
-
-      if (!query) {
-        alert('Masukkan Kode Registrasi atau Nomor WhatsApp terlebih dahulu.');
-        return;
-      }
-
-      btn.disabled = true;
-      btn.textContent = 'Mencari...';
-
-      try {
-        const { data, error } = await supabaseClient
-          .from('pendaftar')
-          .select('no_pendaftaran, nama_anak, status_pembayaran, created_at')
-          .or(`no_pendaftaran.ilike.%${query}%,no_whatsapp.ilike.%${query}%`)
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-
-        resultArea.classList.remove('hidden');
-
-        if (!data || data.length === 0) {
-          resultArea.innerHTML = `
-            <div class="p-4 bg-rose-50 border border-rose-100 text-rose-700 text-xs rounded-xl">
-              Data pendaftaran tidak ditemukan.
-            </div>
-          `;
-        } else {
-          let rowsHtml = data.map(item => `
-            <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs mb-2">
-              <div>
-                <p class="font-bold text-slate-800">${item.nama_anak}</p>
-                <p class="text-[11px] text-slate-500">${item.no_pendaftaran}</p>
-              </div>
-              <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                item.status_pembayaran === 'lunas' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-              }">
-                ${(item.status_pembayaran || 'pending').toUpperCase()}
-              </span>
-            </div>
-          `).join('');
-
-          resultArea.innerHTML = `
-            <h4 class="text-xs font-bold text-slate-700 mb-2">Hasil Pencarian (${data.length}):</h4>
-            ${rowsHtml}
-          `;
+            landing.style.opacity = '0';
+            setTimeout(() => {
+                landing.classList.add('hidden');
+                dashboard.classList.remove('hidden');
+                setTimeout(() => {
+                    dashboard.classList.remove('opacity-0');
+                    body.classList.remove('no-scroll');
+                    window.scrollTo(0, 0);
+                    updateAllWhatsAppLinks();
+                }, 50);
+            }, 500);
         }
 
-      } catch (err) {
-        alert('Gagal mengambil data: ' + err.message);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Cari Data';
-      }
-    }
-  </script>
+        function kembaliKeLanding() {
+            const landing = document.getElementById('landing-page');
+            const dashboard = document.getElementById('dashboard-page');
+            const body = document.getElementById('body-layout');
+
+            body.classList.add('no-scroll');
+            dashboard.classList.add('opacity-0');
+            setTimeout(() => {
+                dashboard.classList.add('hidden');
+                landing.classList.remove('hidden');
+                setTimeout(() => {
+                    landing.style.opacity = '1';
+                    window.scrollTo(0, 0);
+                }, 50);
+            }, 700);
+        }
+
+        function switchKategori(kategori) {
+            currentKategori = kategori;
+            const btnPersonal = document.getElementById('btn-personal');
+            const btnLembaga = document.getElementById('btn-lembaga');
+            const labelInputNama = document.getElementById('label-input-nama');
+
+            if (kategori === 'personal') {
+                btnPersonal.className = "px-4 py-1.5 rounded-full bg-blue-900 text-white transition-all duration-300 cursor-pointer";
+                btnLembaga.className = "px-4 py-1.5 rounded-full text-gray-600 hover:text-blue-900 transition-all duration-300 cursor-pointer";
+                labelInputNama.innerText = "Nama Lengkap Anda:";
+                
+                document.getElementById('price-basic').innerText = "Rp 350.000";
+                document.getElementById('label-basic').innerText = "Kategori Personal";
+                document.getElementById('price-parent').innerText = "Rp 350.000";
+                document.getElementById('label-parent').innerText = "Kategori Personal";
+                document.getElementById('price-talent').innerText = "Rp 600.000";
+                document.getElementById('label-talent').innerText = "Kategori Personal";
+                document.getElementById('price-brainwave').innerText = "Rp 14.000.000";
+                document.getElementById('label-brainwave').innerText = "Kategori Personal";
+            } else {
+                btnLembaga.className = "px-4 py-1.5 rounded-full bg-blue-900 text-white transition-all duration-300 cursor-pointer";
+                btnPersonal.className = "px-4 py-1.5 rounded-full text-gray-600 hover:text-blue-900 transition-all duration-300 cursor-pointer";
+                labelInputNama.innerText = "Nama PIC / Lembaga / Sekolah:";
+
+                document.getElementById('price-basic').innerText = "Hubungi Admin";
+                document.getElementById('label-basic').innerText = "Kategori Lembaga (MoU)";
+                document.getElementById('price-parent').innerText = "Hubungi Admin";
+                document.getElementById('label-parent').innerText = "Kategori Lembaga (MoU)";
+                document.getElementById('price-talent').innerText = "Hubungi Admin";
+                document.getElementById('label-talent').innerText = "Kategori Lembaga (MoU)";
+                document.getElementById('price-brainwave').innerText = "Hubungi Admin";
+                document.getElementById('label-brainwave').innerText = "Kategori Lembaga (MoU)";
+            }
+            updateAllWhatsAppLinks();
+        }
+
+        function updateAllWhatsAppLinks() {
+            const namaInput = document.getElementById('klien-name').value.trim();
+            const nama = namaInput !== "" ? namaInput : "Klien";
+            const cabangSelect = document.getElementById('klien-cabang').value;
+            const nomorWa = nomorCabang[cabangSelect] || nomorCabang["pusat"];
+
+            // 1. Format Pesan untuk Tombol "Hubungi Kami (Tanya-Tanya Dulu)"
+            const pesanTanya = `Halo Admin TERABACA (${cabangSelect.toUpperCase()}), perkenalkan nama saya ${nama}. Saya ingin bertanya-tanya terlebih dahulu mengenai layanan TERABACA. Mohon informasinya, terima kasih.`;
+            const lnkTanya = document.getElementById('lnk-tanya');
+            if (lnkTanya) {
+                lnkTanya.href = `https://wa.me/${nomorWa}?text=${encodeURIComponent(pesanTanya)}`;
+            }
+
+            // 2. Format Pesan untuk Masing-Masing Paket
+            const paketElements = [
+                { id: 'lnk-basic', name: 'BASIC' },
+                { id: 'lnk-parent', name: 'PARENT' },
+                { id: 'lnk-talent', name: 'TALENT' },
+                { id: 'lnk-brainwave', name: 'BRAINWAVE' }
+            ];
+
+            paketElements.forEach(paket => {
+                const el = document.getElementById(paket.id);
+                if (el) {
+                    let pesanPaket = `Halo Admin TERABACA (${cabangSelect.toUpperCase()}), perkenalkan nama saya ${nama}. Saya ingin mendaftar untuk Paket ${paket.name} (${currentKategori.toUpperCase()}). Mohon panduan selanjutnya, terima kasih.`;
+                    el.href = `https://wa.me/${nomorWa}?text=${encodeURIComponent(pesanPaket)}`;
+                }
+            });
+        }
+
+        // Jalankan saat pertama kali halaman termuat
+        window.onload = function() {
+            updateAllWhatsAppLinks();
+        };
+    </script>
 </body>
 </html>
