@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembayaran Online - TERABACA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="Mid-client-2-2L5XUm_r2zrd6p"></script>
+</head>
+<body class="bg-slate-50 min-h-screen font-sans flex flex-col justify-between">
+
+    <header class="bg-white shadow-sm py-4 px-6 border-b border-slate-100">
+        <div class="max-w-4xl mx-auto flex items-center justify-between">
+            <span class="font-bold text-2xl text-emerald-700 tracking-wide">TERABACA</span>
+            <span class="text-xs bg-emerald-100 text-emerald-800 font-semibold px-3 py-1 rounded-full">Portal Pembayaran Resmi</span>
+        </div>
+    </header>
+
+    <main class="max-w-xl mx-auto p-4 sm:p-6 w-full flex-grow">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8 space-y-6">
+            
+            <div class="text-center space-y-1">
+                <h1 class="text-xl font-bold text-slate-800">Form Tagihan Pembayaran Tes</h1>
+                <p class="text-xs text-slate-500">Silakan lengkapi data untuk memproses pembayaran via Midtrans</p>
+            </div>
+
+            <!-- Form Pembayaran -->
+            <form id="paymentForm" class="space-y-4">
+                
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Pembayar / Orang Tua *</label>
+                    <input type="text" id="pay_nama" required class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Email *</label>
+                        <input type="email" id="pay_email" required class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">No WhatsApp *</label>
+                        <input type="tel" id="pay_phone" required class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm" placeholder="08xxxxxxxxxx">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Cabang *</label>
+                        <select id="pay_cabang" required class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
+                            <option value="">-- Pilih Cabang --</option>
+                            <option value="Kab. Tasikmalaya">Kab. Tasikmalaya</option>
+                            <option value="Kota Depok">Kota Depok</option>
+                            <option value="Pusat">Pusat</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Paket Tes *</label>
+                        <select id="pay_paket" required class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
+                            <option value="">-- Pilih Paket --</option>
+                            <option value="BASIC" data-harga="350000">Paket 01 - BASIC (Rp 350.000)</option>
+                            <option value="PARENT" data-harga="350000">Paket 02 - PARENT (Rp 350.000)</option>
+                            <option value="TALENT" data-harga="600000">Paket 03 - TALENT (Rp 600.000)</option>
+                            <option value="BRAINWAVE" data-harga="14000000">Paket 04 - BRAINWAVE (Rp 14.000.000)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" id="btnPay" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl transition shadow-md text-sm mt-2">
+                    Lanjut ke Pembayaran Online (Midtrans)
+                </button>
+            </form>
+
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('paymentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnPay');
+            btn.disabled = true;
+            btn.textContent = 'Memproses Transaksi...';
+
+            const selectPaket = document.getElementById('pay_paket');
+            const nominal = selectPaket.options[selectPaket.selectedIndex].getAttribute('data-harga');
+
+            const payload = {
+                nama: document.getElementById('pay_nama').value,
+                email: document.getElementById('pay_email').value,
+                phone: document.getElementById('pay_phone').value,
+                cabang: document.getElementById('pay_cabang').value,
+                paket: selectPaket.value,
+                nominal: nominal
+            };
+
+            try {
+                const res = await fetch('/api/create-transaction', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+
+                if (data.token) {
+                    window.snap.pay(data.token, {
+                        onSuccess: function(result) {
+                            alert('Alhamdulillah! Pembayaran Berhasil.');
+                            sessionStorage.setItem('isPaidTERABACA', 'true');
+                            sessionStorage.setItem('orderIdTERABACA', data.orderId);
+                            window.location.href = '/pendaftaran.html';
+                        },
+                        onPending: function(result) {
+                            alert('Menunggu pembayaran diselesaikan.');
+                        },
+                        onError: function(result) {
+                            alert('Pembayaran gagal, silakan coba lagi.');
+                        },
+                        onClose: function() {
+                            btn.disabled = false;
+                            btn.textContent = 'Lanjut ke Pembayaran Online (Midtrans)';
+                        }
+                    });
+                }
+            } catch (err) {
+                alert('Terjadi kesalahan: ' + err.message);
+                btn.disabled = false;
+                btn.textContent = 'Lanjut ke Pembayaran Online (Midtrans)';
+            }
+        });
+    </script>
+</body>
+</html>
