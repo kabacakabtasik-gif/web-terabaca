@@ -2,30 +2,57 @@ const { createClient } = require('@supabase/supabase-js');
 const midtransClient = require('midtrans-client');
 
 module.exports = async function handler(req, res) {
+  // 1. Pastikan response selalu berformat JSON
+  res.setHeader('Content-Type', 'application/json');
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const { nama, email, phone, cabang, nominal, paket } = req.body;
+    // 2. Safe Parsing Body
+    let body = req.body;
+    if (typeof body === 'string') {
+      try {
+        body = JSON.parse(body);
+      } catch (e) {
+        body = {};
+      }
+    }
+    body = body || {};
+
+    const { nama, email, phone, cabang, nominal, paket } = body;
+
+    // Fallback data agar variabel tidak undefined
+    const cleanNama = nama || 'Pelanggan';
+    const cleanEmail = email || 'pelanggan@example.com';
+    const cleanPhone = phone || '08123456789';
+    const cleanCabang = cabang || 'Pusat';
+    const cleanPaket = paket || 'Umum';
+    const cleanNominal = Number(nominal) || 10000;
+
     const orderId = 'TERA-' + Date.now();
 
-    // 1. Inisialisasi Supabase
-    const supabase = createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    );
+    // 3. Safe Inisialisasi Supabase
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
-    // 2. Simpan Data Awal Transaksi ke Supabase (Status: pending)
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Supabase Environment Variables belum dipasang di Vercel');
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // 4. Simpan Data Awal ke Supabase
     const { error: dbError } = await supabase.from('pembayaran').insert([
       {
         order_id: orderId,
-        nama: nama,
-        email: email,
-        whatsapp: phone,
-        cabang: cabang,
-        paket: paket,
-        gross_amount: Number(nominal),
+        nama: cleanNama,
+        email: cleanEmail,
+        whatsapp: cleanPhone,
+        cabang: cleanCabang,
+        paket: cleanPaket,
+        gross_amount: cleanNominal,
         status_pembayaran: 'pending'
       }
     ]);
@@ -35,9 +62,9 @@ module.exports = async function handler(req, res) {
       throw new Error(`Database Error: ${dbError.message}`);
     }
 
-    // 3. Buat Transaksi Midtrans Snap
+    // 5. Inisialisasi Midtrans Snap
     const snap = new midtransClient.Snap({
-      isProduction: false,
+      isProduction: false, // Ubah ke true jika sudah produksi
       serverKey: process.env.MIDTRANS_SERVER_KEY || 'Mid-server-EAtUEPxspPR8vrU4GC8qk9gT',
       clientKey: process.env.MIDTRANS_CLIENT_KEY || 'Mid-client-2-2L5XUm_r2zrd6p'
     });
@@ -45,27 +72,28 @@ module.exports = async function handler(req, res) {
     const parameter = {
       transaction_details: {
         order_id: orderId,
-        gross_amount: Number(nominal)
+        gross_amount: cleanNominal
       },
       customer_details: {
-        first_name: nama,
-        email: email,
-        phone: phone
+        first_name: cleanNama,
+        email: cleanEmail,
+        phone: cleanPhone
       },
       item_details: [{
-        id: (paket || 'TEST').toLowerCase(),
-        price: Number(nominal),
+        id: cleanPaket.toLowerCase().replace(/\s+/g, '-'),
+        price: cleanNominal,
         quantity: 1,
-        name: `Paket TERABACA - ${paket}`
+        name: `Paket TERABACA - ${cleanPaket}`.substring(0, 50)
       }],
-      custom_field1: cabang
+      custom_field1: cleanCabang
     };
 
     const transaction = await snap.createTransaction(parameter);
     return res.status(200).json({ token: transaction.token, orderId: orderId });
 
   } catch (error) {
-    console.error('Error Midtrans:', error);
-    return res.status(500).json({ error: error.message });
+    console.error('Error Backend:', error);
+    // Mengembalikan JSON error agar frontend tidak menerima HTML 500
+    return res.status(500).json({ error: error.message || 'Internal Server Error' });
   }
 };
