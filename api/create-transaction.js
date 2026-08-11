@@ -2,7 +2,7 @@ const { createClient } = require('@supabase/supabase-js');
 const midtransClient = require('midtrans-client');
 
 module.exports = async function handler(req, res) {
-  // Wajib set header JSON agar Vercel tidak mengirim HTML
+  // Set header agar respons selalu JSON
   res.setHeader('Content-Type', 'application/json');
 
   if (req.method !== 'POST') {
@@ -10,7 +10,7 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    // 1. Safe Body Parsing (Cegah error jika body berupa string)
+    // 1. Safe Body Parsing
     let body = req.body;
     if (typeof body === 'string') {
       try {
@@ -21,19 +21,19 @@ module.exports = async function handler(req, res) {
     }
     body = body || {};
 
-    const { nama, email, phone, cabang, nominal, paket } = body;
+    const { nama, email, phone, whatsapp, cabang, nominal, gross_amount, paket } = body;
 
-    // Nilai fallback jika input kosong
+    // Nilai fallback
     const cleanNama = nama || 'Pelanggan';
     const cleanEmail = email || 'pelanggan@example.com';
-    const cleanPhone = phone || '08123456789';
+    const cleanPhone = phone || whatsapp || '08123456789';
     const cleanCabang = cabang || 'Pusat';
     const cleanPaket = paket || 'Umum';
-    const cleanNominal = Number(nominal) || 10000;
+    const cleanNominal = Number(nominal || gross_amount) || 10000;
 
     const orderId = 'TERA-' + Date.now();
 
-    // 2. Simpan ke Supabase (Tanpa bikin crash server jika env kosong/error)
+    // 2. Simpan Data ke Supabase
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
@@ -53,7 +53,7 @@ module.exports = async function handler(req, res) {
           }
         ]);
       } catch (dbErr) {
-        console.error('Supabase error (ignored):', dbErr.message);
+        console.error('Supabase warning (ignored):', dbErr.message);
       }
     }
 
@@ -88,10 +88,6 @@ module.exports = async function handler(req, res) {
 
   } catch (error) {
     console.error('Error Backend:', error);
-    // Kembalikan JSON berstatus 200 agar popup/alert di frontend bisa menampilkan pesan jelas
-    return res.status(200).json({ 
-      error: true, 
-      message: error.message || 'Terjadi kesalahan sistem' 
-    });
+    return res.status(500).json({ error: error.message || 'Internal Server Error' });
   }
 };
