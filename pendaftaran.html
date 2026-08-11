@@ -141,7 +141,7 @@
         <hr class="border-slate-100">
 
         <!-- SECTION 3: KONDISI PENERAPAN & OBSERVASI -->
-        <h2 class="text-sm font-bold text-slate-800 border-b pb-2 uppercase tracking-wide">Kondisi Observasi & Gambar</h2>
+        <h2 class="text-sm font-bold text-slate-800 border-b pb-2 uppercase tracking-wide">Kondisi Observasi & Berkas Foto</h2>
         
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
@@ -192,9 +192,17 @@
           </div>
         </div>
 
-        <div>
-          <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Catatan</label>
-          <input type="text" id="catatan" placeholder="Catatan tambahan (opsional)" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg">
+        <!-- AMAT SANGAT PENTING: LINK FOTO HASIL CORETAN -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+          <div>
+            <label class="block text-[11px] font-bold text-blue-900 uppercase mb-1">Link Foto / PDF Hasil Coretan Tes</label>
+            <input type="url" id="linkFoto" placeholder="https://drive.google.com/... atau https://cloudinary.com/..." class="w-full px-3 py-2 text-xs bg-white border border-blue-200 rounded-lg focus:outline-none focus:border-blue-900">
+            <span class="text-[10px] text-slate-500">Masukkan URL Google Drive, Cloudinary, atau folder hasil gambar murid.</span>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Catatan Tambahan</label>
+            <input type="text" id="catatan" placeholder="Catatan tambahan (opsional)" class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg">
+          </div>
         </div>
 
         <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs transition shadow-sm">
@@ -211,7 +219,7 @@
           <p class="text-[11px] text-slate-500">Impor data pendaftar dalam jumlah banyak sekaligus menggunakan file Excel (.xlsx).</p>
         </div>
         <button onclick="downloadTemplateExcel()" class="bg-blue-50 text-blue-900 border border-blue-200 px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-blue-100 transition flex items-center gap-1.5 shadow-sm">
-          📥 Download Template Excel TERABACA
+          📥 Download Template Excel TERABACA (23 Kolom)
         </button>
       </div>
 
@@ -220,7 +228,7 @@
         <label for="excelFileInput" class="cursor-pointer flex flex-col items-center">
           <svg class="w-12 h-12 text-blue-900 mb-2 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
           <span class="text-xs font-bold text-slate-700">Klik di sini untuk memilih file Excel (.xlsx)</span>
-          <span class="text-[10px] text-slate-400 mt-1">Sistem otomatis membaca file sesuai struktur 22 kolom TERABACA</span>
+          <span class="text-[10px] text-slate-400 mt-1">Sistem otomatis membaca file sesuai struktur 23 kolom TERABACA</span>
         </label>
       </div>
 
@@ -235,7 +243,7 @@
           </table>
         </div>
         <button onclick="saveBulkData()" id="btnSaveBulk" class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 rounded-xl text-xs transition shadow-sm">
-          Proses & Upload Semua Data Ke Database
+          Proses & Upload Semua Data Ke Database Supabase
         </button>
       </div>
     </div>
@@ -243,6 +251,11 @@
   </div>
 
   <script>
+    // CREDENTIAL SUPABASE
+    const SUPABASE_URL = "https://zdealocdcweemecirdap.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkZWFsb2NkY3dlZW1lY2lyZGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5ODEyNTgsImV4cCI6MjA5NDU1NzI1OH0._fgstIY2k0s0zv-7_EnupEmFlExFsXRLZP7BAYHd_-c";
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
     function switchTab(tab) {
       const btnSingle = document.getElementById('tabSingle');
       const btnBulk = document.getElementById('tabBulk');
@@ -262,7 +275,7 @@
       }
     }
 
-    // Generator Download Template Excel Persis Format 22 Kolom Gambar
+    // GENERATOR TEMPLATE EXCEL 23 KOLOM TERMASUK LINK FOTO
     function downloadTemplateExcel() {
       const templateData = [
         {
@@ -288,7 +301,8 @@
           "Posisi Kertas": "Landscape",
           "Alat Gambar yang digunakan": "Kuning / Oranye / Merah",
           "Dominasi Warna": "Hijau / Biru / Ungu",
-          "Catatan": 0
+          "Catatan": 0,
+          "Link Foto Hasil Gambar": "https://drive.google.com/file/d/sample-eti/view"
         },
         {
           "No": 2,
@@ -313,16 +327,58 @@
           "Posisi Kertas": "Portrait",
           "Alat Gambar yang digunakan": "Hijau / Biru / Ungu",
           "Dominasi Warna": "Kuning / Oranye / Merah",
-          "Catatan": 1
+          "Catatan": 1,
+          "Link Foto Hasil Gambar": "https://drive.google.com/file/d/sample-etu/view"
         }
       ];
 
       const worksheet = XLSX.utils.json_to_sheet(templateData);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-      XLSX.writeFile(workbook, "Template_Upload_TERABACA.xlsx");
+      XLSX.writeFile(workbook, "Template_Upload_TERABACA_23Kolom.xlsx");
     }
 
+    // SIMPAN FORM SATUAN KE SUPABASE
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+      
+      const payload = {
+        nama: document.getElementById('nama').value,
+        nama_lembaga: document.getElementById('namaLembaga').value,
+        jenis_kelamin: document.getElementById('jenisKelamin').value,
+        tempat_lahir: document.getElementById('tempatLahir').value,
+        tanggal_lahir: document.getElementById('tanggalLahir').value,
+        usia_testee: parseInt(document.getElementById('usiaTestee').value) || 0,
+        tanggal_tes: document.getElementById('tanggalTes').value,
+        level_pendidikan: document.getElementById('levelPendidikan').value,
+        paket: document.getElementById('paket').value,
+        cabang: document.getElementById('cabang').value,
+        jurusan_sma: document.getElementById('jurusanSma').value || '0',
+        jurusan_pilihan: document.getElementById('jurusanPilihan').value || '0',
+        anak_ke: parseInt(document.getElementById('anakKe').value) || 0,
+        dari_bersaudara: parseInt(document.getElementById('dariBersaudara').value) || 0,
+        dibantu_ortu: document.getElementById('dibantuOrtu').value,
+        dibantu_lain: document.getElementById('dibantuLain').value,
+        kertas_sobek: document.getElementById('kertasSobek').value,
+        ganti_kertas: document.getElementById('gantiKertas').value,
+        posisi_kertas: document.getElementById('posisiKertas').value,
+        alat_gambar: document.getElementById('alatGambar').value,
+        dominasi_warna: document.getElementById('dominasiWarna').value,
+        link_foto: document.getElementById('linkFoto').value || '',
+        catatan: document.getElementById('catatan').value || '0'
+      };
+
+      const { data, error } = await _supabase.from('pendaftaran_terabaca').insert([payload]);
+
+      if (error) {
+        alert("Gagal menyimpan data: " + error.message);
+      } else {
+        alert("Berhasil! Data pendaftaran satuan beserta link gambar sudah tersimpan di Supabase.");
+        e.target.reset();
+      }
+    }
+
+    // UPLOAD MASSAL EXCEL KE SUPABASE
     let parsedExcelData = [];
 
     function handleExcelUpload(e) {
@@ -346,10 +402,7 @@
       const table = document.getElementById('previewTable');
       const countEl = document.getElementById('countRows');
       
-      if (!data || data.length === 0) {
-        alert('File Excel kosong!');
-        return;
-      }
+      if (!data || data.length === 0) return;
 
       container.classList.remove('hidden');
       countEl.textContent = data.length;
@@ -363,13 +416,44 @@
       table.innerHTML = headerHtml + bodyHtml;
     }
 
-    function handleFormSubmit(e) {
-      e.preventDefault();
-      alert('Simulasi: Form Satuan Berhasil Disimpan!');
-    }
+    async function saveBulkData() {
+      if (parsedExcelData.length === 0) return;
 
-    function saveBulkData() {
-      alert(`Simulasi: Berhasil memproses ${parsedExcelData.length} data pendaftar dari Excel!`);
+      const formattedData = parsedExcelData.map(row => ({
+        no_urut: row['No'] || null,
+        nama: row['Nama'],
+        nama_lembaga: row['Nama Lembaga'],
+        tempat_lahir: row['Tempat Lahir'],
+        tanggal_lahir: row['Tanggal Lahir'],
+        usia_testee: parseInt(row['Usia Testee']) || 0,
+        tanggal_tes: row['Tanggal Tes'],
+        jenis_kelamin: row['Jenis Kelamin'],
+        level_pendidikan: row['Level Pendidikan'],
+        jurusan_sma: row['Jurusan (Khusus untuk level Pendidikan SMA)'] || '0',
+        jurusan_pilihan: row['3 Jurusan Pilihan (Paket Talent)'] || '0',
+        anak_ke: parseInt(row['Anak Ke']) || 0,
+        dari_bersaudara: parseInt(row['dari ... bersaudara']) || 0,
+        paket: row['Paket'],
+        cabang: row['Cabang'],
+        dibantu_ortu: row['Dibantu Orang Tua'],
+        dibantu_lain: row['Dibantu Orang Lain'],
+        kertas_sobek: row['Kondisi Kertas Sobek'],
+        ganti_kertas: row['Mengganti Kertas'],
+        posisi_kertas: row['Posisi Kertas'],
+        alat_gambar: row['Alat Gambar yang digunakan'],
+        dominasi_warna: row['Dominasi Warna'],
+        catatan: row['Catatan'] || '0',
+        link_foto: row['Link Foto Hasil Gambar'] || ''
+      }));
+
+      const { data, error } = await _supabase.from('pendaftaran_terabaca').insert(formattedData);
+
+      if (error) {
+        alert("Gagal mengunggah data massal: " + error.message);
+      } else {
+        alert(`Sukses! ${formattedData.length} data murid dari Excel (beserta link gambar) berhasil diimpor ke Supabase!`);
+        document.getElementById('excelPreviewArea').classList.add('hidden');
+      }
     }
   </script>
 </body>
