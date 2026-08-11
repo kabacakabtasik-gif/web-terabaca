@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TERABACA - Dashboard Admin Pusat</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen py-6 px-4">
+
+  <div class="max-w-7xl mx-auto space-y-6">
+    
+    <!-- HEADER & AKSI -->
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div>
+        <span class="text-[10px] font-bold bg-blue-100 text-blue-900 px-2.5 py-1 rounded-md uppercase tracking-wider">Portal Pusat</span>
+        <h1 class="text-xl font-bold text-slate-800 mt-1">Dashboard Rekapitulasi TERABACA</h1>
+        <p class="text-xs text-slate-500">Pemantauan Data Murid, Cabang, dan Berkas Hasil Gambar</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition shadow-sm flex items-center gap-1.5">
+          📊 Export Data Ke Excel
+        </button>
+        <a href="index.html" class="text-xs text-slate-600 hover:text-blue-900 border border-slate-200 px-3.5 py-2 rounded-xl transition">
+          &larr; Landing Page
+        </a>
+      </div>
+    </div>
+
+    <!-- METRIK STATISTIK -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <span class="text-[10px] font-bold text-slate-400 uppercase">Total Peserta</span>
+        <div id="statTotalPeserta" class="text-2xl font-extrabold text-blue-900 mt-1">0</div>
+      </div>
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <span class="text-[10px] font-bold text-slate-400 uppercase">Total Cabang Aktif</span>
+        <div id="statTotalCabang" class="text-2xl font-extrabold text-indigo-900 mt-1">0</div>
+      </div>
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <span class="text-[10px] font-bold text-slate-400 uppercase">Paket Basic / Parent</span>
+        <div id="statBasicParent" class="text-2xl font-extrabold text-emerald-600 mt-1">0</div>
+      </div>
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <span class="text-[10px] font-bold text-slate-400 uppercase">Paket Talent / Brainwave</span>
+        <div id="statTalentBrainwave" class="text-2xl font-extrabold text-amber-600 mt-1">0</div>
+      </div>
+    </div>
+
+    <!-- AREA FILTER & PENCARIAN -->
+    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+      <div class="w-full md:w-1/3">
+        <input type="text" id="searchInput" onkeyup="applyFilter()" placeholder="Cari nama murid atau lembaga..." class="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-900">
+      </div>
+      <div class="flex items-center gap-2 w-full md:w-auto justify-end">
+        <select id="filterCabang" onchange="applyFilter()" class="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-medium">
+          <option value="">Semua Cabang</option>
+        </select>
+        <select id="filterPaket" onchange="applyFilter()" class="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-medium">
+          <option value="">Semua Paket</option>
+          <option value="Basic">Basic</option>
+          <option value="Parent">Parent</option>
+          <option value="Talent">Talent</option>
+          <option value="Brainwave">Brainwave</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- TABEL DATA MURID -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+        <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Data Peserta Terdaftar (<span id="countTable">0</span>)</h2>
+        <span id="loadingStatus" class="text-xs text-amber-600 font-bold hidden">⏳ Memuat data...</span>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-[11px] text-slate-600 whitespace-nowrap">
+          <thead class="bg-slate-50 text-slate-700 uppercase font-bold border-b border-slate-200">
+            <tr>
+              <th class="p-3">#</th>
+              <th class="p-3">Nama Lengkap</th>
+              <th class="p-3">Lembaga / Sekolah</th>
+              <th class="p-3">Cabang</th>
+              <th class="p-3">Paket</th>
+              <th class="p-3">L/P</th>
+              <th class="p-3">Usia</th>
+              <th class="p-3">Tgl Tes</th>
+              <th class="p-3">Hasil Gambar</th>
+              <th class="p-3">Observasi</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody" class="divide-y divide-slate-100">
+            <!-- Row data dimasukkan secara dinamis via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // CREDENTIAL SUPABASE
+    const SUPABASE_URL = "https://zdealocdcweemecirdap.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkZWFsb2NkY3dlZW1lY2lyZGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5ODEyNTgsImV4cCI6MjA5NDU1NzI1OH0._fgstIY2k0s0zv-7_EnupEmFlExFsXRLZP7BAYHd_-c";
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let rawData = [];
+
+    // POPULASI DATA SAAT BUKAN DASHBOARD
+    window.addEventListener('DOMContentLoaded', () => {
+      fetchData();
+    });
+
+    async function fetchData() {
+      const statusEl = document.getElementById('loadingStatus');
+      statusEl.classList.remove('hidden');
+
+      const { data, error } = await _supabase
+        .from('pendaftaran_terabaca')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      statusEl.classList.add('hidden');
+
+      if (error) {
+        alert("Gagal mengambil data: " + error.message);
+        return;
+      }
+
+      rawData = data || [];
+      populateCabangDropdown(rawData);
+      updateStatistics(rawData);
+      renderTable(rawData);
+    }
+
+    function updateStatistics(data) {
+      document.getElementById('statTotalPeserta').textContent = data.length;
+      
+      const cabangSet = new Set(data.map(i => i.cabang).filter(Boolean));
+      document.getElementById('statTotalCabang').textContent = cabangSet.size;
+
+      const basicParent = data.filter(i => i.paket === 'Basic' || i.paket === 'Parent').length;
+      document.getElementById('statBasicParent').textContent = basicParent;
+
+      const talentBrainwave = data.filter(i => i.paket === 'Talent' || i.paket === 'Brainwave').length;
+      document.getElementById('statTalentBrainwave').textContent = talentBrainwave;
+    }
+
+    function populateCabangDropdown(data) {
+      const select = document.getElementById('filterCabang');
+      select.innerHTML = '<option value="">Semua Cabang</option>';
+      const cabangList = [...new Set(data.map(i => i.cabang).filter(Boolean))];
+      
+      cabangList.forEach(cab => {
+        const opt = document.createElement('option');
+        opt.value = cab;
+        opt.textContent = cab;
+        select.appendChild(opt);
+      });
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById('tableBody');
+      document.getElementById('countTable').textContent = data.length;
+
+      if(data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" class="p-6 text-center text-slate-400">Belum ada data pendaftar.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = data.map((item, idx) => `
+        <tr class="hover:bg-slate-50/80 transition">
+          <td class="p-3 font-bold text-slate-400">${idx + 1}</td>
+          <td class="p-3 font-bold text-slate-800">${item.nama || '-'}</td>
+          <td class="p-3">${item.nama_lembaga || '-'}</td>
+          <td class="p-3"><span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-medium">${item.cabang || '-'}</span></td>
+          <td class="p-3"><span class="bg-blue-50 text-blue-900 px-2 py-0.5 rounded font-bold">${item.paket || '-'}</span></td>
+          <td class="p-3">${item.jenis_kelamin || '-'}</td>
+          <td class="p-3">${item.usia_testee || '0'} thn</td>
+          <td class="p-3">${item.tanggal_tes || '-'}</td>
+          <td class="p-3">
+            ${item.link_foto ? `<a href="${item.link_foto}" target="_blank" class="bg-blue-900 text-white font-bold px-2.5 py-1 rounded text-[10px] hover:bg-blue-800 transition">🖼️ Lihat Berkas</a>` : '<span class="text-slate-300">Tidak ada</span>'}
+          </td>
+          <td class="p-3 text-[10px] text-slate-500">
+            Sobek: ${item.kertas_sobek || 'tidak'} | Ganti: ${item.ganti_kertas || 'tidak'}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function applyFilter() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const cabang = document.getElementById('filterCabang').value;
+      const paket = document.getElementById('filterPaket').value;
+
+      const filtered = rawData.filter(item => {
+        const matchSearch = (item.nama && item.nama.toLowerCase().includes(search)) || 
+                            (item.nama_lembaga && item.nama_lembaga.toLowerCase().includes(search));
+        const matchCabang = cabang === "" || item.cabang === cabang;
+        const matchPaket = paket === "" || item.paket === paket;
+
+        return matchSearch && matchCabang && matchPaket;
+      });
+
+      renderTable(filtered);
+    }
+
+    function exportToExcel() {
+      if (rawData.length === 0) {
+        alert("Tidak ada data untuk diekspor!");
+        return;
+      }
+
+      const worksheet = XLSX.utils.json_to_sheet(rawData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Data_Pusat_TERABACA");
+      XLSX.writeFile(workbook, `Rekap_Pusat_TERABACA_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
+  </script>
+</body>
+</html>  
