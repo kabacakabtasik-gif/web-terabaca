@@ -8,11 +8,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// Inisialisasi Midtrans Snap
+// Inisialisasi Midtrans Snap (Aman dari peringatan GitHub)
 const snap = new midtransClient.Snap({
     isProduction: false,
-    serverKey: process.env.MIDTRANS_SERVER_KEY || 'Mid-server-EAtUEPxspPR8vrU4GC8qk9gT',
-    clientKey: process.env.MIDTRANS_CLIENT_KEY || 'Mid-client-2-2L5XUm_r2zrd6p'
+    serverKey: process.env.MIDTRANS_SERVER_KEY || '',
+    clientKey: process.env.MIDTRANS_CLIENT_KEY || ''
 });
 
 // 1. Endpoint Membuat Snap Token Pembayaran
