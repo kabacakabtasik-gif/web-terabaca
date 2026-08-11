@@ -297,7 +297,7 @@
                     </p>
                     <div>
                         <button type="button" onclick="downloadTemplateExcel()" class="inline-flex items-center text-xs font-semibold text-indigo-700 bg-indigo-100 hover:bg-indigo-200 px-3.5 py-2 rounded-lg transition shadow-sm">
-                            📥 Download Template Excel Standar Pusat
+                            📥 Download Template Excel Standar TERABACA (23 Kolom)
                         </button>
                     </div>
                 </div>
@@ -361,47 +361,46 @@
             }
         }
 
-        // Fungsi Download Template Excel Standar dengan format kolom lengkap
+        // Fungsi Download Template Excel Standar dengan Format 23 Kolom Terbaru
         function downloadTemplateExcel() {
             const templateData = [
                 {
-                    nama_penginput: "Nama Praktisi / Penginput",
-                    email_cabang: "penginput@gmail.com",
-                    whatsapp_penginput: "08123456789",
-                    cabang: "Kab. Tasikmalaya",
-                    jenis_paket_bayar: "Berbayar",
-                    jenis_layanan: "Personal",
-                    nama_testee: "Contoh Nama Peserta",
-                    no_testee: "001",
-                    paket_tes: "Talent",
-                    lembaga_institusi: "SD Negeri 1 Contoh",
-                    tempat_lahir: "Tasikmalaya",
-                    tanggal_lahir: "2015-05-12",
-                    usia: "11 Tahun",
-                    tanggal_tes: "2026-07-24",
-                    jenis_kelamin: "Laki-laki",
-                    level_pendidikan: "SD kelas 5-6 dan SLTP",
-                    jurusan_sma: "",
-                    jurusan_terlintas: "Kedokteran, Psikologi, Hukum",
-                    anak_ke: "1",
-                    dari_bersaudara: "3",
-                    dibantu_ortu: "tidak",
-                    dibantu_orang_lain: "tidak",
-                    kondisi_kertas: "tidak",
-                    ganti_kertas: "tidak",
-                    posisi_kertas: "Vertikal",
-                    alat_gambar: "Pensil Warna",
-                    dominasi_warna: "Biru / Hijau",
-                    catatan_gambar: "Anak tampak antusias dan tenang.",
-                    catatan_khusus: "Mohon segera diproses",
-                    link_coretan_drive: "https://drive.google.com/file/d/contoh_link_file_anda"
+                    "Cabang": "Kab. Tasikmalaya",
+                    "Email Penginput": "penginput@gmail.com",
+                    "Nama Penginput": "Nama Penginput",
+                    "No WhatsApp Penginput": "08123456789",
+                    "Status Paket": "Berbayar",
+                    "Jenis Layanan": "Personal",
+                    "Nama Testee": "Contoh Nama Peserta",
+                    "No Testee": "001",
+                    "Paket Tes": "Talent",
+                    "Lembaga / Institusi": "SD Negeri 1 Contoh",
+                    "Tempat Lahir": "Tasikmalaya",
+                    "Tanggal Lahir": "2015-05-12",
+                    "Usia": "11 Tahun",
+                    "Tanggal Tes": "2026-08-11",
+                    "Jenis Kelamin": "Laki-laki",
+                    "Level Pendidikan": "SD kelas 5-6 dan SLTP",
+                    "Jurusan SMA": "",
+                    "Jurusan Terlintas": "Kedokteran, Psikologi, Hukum",
+                    "Anak Ke": "1",
+                    "Dari Bersaudara": "3",
+                    "Bantuan Menggambar": "Mandiri",
+                    "Kondisi Kertas": "tidak",
+                    "Ganti Kertas": "tidak",
+                    "Posisi Kertas": "Vertikal",
+                    "Alat Gambar": "Pensil Warna",
+                    "Dominasi Warna": "Biru / Hijau",
+                    "Catatan Gambar": "Anak tampak antusias dan tenang.",
+                    "Catatan Khusus": "Mohon segera diproses",
+                    "Link Coretan Drive": "https://drive.google.com/file/d/contoh_link"
                 }
             ];
 
             const worksheet = XLSX.utils.json_to_sheet(templateData);
             const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Template Data Peserta");
-            XLSX.writeFile(workbook, "template_upload_terabaca.xlsx");
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Template TERABACA 23 Kolom");
+            XLSX.writeFile(workbook, "template_upload_terabaca_23_kolom.xlsx");
         }
 
         // 1. Submit Form Satuan
@@ -448,7 +447,7 @@
                     cabang: cabang,
                     jenis_paket_bayar: document.getElementById('jenis_paket_bayar').value,
                     jenis_layanan: document.getElementById('jenis_layanan').value,
-                    bentuk_kerjasama: document.getElementById('jenis_layanan').value, // Menyelaraskan jika dibutuhkan
+                    bentuk_kerjasama: document.getElementById('jenis_layanan').value,
                     catatan_khusus: document.getElementById('catatan_khusus').value,
                     nama_testee: namaTestee,
                     no_testee: document.getElementById('no_testee').value,
@@ -483,73 +482,76 @@
                 document.getElementById('uploadForm').reset();
 
             } catch (error) {
-                console.error(error);
+                console.error('Error uploading data:', error);
                 alert("Gagal mengirim data: " + error.message);
             } finally {
-                submitBtn.textContent = "Kirim Seluruh Data & Berkas ke Pusat";
                 submitBtn.disabled = false;
+                submitBtn.textContent = "Kirim Seluruh Data & Berkas ke Pusat";
             }
         });
 
-        // 2. Submit Form Massal Excel
+        // 2. Submit Form Excel Massal (Presisi 23 Kolom)
         document.getElementById('excelUploadForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const submitBtn = e.target.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
-            submitBtn.textContent = "Membaca Data Excel...";
+            submitBtn.textContent = "Sedang Memproses File Excel...";
 
             try {
-                const cabang = document.getElementById('excel_cabang').value;
-                const excelFile = document.getElementById('excelFileInput').files[0];
+                const cabangForm = document.getElementById('excel_cabang').value;
+                const fileInput = document.getElementById('excelFileInput');
+                const file = fileInput.files[0];
 
-                if (!excelFile) throw new Error("File Excel belum dipilih!");
+                if (!file) {
+                    alert("Silakan pilih file Excel terlebih dahulu.");
+                    return;
+                }
 
-                const dataBuffer = await excelFile.arrayBuffer();
+                const dataBuffer = await file.arrayBuffer();
                 const workbook = XLSX.read(dataBuffer, { type: 'array' });
-                const sheetName = workbook.SheetNames[0];
-                const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const rows = XLSX.utils.sheet_to_json(worksheet);
 
-                if (!rows || rows.length === 0) throw new Error("File Excel kosong atau format tidak sesuai!");
+                if (rows.length === 0) {
+                    alert("File Excel kosong atau format tidak sesuai.");
+                    return;
+                }
 
                 let successCount = 0;
 
                 for (let row of rows) {
-                    const namaTestee = row.nama_testee || row.Nama || 'Tanpa_Nama';
-                    const linkDrive = row.link_coretan_drive || row.Link_Coretan_Drive || '';
-
                     const { error: insertErr } = await _supabase.from('data_peserta').insert([{
-                        cabang: row.cabang || cabang,
-                        email_cabang: row.email_cabang || '',
-                        nama_penginput: row.nama_penginput || '',
-                        whatsapp_penginput: row.whatsapp_penginput || '',
-                        jenis_paket_bayar: row.jenis_paket_bayar || 'Berbayar',
-                        jenis_layanan: row.jenis_layanan || 'Personal',
-                        nama_testee: namaTestee,
-                        no_testee: row.no_testee || row.No_Testee || '',
-                        paket_tes: row.paket_tes || 'Basic',
-                        lembaga_institusi: row.lembaga_institusi || row.Lembaga || '-',
-                        tempat_lahir: row.tempat_lahir || '-',
-                        tanggal_lahir: row.tanggal_lahir || '',
-                        usia: row.usia ? row.usia.toString() : '',
-                        tanggal_tes: row.tanggal_tes || '',
-                        jenis_kelamin: row.jenis_kelamin || '',
-                        level_pendidikan: row.level_pendidikan || '',
-                        jurusan_sma: row.jurusan_sma || '',
-                        jurusan_terlintas: row.jurusan_terlintas || '-',
-                        anak_ke: row.anak_ke || '',
-                        dari_bersaudara: row.dari_bersaudara || '',
-                        dibantu_ortu: row.dibantu_ortu || 'tidak',
-                        dibantu_orang_lain: row.dibantu_orang_lain || 'tidak',
-                        kondisi_kertas: row.kondisi_kertas || 'tidak',
-                        ganti_kertas: row.ganti_kertas || 'tidak',
-                        posisi_kertas: row.posisi_kertas || 'Vertikal',
-                        alat_gambar: row.alat_gambar || 'Pensil Warna',
-                        dominasi_warna: row.dominasi_warna || '',
-                        catatan_gambar: row.catatan_gambar || '',
-                        catatan_khusus: row.catatan_khusus || '',
-                        file_coretan_url: linkDrive
+                        cabang: row['Cabang'] || row.cabang || cabangForm,
+                        email_cabang: row['Email Penginput'] || row.email_cabang || '',
+                        nama_penginput: row['Nama Penginput'] || row.nama_penginput || '',
+                        whatsapp_penginput: row['No WhatsApp Penginput'] || row.whatsapp_penginput || '',
+                        jenis_paket_bayar: row['Status Paket'] || row.jenis_paket_bayar || 'Berbayar',
+                        jenis_layanan: row['Jenis Layanan'] || row.jenis_layanan || 'Personal',
+                        nama_testee: row['Nama Testee'] || row.nama_testee || 'Tanpa_Nama',
+                        no_testee: row['No Testee'] || row.no_testee || '',
+                        paket_tes: row['Paket Tes'] || row.paket_tes || 'Basic',
+                        lembaga_institusi: row['Lembaga / Institusi'] || row.lembaga_institusi || '-',
+                        tempat_lahir: row['Tempat Lahir'] || row.tempat_lahir || '-',
+                        tanggal_lahir: row['Tanggal Lahir'] || row.tanggal_lahir || '',
+                        usia: row['Usia'] ? row['Usia'].toString() : (row.usia ? row.usia.toString() : ''),
+                        tanggal_tes: row['Tanggal Tes'] || row.tanggal_tes || '',
+                        jenis_kelamin: row['Jenis Kelamin'] || row.jenis_kelamin || '',
+                        level_pendidikan: row['Level Pendidikan'] || row.level_pendidikan || '',
+                        jurusan_sma: row['Jurusan SMA'] || row.jurusan_sma || '',
+                        jurusan_terlintas: row['Jurusan Terlintas'] || row.jurusan_terlintas || '-',
+                        anak_ke: row['Anak Ke'] || row.anak_ke || '',
+                        dari_bersaudara: row['Dari Bersaudara'] || row.dari_bersaudara || '',
+                        bantuan_menggambar: row['Bantuan Menggambar'] || row.bantuan_menggambar || 'Mandiri',
+                        kondisi_kertas: row['Kondisi Kertas'] || row.kondisi_kertas || 'tidak',
+                        ganti_kertas: row['Ganti Kertas'] || row.ganti_kertas || 'tidak',
+                        posisi_kertas: row['Posisi Kertas'] || row.posisi_kertas || 'Vertikal',
+                        alat_gambar: row['Alat Gambar'] || row.alat_gambar || 'Pensil Warna',
+                        dominasi_warna: row['Dominasi Warna'] || row.dominasi_warna || '',
+                        catatan_gambar: row['Catatan Gambar'] || row.catatan_gambar || '',
+                        catatan_khusus: row['Catatan Khusus'] || row.catatan_khusus || '',
+                        file_coretan_url: row['Link Coretan Drive'] || row.link_coretan_drive || row.file_coretan_url || ''
                     }]);
-
                     if (!insertErr) successCount++;
                 }
 
