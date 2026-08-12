@@ -1,107 +1,311 @@
 <!DOCTYPE html>
 <html lang="id">
-<script>
-    const ADMIN_PASSWORD = "terabaca2026"; 
-
-    function verifyAdmin() {
-        let pwd = prompt("Masukkan Password Akses Dashboard Pusat TERABACA:");
-        if (pwd === null || pwd.trim() === "") {
-            alert("Akses dibatalkan / kosong. Anda diarahkan kembali ke Portal Cabang.");
-            window.location.href = "upload.html";
-            return;
-        }
-        if (pwd !== ADMIN_PASSWORD) {
-            alert("Password salah! Silakan coba lagi.");
-            verifyAdmin(); 
-        }
-    }
-    verifyAdmin();
-</script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Pusat - TERABACA</title>
+    <title>Dashboard Kendali Pusat - TERABACA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
 </head>
-<body class="bg-slate-100 min-h-screen flex flex-col justify-between">
+<body class="bg-slate-100 min-h-screen flex text-slate-800">
 
-    <!-- Header Pusat -->
-    <header class="bg-slate-900 text-white shadow py-4 px-6">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div class="flex items-center space-x-3">
+    <!-- SIDEBAR UTAMA -->
+    <aside class="w-64 bg-slate-900 text-white min-h-screen flex flex-col justify-between p-4 sticky top-0 h-screen shrink-0">
+        <div>
+            <!-- Header Brand -->
+            <div class="flex items-center gap-3 px-2 py-3 border-b border-slate-800 mb-6">
                 <span class="font-bold text-xl tracking-wide text-emerald-400">TERABACA</span>
-                <span class="text-xs bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-full border border-emerald-500/30 font-medium">Dashboard Kendali Pusat</span>
+                <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/30">Pusat</span>
             </div>
-            <div class="flex items-center flex-wrap gap-2">
-                <button onclick="downloadRekapExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-lg transition font-semibold shadow-sm">
-                    📥 Unduh Master Excel (.xlsx)
-                </button>
 
-                <!-- TOMBOL NAVIGASI BARU KE ADMIN PUSAT -->
-                <a href="admin_pusat.html" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-1.5 rounded-lg transition font-semibold shadow-sm flex items-center gap-1">
-                    📊 Rekapitulasi Data (23 Kolom)
-                </a>
-
-                <button onclick="loadDataPeserta()" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded-lg border border-slate-700 transition">
-                    🔄 Muat Ulang
+            <!-- Menu Navigasi Sidebar -->
+            <nav class="space-y-1">
+                <button onclick="switchTab('approval')" id="btn-tab-approval" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold bg-emerald-600 text-white shadow-sm transition">
+                    <i class="fas fa-check-circle w-4 text-center"></i> Ruang Approval & Berkas
                 </button>
-                <button onclick="logoutAdmin()" class="bg-rose-900/50 hover:bg-rose-800 text-rose-200 text-xs px-3 py-1.5 rounded-lg border border-rose-700/50 transition">
-                    🚪 Keluar
+                <button onclick="switchTab('database')" id="btn-tab-database" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">
+                    <i class="fas fa-database w-4 text-center"></i> Database Testee (Master)
                 </button>
-            </div>
+                <button onclick="switchTab('cabang')" id="btn-tab-cabang" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">
+                    <i class="fas fa-network-wired w-4 text-center"></i> Ruang Kontrol Cabang
+                </button>
+            </nav>
         </div>
-    </header>
 
-    <!-- Konten Utama -->
-    <main class="max-w-7xl mx-auto p-4 sm:p-6 w-full flex-grow">
+        <!-- Tombol Logout & Landing Page -->
+        <div class="border-t border-slate-800 pt-4 space-y-2">
+            <a href="index.html" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">
+                <i class="fas fa-globe w-4 text-center"></i> Landing Page
+            </a>
+            <button onclick="logoutAdmin()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold bg-rose-900/30 hover:bg-rose-800/50 text-rose-300 border border-rose-800/50 transition">
+                <i class="fas fa-sign-out-alt w-4 text-center"></i> Keluar Portal
+            </button>
+        </div>
+    </aside>
+
+    <!-- AREA KONTEN UTAMA -->
+    <div class="flex-1 flex flex-col min-h-screen overflow-y-auto">
         
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <!-- Header Top Bar -->
+        <header class="bg-white border-b border-slate-200 py-4 px-8 flex justify-between items-center sticky top-0 z-10">
             <div>
-                <h1 class="text-xl font-bold text-slate-800">Verifikasi Keuangan, Berkas & Hasil Analisa</h1>
-                <p class="text-sm text-slate-500 mt-1">Pusat hanya memproses lembar coretan testee yang data & bukti transfernya sudah terverifikasi.</p>
+                <h1 id="page-title" class="text-lg font-bold text-slate-800">Ruang Approval & Control Berkas</h1>
+                <p id="page-subtitle" class="text-xs text-slate-500">Verifikasi keuangan, download lembar kerja, dan unggah hasil analisa.</p>
             </div>
-            <!-- Filter Tanggal Sesi -->
-            <div class="flex items-center gap-2">
-                <label class="text-xs font-semibold text-slate-600">Filter Sesi Tanggal:</label>
-                <input type="date" id="filterTanggal" onchange="loadDataPeserta()" class="px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-slate-50">
-                <button onclick="document.getElementById('filterTanggal').value=''; loadDataPeserta();" class="text-xs text-indigo-600 hover:underline">Reset</button>
+            <div class="flex items-center gap-3">
+                <button onclick="downloadRekapExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3.5 py-2 rounded-xl transition font-semibold shadow-sm flex items-center gap-1.5">
+                    <i class="fas fa-file-excel"></i> Unduh Excel (.xlsx)
+                </button>
+                <button onclick="refreshData()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs px-3 py-2 rounded-xl border border-slate-200 transition">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="p-8 flex-grow space-y-6">
+
+            <!-- TAB 1: RUANG APPROVAL & CONTROL BERKAS -->
+            <section id="tab-approval" class="space-y-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex justify-between items-center">
+                    <span class="text-xs font-semibold text-slate-600">Filter Sesi Tanggal Input:</span>
+                    <div class="flex items-center gap-2">
+                        <input type="date" id="filterTanggal" onchange="loadDataPeserta()" class="px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-slate-50 outline-none">
+                        <button onclick="document.getElementById('filterTanggal').value=''; loadDataPeserta();" class="text-xs text-indigo-600 hover:underline">Reset</button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-600 text-xs uppercase tracking-wider border-b border-slate-200">
+                                    <th class="py-3 px-4">Penginput & Cabang</th>
+                                    <th class="py-3 px-4">Identitas Testee</th>
+                                    <th class="py-3 px-4">Paket & Status Bayar</th>
+                                    <th class="py-3 px-4">Coretan & Verifikasi Transfer</th>
+                                    <th class="py-3 px-4">Hasil Analisa (Upload)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelDataApproval" class="divide-y divide-slate-100 text-sm text-slate-700">
+                                <tr>
+                                    <td colspan="5" class="text-center py-8 text-slate-400">Memuat data dari database pusat...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: DATABASE TESTEE (REKAPITULASI MASTER) -->
+            <section id="tab-database" class="hidden space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Total Peserta</span>
+                        <div id="statTotalPeserta" class="text-2xl font-extrabold text-blue-900 mt-1">0</div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Total Cabang Aktif</span>
+                        <div id="statTotalCabang" class="text-2xl font-extrabold text-indigo-900 mt-1">0</div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Paket Basic / Parent</span>
+                        <div id="statBasicParent" class="text-2xl font-extrabold text-emerald-600 mt-1">0</div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Paket Talent / Brainwave</span>
+                        <div id="statTalentBrainwave" class="text-2xl font-extrabold text-amber-600 mt-1">0</div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+                    <div class="w-full md:w-1/3">
+                        <input type="text" id="searchInput" onkeyup="applyMasterFilter()" placeholder="Cari nama murid atau lembaga..." class="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-900">
+                    </div>
+                    <div class="flex items-center gap-2 w-full md:w-auto justify-end">
+                        <select id="filterCabang" onchange="applyMasterFilter()" class="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-medium">
+                            <option value="">Semua Cabang</option>
+                        </select>
+                        <select id="filterPaket" onchange="applyMasterFilter()" class="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-medium">
+                            <option value="">Semua Paket</option>
+                            <option value="Basic">Basic</option>
+                            <option value="Parent">Parent</option>
+                            <option value="Talent">Talent</option>
+                            <option value="Brainwave">Brainwave</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+                        <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Data Peserta Terdaftar (<span id="countTable">0</span>)</h2>
+                        <span id="loadingStatusMaster" class="text-xs text-amber-600 font-bold hidden">⏳ Memuat data...</span>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-[11px] text-slate-600 whitespace-nowrap">
+                            <thead class="bg-slate-50 text-slate-700 uppercase font-bold border-b border-slate-200">
+                                <tr>
+                                    <th class="p-3 text-center">#</th>
+                                    <th class="p-3">Cabang</th>
+                                    <th class="p-3">Email Penginput</th>
+                                    <th class="p-3">Nama Penginput</th>
+                                    <th class="p-3">WA Penginput</th>
+                                    <th class="p-3">Status Paket</th>
+                                    <th class="p-3">Jenis Layanan</th>
+                                    <th class="p-3">Nama Testee</th>
+                                    <th class="p-3">No Testee</th>
+                                    <th class="p-3">Paket Tes</th>
+                                    <th class="p-3">Lembaga / Institusi</th>
+                                    <th class="p-3">Tempat Lahir</th>
+                                    <th class="p-3">Tanggal Lahir</th>
+                                    <th class="p-3">Usia</th>
+                                    <th class="p-3">Tanggal Tes</th>
+                                    <th class="p-3">Jenis Kelamin</th>
+                                    <th class="p-3">Level Pendidikan</th>
+                                    <th class="p-3">Jurusan SMA</th>
+                                    <th class="p-3">Jurusan Terlintas</th>
+                                    <th class="p-3">Anak Ke</th>
+                                    <th class="p-3">Dari Bersaudara</th>
+                                    <th class="p-3">Bantuan Menggambar</th>
+                                    <th class="p-3">Kondisi Kertas</th>
+                                    <th class="p-3">Ganti Kertas</th>
+                                    <th class="p-3">Posisi Kertas</th>
+                                    <th class="p-3">Alat Gambar</th>
+                                    <th class="p-3">Dominasi Warna</th>
+                                    <th class="p-3">Catatan Gambar</th>
+                                    <th class="p-3">Catatan Khusus</th>
+                                    <th class="p-3 text-center">Hasil Gambar</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBodyMaster" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: RUANG KONTROL CABANG -->
+            <section id="tab-cabang" class="hidden space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl font-bold">
+                            <i class="fas fa-store"></i>
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase">Total Cabang Terdaftar</span>
+                            <div id="statTotalCabangKoneksi" class="text-2xl font-extrabold text-slate-800 mt-0.5">0</div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl font-bold">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase">Total Entri Data Cabang</span>
+                            <div id="statTotalEntriCabang" class="text-2xl font-extrabold text-slate-800 mt-0.5">0</div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl font-bold">
+                            <i class="fas fa-signal"></i>
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase">Status Integrasi</span>
+                            <div class="text-sm font-bold text-emerald-600 mt-1 flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Synchronized
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabel Monitoring & Tombol Tambah Cabang -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+                        <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Daftar Cabang Terdaftar</h2>
+                        <div class="flex items-center gap-2">
+                            <!-- Tombol Link Form Registrasi (Baru) -->
+                            <a href="/register-cabang.html" target="_blank" 
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-xs font-semibold transition border border-indigo-200 shadow-sm">
+                                <i class="fas fa-external-link-alt"></i> Link Form Registrasi
+                            </a>
+
+                            <!-- Tombol Tambah Cabang Baru (Eksisting) -->
+                            <button onclick="toggleModalCabang(true)" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-xl font-semibold transition flex items-center gap-1.5 shadow-sm">
+                                <i class="fas fa-plus-circle"></i> Tambah Cabang Baru
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-600">
+                            <thead class="bg-slate-50 text-slate-700 uppercase font-bold border-b border-slate-200">
+                                <tr>
+                                    <th class="p-3 text-center">#</th>
+                                    <th class="p-3">Kode Cabang</th>
+                                    <th class="p-3">Nama Cabang / Unit</th>
+                                    <th class="p-3">Penanggung Jawab</th>
+                                    <th class="p-3">Kontak WA</th>
+                                    <th class="p-3 text-center">Total Testee</th>
+                                    <th class="p-3 text-center">Status</th>
+                                    <th class="p-3 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBodyCabang" class="divide-y divide-slate-100">
+                                <tr>
+                                    <td colspan="8" class="text-center py-8 text-slate-400">Memuat data cabang...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- MODAL FORM TAMBAH CABANG BARU -->
+        <div id="modalCabang" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md p-6 relative">
+                <button onclick="toggleModalCabang(false)" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                    <i class="fas fa-times text-base"></i>
+                </button>
+                <h3 class="text-base font-bold text-slate-800 mb-1">Tambah Cabang Baru</h3>
+                <p class="text-xs text-slate-500 mb-5">Daftarkan lokasi unit atau cabang kemitraan baru.</p>
+
+                <form id="formTambahCabang" onsubmit="simpanCabangBaru(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Kode Cabang</label>
+                        <input type="text" id="inputKodeCabang" placeholder="Contoh: DPK-01" required class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:border-indigo-600">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Cabang / Unit</label>
+                        <input type="text" id="inputNamaCabang" placeholder="Contoh: Kota Depok" required class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:border-indigo-600">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Penanggung Jawab</label>
+                        <input type="text" id="inputPJ" placeholder="Contoh: Ahmad Hidayat" required class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:border-indigo-600">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Nomor WhatsApp</label>
+                        <input type="text" id="inputWA" placeholder="Contoh: 08123456789" required class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:border-indigo-600">
+                    </div>
+                    <div class="pt-2 flex justify-end gap-2">
+                        <button type="button" onclick="toggleModalCabang(false)" class="px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition">Batal</button>
+                        <button type="submit" id="btnSubmitCabang" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-sm transition">Simpan Cabang</button>
+                    </div>
+                </form>
             </div>
         </div>
 
-        <!-- Tabel Data Peserta -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-50 text-slate-600 text-xs uppercase tracking-wider border-b border-slate-200">
-                            <th class="py-3 px-4">Sesi Waktu & Penginput</th>
-                            <th class="py-3 px-4">Identitas Testee</th>
-                            <th class="py-3 px-4">Paket & Status Bayar</th>
-                            <th class="py-3 px-4">Catatan & Temuan</th>
-                            <th class="py-3 px-4">Verifikasi Berkas (Transfer & Coretan)</th>
-                            <th class="py-3 px-4">Hasil Analisa (Pusat)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabelData" class="divide-y divide-slate-100 text-sm text-slate-700">
-                        <tr>
-                            <td colspan="6" class="text-center py-8 text-slate-400">Memuat data dari database pusat...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </main>
+        <!-- Footer -->
+        <footer class="text-center py-4 text-xs text-slate-400 border-t border-slate-200 bg-white">
+            &copy; 2026 Program TERABACA Pusat. All rights reserved.
+        </footer>
+    </div>
 
-    <!-- Footer -->
-    <footer class="text-center py-6 text-xs text-slate-400">
-        &copy; 2026 Program TERABACA Pusat. All rights reserved.
-    </footer>
-
-    <!-- Script Koneksi Supabase & Logika Dashboard -->
+    <!-- Script Supabase & Logika Utama -->
     <script>
         const SUPABASE_URL = 'https://zdealocdcweemecirdap.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkZWFsb2NkY3dlZW1lY2lyZGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5ODEyNTgsImV4cCI6MjA5NDU1NzI1OH0._fgstIY2k0s0zv-7_EnupEmFlExFsXRLZP7BAYHd_-c';
@@ -109,159 +313,141 @@
         const { createClient } = supabase;
         const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        function logoutAdmin() {
-            if (confirm("Apakah Anda ingin keluar dari Dashboard Pusat?")) {
-                window.location.href = "upload.html";
+        let rawData = [];
+        let rawCabang = [];
+        let currentTab = 'approval';
+
+        function switchTab(tabName) {
+            currentTab = tabName;
+            const btnApproval = document.getElementById('btn-tab-approval');
+            const btnDatabase = document.getElementById('btn-tab-database');
+            const btnCabang = document.getElementById('btn-tab-cabang');
+
+            const tabApproval = document.getElementById('tab-approval');
+            const tabDatabase = document.getElementById('tab-database');
+            const tabCabang = document.getElementById('tab-cabang');
+
+            const title = document.getElementById('page-title');
+            const subtitle = document.getElementById('page-subtitle');
+
+            const activeStyle = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold bg-emerald-600 text-white shadow-sm transition";
+            const inactiveStyle = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition";
+
+            btnApproval.className = inactiveStyle;
+            btnDatabase.className = inactiveStyle;
+            btnCabang.className = inactiveStyle;
+
+            tabApproval.classList.add('hidden');
+            tabDatabase.classList.add('hidden');
+            tabCabang.classList.add('hidden');
+
+            if (tabName === 'approval') {
+                tabApproval.classList.remove('hidden');
+                btnApproval.className = activeStyle;
+                title.innerText = "Ruang Approval & Control Berkas";
+                subtitle.innerText = "Verifikasi keuangan, download lembar kerja, dan unggah hasil analisa.";
+            } else if (tabName === 'database') {
+                tabDatabase.classList.remove('hidden');
+                btnDatabase.className = activeStyle;
+                title.innerText = "Database Testee (Master Record)";
+                subtitle.innerText = "Pemantauan menyeluruh data murid, statistik cabang, dan rincian observasi.";
+            } else if (tabName === 'cabang') {
+                tabCabang.classList.remove('hidden');
+                btnCabang.className = activeStyle;
+                title.innerText = "Ruang Kontrol Cabang Terkoneksi";
+                subtitle.innerText = "Monitoring status cabang terdaftar dan rekapitulasi data per unit.";
             }
         }
 
-        async function downloadRekapExcel() {
-            try {
-                const { data, error } = await _supabase
-                    .from('data_peserta')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-                if (!data || data.length === 0) {
-                    alert("Belum ada data untuk diunduh.");
-                    return;
-                }
-
-                const formattedData = data.map((row, index) => ({
-                    No: index + 1,
-                    Waktu_Masuk: row.created_at,
-                    Cabang_Wilayah: row.cabang,
-                    Jenis_Layanan: row.jenis_layanan || 'Personal',
-                    Email_Penginput: row.email_cabang || '-',
-                    Nama_Penginput: row.nama_penginput || '-',
-                    WhatsApp_Penginput: row.whatsapp_penginput || '-',
-                    Status_Bayar: row.jenis_paket_bayar,
-                    Nama_Testee: row.nama_testee,
-                    No_Testee: row.no_testee || '-',
-                    Paket_Tes: row.paket_tes || '-',
-                    Lembaga_Institusi: row.lembaga_institusi,
-                    Tempat_Lahir: row.tempat_lahir,
-                    Tanggal_Lahir: row.tanggal_lahir,
-                    Usia: row.usia,
-                    Tanggal_Tes: row.tanggal_tes,
-                    Jenis_Kelamin: row.jenis_kelamin,
-                    Level_Pendidikan: row.level_pendidikan,
-                    Jurusan_SMA: row.jurusan_sma || '-',
-                    Jurusan_Pilihan_Talent: row.jurusan_terlintas || '-',
-                    Anak_Ke: row.anak_ke || '-',
-                    Dari_Bersaudara: row.dari_bersaudara || '-',
-                    Dibantu_Ortu: row.dibantu_ortu || '-',
-                    Dibantu_Orang_Lain: row.dibantu_orang_lain || '-',
-                    Kondisi_Kertas_Sobek: row.kondisi_kertas || '-',
-                    Ganti_Kertas: row.ganti_kertas || '-',
-                    Posisi_Kertas: row.posisi_kertas || '-',
-                    Alat_Gambar: row.alat_gambar || '-',
-                    Dominasi_Warna: row.dominasi_warna || '-',
-                    Catatan_Temuan_Gambar: row.catatan_gambar || '-',
-                    Catatan_Khusus_Pusat: row.catatan_khusus || '-',
-                    Link_Coretan_Drive: row.file_coretan_url || '-',
-                    Bukti_Transfer_URL: row.bukti_transfer_url || '-',
-                    Hasil_Analisa_URL: row.hasil_analisa_url || '-'
-                }));
-
-                const worksheet = XLSX.utils.json_to_sheet(formattedData);
-                const workbook = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Master Terabaca");
-
-                XLSX.writeFile(workbook, `Rekap_Master_Terabaca_${Date.now()}.xlsx`);
-            } catch (err) {
-                console.error(err);
-                alert("Gagal mengunduh rekap Excel: " + err.message);
+        function logoutAdmin() {
+            if (confirm("Apakah Anda yakin ingin keluar dari Dashboard Portal?")) {
+                localStorage.clear();
+                window.location.href = "/";
             }
+        }
+
+        function refreshData() {
+            loadDataPeserta();
         }
 
         async function loadDataPeserta() {
-            const tbody = document.getElementById('tabelData');
-            const filterTgl = document.getElementById('filterTanggal').value;
+            const tbodyApproval = document.getElementById('tabelDataApproval');
+            const statusMaster = document.getElementById('loadingStatusMaster');
             
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400">Sedang menyinkronkan data...</td></tr>`;
+            tbodyApproval.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400">Sedang menyinkronkan data...</td></tr>`;
+            statusMaster.classList.remove('hidden');
 
-            let query = _supabase.from('data_peserta').select('*').order('created_at', { ascending: false });
+            const [pesertaRes, cabangRes] = await Promise.all([
+                _supabase.from('data_peserta').select('*').order('created_at', { ascending: false }),
+                _supabase.from('data_cabang').select('*').order('created_at', { ascending: true })
+            ]);
 
-            const { data, error } = await query;
+            statusMaster.classList.add('hidden');
 
-            if (error) {
-                console.error(error);
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
+            if (pesertaRes.error) {
+                tbodyApproval.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-red-500">Gagal memuat data: ${pesertaRes.error.message}</td></tr>`;
                 return;
             }
 
-            // Filter manual berdasarkan tanggal sesi jika dipilih
-            let filteredData = data;
+            rawData = pesertaRes.data || [];
+            rawCabang = cabangRes.data || [];
+
+            renderApprovalTable(rawData);
+            renderMasterComponents(rawData);
+            renderCabangControl(rawCabang, rawData);
+        }
+
+        function renderApprovalTable(data) {
+            const tbody = document.getElementById('tabelDataApproval');
+            const filterTgl = document.getElementById('filterTanggal').value;
+            
+            let filtered = data;
             if (filterTgl) {
-                filteredData = data.filter(row => row.created_at && row.created_at.startsWith(filterTgl));
+                filtered = data.filter(row => row.created_at && row.created_at.startsWith(filterTgl));
             }
 
-            if (!filteredData || filteredData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400">Tidak ada data pada sesi tanggal tersebut.</td></tr>`;
+            if (!filtered || filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400">Tidak ada data ditemukan.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = '';
-            filteredData.forEach((row) => {
+            filtered.forEach((row) => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/60 transition";
 
                 const tanggalInput = new Date(row.created_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
 
-                // Penanda Status Bukti Transfer
-                let statusTransferHTML = `<span class="inline-block bg-amber-50 text-amber-700 text-[11px] font-semibold px-2 py-0.5 rounded border border-amber-200 mb-1">⚠️ Belum Ada Bukti Transfer</span>`;
+                let statusTransferHTML = `<span class="inline-block bg-amber-50 text-amber-700 text-[11px] font-semibold px-2 py-0.5 rounded border border-amber-200 mb-1">⚠️ Belum Bukti Bayar</span>`;
                 if (row.bukti_transfer_url) {
-                    statusTransferHTML = `<a href="${row.bukti_transfer_url}" target="_blank" class="inline-block bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-[11px] font-semibold px-2.5 py-0.5 rounded border border-emerald-200 mb-1">✅ Valid (Lihat Transfer)</a>`;
+                    statusTransferHTML = `<a href="${row.bukti_transfer_url}" target="_blank" class="inline-block bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-[11px] font-semibold px-2.5 py-0.5 rounded border border-emerald-200 mb-1"><i class="fas fa-receipt mr-1"></i> Valid (Bukti Transfer)</a>`;
                 }
 
-                // Penanda Lembar Coretan
-                let linkCoretanHTML = '<span class="text-xs text-slate-400">Tidak ada file coretan</span>';
+                let linkCoretanHTML = '<span class="text-xs text-slate-400 block">Tidak ada file coretan</span>';
                 if (row.file_coretan_url) {
-                    const rawUrl = row.file_coretan_url.trim();
-                    if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
-                        linkCoretanHTML = `<a href="${rawUrl}" target="_blank" class="inline-block bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-semibold px-2.5 py-0.5 rounded border border-indigo-200">🔗 Buka Berkas Coretan</a>`;
-                    } else {
-                        const urls = rawUrl.split(', ');
-                        linkCoretanHTML = urls.map((url, idx) => `<a href="${url.trim()}" target="_blank" class="inline-block bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs px-2 py-0.5 rounded mr-1 mb-1 border border-indigo-200">📄 Hal ${idx + 1}</a>`).join('');
-                    }
+                    linkCoretanHTML = `<a href="${row.file_coretan_url.trim()}" target="_blank" class="inline-block bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-semibold px-2.5 py-0.5 rounded border border-indigo-200"><i class="fas fa-file-download mr-1"></i> Unduh Lembar Work</a>`;
                 }
 
-                let analisaHTML = '';
-                if (row.hasil_analisa_url) {
-                    analisaHTML = `
-                        <div class="space-y-1">
-                            <a href="${row.hasil_analisa_url}" target="_blank" class="block bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-semibold px-2.5 py-1 rounded border border-blue-200 text-center">📥 Unduh Analisa</a>
-                            <button onclick="unggahAnalisa(${row.id}, '${row.nama_testee}')" class="text-xs text-slate-500 hover:text-slate-700 underline block text-center w-full">Ganti File</button>
-                        </div>
-                    `;
-                } else {
-                    analisaHTML = `<button onclick="unggahAnalisa(${row.id}, '${row.nama_testee}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm transition w-full">⬆️ Upload Analisa</button>`;
-                }
+                let analisaHTML = row.hasil_analisa_url ? 
+                    `<div class="space-y-1">
+                        <a href="${row.hasil_analisa_url}" target="_blank" class="block bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-semibold px-2.5 py-1 rounded border border-blue-200 text-center"><i class="fas fa-download"></i> Hasil Analisa</a>
+                        <button onclick="unggahAnalisa(${row.id}, '${row.nama_testee}')" class="text-[11px] text-slate-500 hover:text-slate-700 underline block text-center w-full">Ganti File</button>
+                    </div>` :
+                    `<button onclick="unggahAnalisa(${row.id}, '${row.nama_testee}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm transition w-full"><i class="fas fa-upload mr-1"></i> Upload Hasil</button>`;
 
                 tr.innerHTML = `
                     <td class="py-4 px-4 align-top">
-                        <div class="font-semibold text-slate-800">${row.cabang || 'Pusat'} <span class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-600 ml-1">${row.jenis_layanan || 'Personal'}</span></div>
+                        <div class="font-semibold text-slate-800">${row.cabang || 'Pusat'}</div>
                         <div class="text-xs text-slate-400 mt-0.5">${tanggalInput}</div>
                         <div class="text-xs text-slate-500 mt-1">Penginput: ${row.nama_penginput || '-'}</div>
-                        <div class="text-[11px] text-slate-400">${row.whatsapp_penginput || ''}</div>
                     </td>
                     <td class="py-4 px-4 align-top">
-                        <div class="font-bold text-slate-900">${row.nama_testee} <span class="text-xs font-normal text-slate-500">(No: ${row.no_testee || '-'})</span></div>
-                        <div class="text-xs text-slate-600 mt-0.5">Lembaga: ${row.lembaga_institusi || '-'}</div>
-                        <div class="text-xs text-slate-500">Usia: ${row.usia || '-'} | ${row.jenis_kelamin || '-'}</div>
+                        <div class="font-bold text-slate-900">${row.nama_testee || row.nama || '-'}</div>
+                        <div class="text-xs text-slate-600 mt-0.5">Lembaga: ${row.lembaga_institusi || row.nama_lembaga || '-'}</div>
                     </td>
                     <td class="py-4 px-4 align-top">
-                        <div class="text-xs bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded inline-block font-bold mb-1">Paket: ${row.paket_tes || 'Basic'}</div>
-                        <div class="text-xs font-semibold text-slate-700">Status: ${row.jenis_paket_bayar || '-'}</div>
-                        <div class="text-xs text-slate-500 mt-1">Level: ${row.level_pendidikan || '-'}</div>
-                    </td>
-                    <td class="py-4 px-4 align-top text-xs text-slate-600 space-y-0.5">
-                        <div>Bantuan Ortu/Lain: <b>${row.dibantu_ortu || 'tidak'} / ${row.dibantu_orang_lain || 'tidak'}</b></div>
-                        <div>Kertas Sobek/Ganti: <b>${row.kondisi_kertas || 'tidak'} / ${row.ganti_kertas || 'tidak'}</b></div>
-                        <div>Posisi / Alat: <b>${row.posisi_kertas || '-'} / ${row.alat_gambar || '-'}</b></div>
-                        ${row.catatan_gambar ? `<div class="text-slate-500 italic mt-1">Temuan: "${row.catatan_gambar}"</div>` : ''}
+                        <div class="text-xs bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded inline-block font-bold mb-1">Paket: ${row.paket_tes || row.paket || 'Basic'}</div>
+                        <div class="text-xs text-slate-500">Bayar: ${row.jenis_paket_bayar || '-'}</div>
                     </td>
                     <td class="py-4 px-4 align-top">
                         <div>${statusTransferHTML}</div>
@@ -273,6 +459,325 @@
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        function renderMasterComponents(data) {
+            updateStatistics(data);
+            populateCabangDropdown(data);
+            applyMasterFilter();
+        }
+
+        function updateStatistics(data) {
+            document.getElementById('statTotalPeserta').textContent = data.length;
+            
+            const cabangSet = new Set(data.map(i => i.cabang).filter(Boolean));
+            document.getElementById('statTotalCabang').textContent = cabangSet.size;
+
+            const basicParent = data.filter(i => {
+                const p = i.paket_tes || i.paket;
+                return p === 'Basic' || p === 'Parent';
+            }).length;
+            document.getElementById('statBasicParent').textContent = basicParent;
+
+            const talentBrainwave = data.filter(i => {
+                const p = i.paket_tes || i.paket;
+                return p === 'Talent' || p === 'Brainwave';
+            }).length;
+            document.getElementById('statTalentBrainwave').textContent = talentBrainwave;
+        }
+
+        function populateCabangDropdown(data) {
+            const select = document.getElementById('filterCabang');
+            select.innerHTML = '<option value="">Semua Cabang</option>';
+            const cabangList = [...new Set(data.map(i => i.cabang).filter(Boolean))];
+            
+            cabangList.forEach(cab => {
+                const opt = document.createElement('option');
+                opt.value = cab;
+                opt.textContent = cab;
+                select.appendChild(opt);
+            });
+        }
+
+        function applyMasterFilter() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const cabang = document.getElementById('filterCabang').value;
+            const paket = document.getElementById('filterPaket').value;
+
+            const filtered = rawData.filter(item => {
+                const nama = item.nama_testee || item.nama || '';
+                const lembaga = item.lembaga_institusi || item.nama_lembaga || '';
+                const itemPaket = item.paket_tes || item.paket || '';
+
+                const matchSearch = nama.toLowerCase().includes(search) || lembaga.toLowerCase().includes(search);
+                const matchCabang = cabang === "" || item.cabang === cabang;
+                const matchPaket = paket === "" || itemPaket === paket;
+
+                return matchSearch && matchCabang && matchPaket;
+            });
+
+            renderMasterTable(filtered);
+        }
+
+        function renderMasterTable(data) {
+            const tbody = document.getElementById('tableBodyMaster');
+            document.getElementById('countTable').textContent = data.length;
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="30" class="p-6 text-center text-slate-400 italic">Belum ada data pendaftar.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = data.map((item, idx) => {
+                const fileGambar = item.file_coretan_url || item.link_foto;
+
+                return `
+                <tr class="hover:bg-slate-50 transition-colors text-xs whitespace-nowrap">
+                    <td class="p-3 text-center font-medium text-slate-400">${idx + 1}</td>
+                    <td class="p-3 font-semibold text-slate-700">${item.cabang || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.email_cabang || '-'}</td>
+                    <td class="p-3 font-medium text-slate-700">${item.nama_penginput || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.whatsapp_penginput || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.jenis_paket_bayar || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.jenis_layanan || '-'}</td>
+                    <td class="p-3 font-bold text-slate-800">${item.nama_testee || item.nama || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.no_testee || '-'}</td>
+                    <td class="p-3 font-semibold text-indigo-600">${item.paket_tes || item.paket || '-'}</td>
+                    <td class="p-3 text-slate-700">${item.lembaga_institusi || item.nama_lembaga || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.tempat_lahir || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.tanggal_lahir || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.usia_testee || item.usia ? (item.usia_testee || item.usia) + ' thn' : '-'}</td>
+                    <td class="p-3 text-slate-600">${item.tanggal_tes || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.jenis_kelamin || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.level_pendidikan || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.jurusan_sma || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.jurusan_terlintas || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.anak_ke || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.dari_bersaudara || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.bantuan_menggambar || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.kondisi_kertas || item.kertas_sobek || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.ganti_kertas || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.posisi_kertas || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.alat_gambar || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.dominasi_warna || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.catatan_gambar || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.catatan_khusus || '-'}</td>
+                    <td class="p-3 text-center">
+                        ${fileGambar ? `
+                            <a href="${fileGambar.trim()}" target="_blank" class="inline-flex items-center gap-1.5 bg-indigo-900 hover:bg-indigo-800 text-white font-medium px-3 py-1.5 rounded-lg text-xs transition-all shadow-sm">
+                                <i class="fas fa-image"></i>
+                                <span>Lihat Berkas</span>
+                            </a>
+                        ` : `
+                            <span class="text-slate-400 italic text-[11px]">Tanpa Berkas</span>
+                        `}
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+        // LOGIKA BARU: MEMBACA DARI TABEL `data_cabang`
+        function renderCabangControl(listCabang, listPeserta) {
+            const tbody = document.getElementById('tableBodyCabang');
+
+            document.getElementById('statTotalCabangKoneksi').textContent = listCabang.length;
+            document.getElementById('statTotalEntriCabang').textContent = listPeserta.length;
+
+            if (listCabang.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-400 italic">Belum ada cabang terdaftar di tabel data_cabang.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = listCabang.map((cab, idx) => {
+                const countTestee = listPeserta.filter(p => p.cabang === cab.nama_cabang).length;
+                const isAktif = cab.status === 'Aktif';
+
+                return `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3 text-center font-semibold text-slate-400">${idx + 1}</td>
+                        <td class="p-3 font-mono font-bold text-slate-700">${cab.kode_cabang}</td>
+                        <td class="p-3 font-bold text-slate-800">${cab.nama_cabang}</td>
+                        <td class="p-3 font-medium text-slate-700">${cab.penanggung_jawab || '-'}</td>
+                        <td class="p-3 text-slate-600">${cab.whatsapp || '-'}</td>
+                        <td class="p-3 text-center font-bold text-indigo-600">${countTestee} Testee</td>
+                        <td class="p-3 text-center">
+                            <span class="inline-flex items-center gap-1 ${isAktif ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'} font-bold px-2.5 py-0.5 rounded-full text-[10px] border">
+                                <span class="w-1.5 h-1.5 rounded-full ${isAktif ? 'bg-emerald-500' : 'bg-rose-500'}"></span> ${cab.status || 'Aktif'}
+                            </span>
+                        </td>
+                        <td class="p-3 text-center">
+                            <button onclick="toggleStatusCabang(${cab.id}, '${cab.status}')" class="text-[11px] font-semibold text-slate-500 hover:text-indigo-600 underline">
+                                ${isAktif ? 'Nonaktifkan' : 'Aktifkan'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ==========================================
+        // 1. FUNGSI MODAL & SIMPAN CABANG BARU (INPUT MANUAL ADMIN)
+        // ==========================================
+        function toggleModalCabang(show) {
+            const modal = document.getElementById('modalCabang');
+            if (show) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
+
+        async function simpanCabangBaru(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmitCabang');
+            btn.disabled = true;
+            btn.textContent = "Menyimpan...";
+
+            const payload = {
+                kode_cabang: document.getElementById('inputKodeCabang').value.trim(),
+                nama_cabang: document.getElementById('inputNamaCabang').value.trim(),
+                penanggung_jawab: document.getElementById('inputPJ').value.trim(),
+                whatsapp: document.getElementById('inputWA').value.trim(),
+                status: 'Aktif' // Jika diinput manual admin, status langsung Aktif
+            };
+
+            // Pastikan variabel client Supabase Anda konsisten (_supabase)
+            const { error } = await _supabase.from('data_cabang').insert([payload]);
+
+            btn.disabled = false;
+            btn.textContent = "Simpan Cabang";
+
+            if (error) {
+                alert("Gagal menambahkan cabang: " + error.message);
+                return;
+            }
+
+            alert("Cabang baru berhasil ditambahkan!");
+            document.getElementById('formTambahCabang').reset();
+            toggleModalCabang(false);
+    
+            // Refresh data tabel cabang dan peserta
+            loadDataCabang();
+            if (typeof loadDataPeserta === 'function') loadDataPeserta();
+        }
+
+
+        // ==========================================
+        // 2. FUNGSI MUAT & APPROVAL REGISTRASI CABANG MANDIRI
+        // ==========================================
+        async function loadDataCabang() {
+            const tbody = document.getElementById("tableBodyCabang");
+            if (!tbody) return;
+
+            try {
+                const { data, error } = await _supabase
+                    .from('data_cabang')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">Belum ada data cabang.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = data.map(item => {
+                    // Badge Status
+                    let statusBadge = '';
+                    if (item.status === 'Aktif') {
+                        statusBadge = `<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-700">Aktif</span>`;
+                    } else if (item.status === 'Pending') {
+                        statusBadge = `<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-700">Pending</span>`;
+                    } else {
+                        statusBadge = `<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-600">${item.status}</span>`;
+                    }
+
+                    // Tombol Aksi
+                    let actionButtons = '';
+                    if (item.status === 'Pending') {
+                        actionButtons = `
+                            <button onclick="updateStatusCabang('${item.id}', 'Aktif')" 
+                                class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-medium transition shadow-sm">
+                                Setujui
+                            </button>
+                            <button onclick="updateStatusCabang('${item.id}', 'Ditolak')" 
+                                class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded text-xs font-medium transition">
+                                Tolak
+                            </button>
+                        `;
+                    } else if (item.status === 'Aktif') {
+                        actionButtons = `
+                            <button onclick="updateStatusCabang('${item.id}', 'Nonaktif')" 
+                                class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-xs transition">
+                                Nonaktifkan
+                            </button>
+                        `;
+                    } else {
+                        actionButtons = `
+                            <button onclick="updateStatusCabang('${item.id}', 'Aktif')" 
+                                class="px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded text-xs transition">
+                                Aktifkan
+                            </button>
+                        `;
+                    }
+
+                    return `
+                        <tr class="hover:bg-slate-50/80 transition border-b border-slate-100">
+                            <td class="p-4">
+                                <div class="font-bold text-slate-800">${item.kode_cabang || '-'}</div>
+                                <div class="text-xs text-slate-400">${item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-'}</div>
+                            </td>
+                            <td class="p-4">
+                                <div class="font-semibold text-slate-700">${item.nama_cabang}</div>
+                                <div class="text-xs text-slate-500">${item.kota || '-'}</div>
+                            </td>
+                            <td class="p-4 text-slate-700 font-medium">${item.penanggung_jawab || '-'}</td>
+                            <td class="p-4">
+                                <div class="text-xs text-slate-700">${item.whatsapp || item.no_whatsapp || '-'}</div>
+                                <div class="text-xs text-slate-400">${item.email || '-'}</div>
+                            </td>
+                            <td class="p-4">${statusBadge}</td>
+                            <td class="p-4 text-center">
+                                <div class="flex justify-center gap-1.5">${actionButtons}</div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+            } catch (err) {
+                console.error("Gagal memuat cabang:", err);
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-rose-500">Gagal mengambil data. ${err.message}</td></tr>`;
+            }
+        }
+
+        // 3. FUNGSI UPDATE STATUS CABANG (APPROVE / REJECT / NONAKTIF)
+        async function updateStatusCabang(id, statusBaru) {
+            if (!confirm(`Apakah Anda yakin ingin mengubah status cabang ini menjadi "${statusBaru}"?`)) return;
+
+            try {
+                const { error } = await _supabase
+                    .from('data_cabang')
+                    .update({ status: statusBaru })
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                // Refresh data tabel cabang
+                loadDataCabang();
+            } catch (err) {
+                alert("Gagal memperbarui status: " + err.message);
+            }
+        }
+
+        async function toggleStatusCabang(id, statusCurrent) {
+            const nextStatus = statusCurrent === 'Aktif' ? 'Nonaktif' : 'Aktif';
+            if (!confirm(`Ubah status cabang menjadi ${nextStatus}?`)) return;
+
+            const { error } = await _supabase.from('data_cabang').update({ status: nextStatus }).eq('id', id);
+            if (error) {
+                alert("Gagal mengubah status: " + error.message);
+                return;
+            }
+            loadDataPeserta();
         }
 
         async function unggahAnalisa(idData, namaTestee) {
@@ -288,46 +793,35 @@
                 const ext = file.name.split('.').pop();
                 const filePath = `hasil_analisa/${cleanName}_${idData}_${Date.now()}.${ext}`;
 
-                const btn = event.target;
-                const originalText = btn.textContent;
-                btn.textContent = "Mengunggah...";
-                btn.disabled = true;
-
                 try {
-                    const { error: uploadError } = await _supabase.storage
-                        .from('lembar-coretan')
-                        .upload(filePath, file);
-
+                    const { error: uploadError } = await _supabase.storage.from('lembar-coretan').upload(filePath, file);
                     if (uploadError) throw uploadError;
 
-                    const { data: publicURLData } = _supabase.storage
-                        .from('lembar-coretan')
-                        .getPublicUrl(filePath);
-
-                    const analisaUrl = publicURLData.publicUrl;
-
-                    const { error: dbError } = await _supabase
-                        .from('data_peserta')
-                        .update({ hasil_analisa_url: analisaUrl })
-                        .eq('id', idData);
-
+                    const { data: publicURLData } = _supabase.storage.from('lembar-coretan').getPublicUrl(filePath);
+                    const { error: dbError } = await _supabase.from('data_peserta').update({ hasil_analisa_url: publicURLData.publicUrl }).eq('id', idData);
                     if (dbError) throw dbError;
 
-                    alert(`Alhamdulillah! Hasil analisa untuk ${namaTestee} berhasil diunggah.`);
+                    alert(`Hasil analisa untuk ${namaTestee} berhasil diunggah.`);
                     loadDataPeserta();
-
                 } catch (err) {
-                    console.error(err);
-                    alert("Gagal mengunggah hasil analisa: " + err.message);
-                    btn.textContent = originalText;
-                    btn.disabled = false;
+                    alert("Gagal mengunggah: " + err.message);
                 }
             };
-
             input.click();
         }
 
-        loadDataPeserta();
+        function downloadRekapExcel() {
+            if (rawData.length === 0) return alert("Belum ada data untuk diunduh.");
+
+            const worksheet = XLSX.utils.json_to_sheet(rawData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Master TERABACA");
+            XLSX.writeFile(workbook, `Rekap_Pusat_TERABACA_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadDataPeserta();
+        });
     </script>
 </body>
 </html>

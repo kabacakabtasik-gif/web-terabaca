@@ -6,6 +6,8 @@
     <title>TERABACA - Nalungtik Titik Manggih Diri</title>
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- FontAwesome untuk Ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .no-scroll {
             overflow: hidden;
@@ -17,9 +19,134 @@
             background-position: center;
             background-repeat: no-repeat;
         }
+
+        /* Styling Ikon Rahasia di 4 Penjuru */
+        .secret-corners .corner-icon {
+          position: fixed;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          opacity: 0.2; /* Dibuat samar agar menyatu dengan latar */
+          transition: opacity 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #333;
+          z-index: 99;
+        }
+
+        .secret-corners .corner-icon:hover {
+          opacity: 0.6; /* Lebih jelas dikit saat di-hover */
+        }
+
+        .corner-icon.top-left { top: 15px; left: 15px; }
+        .corner-icon.top-right { top: 15px; right: 15px; cursor: pointer; }
+        .corner-icon.bottom-left { bottom: 15px; left: 15px; }
+        .corner-icon.bottom-right { bottom: 15px; right: 15px; }
+
+        /* Modal Box Styling */
+        .secret-modal {
+          display: none;
+          position: fixed;
+          z-index: 999;
+          left: 0; top: 0;
+          width: 100%; height: 100%;
+          background-color: rgba(0, 0, 0, 0.6);
+          backdrop-filter: blur(4px);
+        }
+
+        .secret-modal-content {
+          background-color: #fff;
+          margin: 12% auto;
+          padding: 25px;
+          border-radius: 12px;
+          width: 90%;
+          max-width: 380px;
+          position: relative;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .close-btn {
+          position: absolute;
+          right: 15px; top: 10px;
+          font-size: 24px;
+          cursor: pointer;
+        }
     </style>
 </head>
 <body class="bg-white font-sans text-gray-800 antialiased min-h-screen no-scroll" id="body-layout">
+
+        <!-- 4 Ikon Penjuru (Easter Egg) -->
+        <div class="secret-corners">
+          <!-- Top Left (Dummy) -->
+          <div class="corner-icon top-left"><i class="fas fa-mountain"></i></div>
+  
+          <!-- Top Right (AKTIFF: Tambahkan event.stopPropagation() agar tidak memicu bukaDashboard) -->
+          <div class="corner-icon top-right active-secret" onclick="event.stopPropagation(); openLoginModal();">
+                <i class="fas fa-layer-group"></i>
+          </div>
+  
+          <!-- Bottom Left (Dummy) -->
+          <div class="corner-icon bottom-left"><i class="fas fa-compass"></i></div>
+  
+          <!-- Bottom Right (Dummy) -->
+          <div class="corner-icon bottom-right"><i class="fas fa-shield-alt"></i></div>
+        </div>
+
+    <!-- Pop-up Modal Login Rahasia -->
+    <div id="loginModal" style="display: none; position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.6); z-index: 9999; align-items: center; justify-content: center; padding: 1rem;">
+        <div class="bg-white rounded-2xl shadow-2xl border border-indigo-100 w-full max-w-md overflow-hidden transform transition-all">
+    
+            <!-- Header Brand Portal -->
+            <div class="bg-gradient-to-r from-indigo-900 via-indigo-800 to-violet-800 p-6 text-white text-center relative">
+              <button onclick="closeLoginModal()" type="button" class="absolute top-4 right-4 text-indigo-200 hover:text-white text-lg font-bold transition-colors">
+                <i class="fas fa-times"></i>
+              </button>
+              <div class="w-16 h-16 bg-white rounded-full mx-auto mb-3 p-2 shadow-inner flex items-center justify-center border-2 border-indigo-200">
+                <!-- Logo Terabaca -->
+                <img src="https://ui-avatars.com/api/?name=TERABACA&background=4f46e5&color=fff&bold=true" alt="Terabaca Logo" class="w-full h-full object-contain rounded-full">
+              </div>
+              <h3 class="text-xl font-bold tracking-wide">PORTAL TERABACA</h3>
+              <p class="text-xs text-indigo-200 mt-1">Sistem Otentikasi Akses Internal & Cabang</p>
+            </div>
+
+            <!-- Body Form -->
+            <form id="secretLoginForm" class="p-6 space-y-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Email / Username</label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-400">
+                    <i class="fas fa-envelope"></i>
+                  </span>
+                  <input type="email" id="loginEmail" required placeholder="admin@terabaca.com" 
+                    class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Password</label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-400">
+                    <i class="fas fa-lock"></i>
+                  </span>
+                  <input type="password" id="loginPassword" required placeholder="••••••••" 
+                    class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all">
+                </div>
+            </div>
+
+            <button type="submit" 
+                class="w-full mt-2 bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2.5 px-4 rounded-xl shadow-lg shadow-indigo-700/30 hover:shadow-indigo-700/50 active:scale-[0.98] transition-all flex items-center justify-center space-x-2">
+                <i class="fas fa-sign-in-alt"></i>
+                <span>Masuk Portal Akses</span>
+            </button>
+
+            <div class="text-center pt-2">
+                <span class="text-[11px] text-slate-400">© Terabaca Portal Access • Official System</span>
+            </div>
+            </form>
+
+        </div>
+    </div>
 
     <!-- ================= HALAMAN AWAL (LANDING/SPLASH) ================= -->
     <div id="landing-page" class="flex items-center justify-center min-h-screen w-full bg-terabaca-custom cursor-pointer transition-all duration-500 p-4" onclick="bukaDashboard()">
@@ -30,7 +157,6 @@
             </p>
         </div>
     </div>
-
     <!-- ================= HALAMAN DASHBOARD PRINCIPAL ================= -->
     <div id="dashboard-page" class="hidden opacity-0 transition-opacity duration-700 min-h-screen bg-slate-50">
         
@@ -555,6 +681,24 @@
         window.onload = function() {
             updateAllWhatsAppLinks();
         };
+    
+        
+        // Fungsi Buka & Tutup Modal Login Rahasia (Bisa dipanggil langsung dari HTML)
+        window.openLoginModal = function() {
+            const modal = document.getElementById('loginModal');
+            if (modal) modal.style.display = 'block';
+        };
+
+        window.closeLoginModal = function() {
+            const modal = document.getElementById('loginModal');
+            if (modal) modal.style.display = 'none';
+        };
+
+        
     </script>
+<!-- Panggil Supabase & Script Utama -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Panggil script terpisah di sini -->
+    <script src="login.js"></script>
 </body>
 </html>

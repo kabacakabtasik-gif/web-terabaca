@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pendaftaran Cabang Baru - TERABACA</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4 text-slate-800">
+
+    <div class="max-w-lg w-full bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+        <!-- Header / Banner -->
+        <div class="bg-indigo-600 p-6 text-white text-center">
+            <h1 class="text-2xl font-bold tracking-wide">TERABACA</h1>
+            <p class="text-indigo-100 text-sm mt-1">Formulir Pendaftaran Cabang / Mitra Baru</p>
+        </div>
+
+        <!-- Form Pendaftaran -->
+        <form id="formRegisterCabang" class="p-6 space-y-4">
+            
+            <!-- Alert Pesan Status -->
+            <div id="alertBox" class="hidden p-4 rounded-lg text-sm font-medium"></div>
+
+            <!-- Nama Cabang -->
+            <div>
+                <label for="namaCabang" class="block text-sm font-semibold text-slate-700 mb-1">Nama Cabang / Unit <span class="text-red-500">*</span></label>
+                <input type="text" id="namaCabang" required placeholder="Contoh: TERABACA Depok Margonda"
+                    class="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-slate-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+            </div>
+
+            <!-- Kota / Kabupaten -->
+            <div>
+                <label for="kota" class="block text-sm font-semibold text-slate-700 mb-1">Kota / Kabupaten <span class="text-red-500">*</span></label>
+                <input type="text" id="kota" required placeholder="Contoh: Kota Depok"
+                    class="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-slate-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+            </div>
+
+            <!-- Nama Penanggung Jawab -->
+            <div>
+                <label for="penanggungJawab" class="block text-sm font-semibold text-slate-700 mb-1">Nama Penanggung Jawab / Pengelola <span class="text-red-500">*</span></label>
+                <input type="text" id="penanggungJawab" required placeholder="Nama lengkap Anda"
+                    class="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-slate-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+            </div>
+
+            <!-- No WhatsApp -->
+            <div>
+                <label for="noWhatsapp" class="block text-sm font-semibold text-slate-700 mb-1">No. WhatsApp <span class="text-red-500">*</span></label>
+                <input type="tel" id="noWhatsapp" required placeholder="08xxxxxxxxxx"
+                    class="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-slate-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+            </div>
+
+            <!-- Email -->
+            <div>
+                <label for="email" class="block text-sm font-semibold text-slate-700 mb-1">Alamat Email <span class="text-red-500">*</span></label>
+                <input type="email" id="email" required placeholder="email@contoh.com"
+                    class="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-slate-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+            </div>
+
+            <!-- Alamat Lengkap Cabang -->
+            <div>
+                <label for="alamat" class="block text-sm font-semibold text-slate-700 mb-1">Alamat Lengkap Cabang</label>
+                <textarea id="alamat" rows="3" placeholder="Jl. Margonda Raya No. 123..."
+                    class="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-slate-900 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"></textarea>
+            </div>
+
+            <!-- Tombol Submit -->
+            <div class="pt-2">
+                <button type="submit" id="btnSubmit"
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg flex justify-center items-center gap-2">
+                    <span>Kirim Pendaftaran</span>
+                </button>
+            </div>
+        </form>
+
+        <!-- Footer -->
+        <div class="bg-slate-50 border-t border-slate-100 p-4 text-center text-xs text-slate-500">
+            &copy; TERABACA. Seluruh hak cipta dilindungi.
+        </div>
+    </div>
+
+    <!-- Script Supabase & Logic -->
+    <script>
+        // 1. Inisialisasi Supabase (Ganti URL & ANON KEY sesuai milik Anda jika berbeda)
+        const SUPABASE_URL = "https://zdealocdcweemecirdap.supabase.co"; 
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkZWFsb2NkY3dlZW1lY2lyZGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5ODEyNTgsImV4cCI6MjA5NDU1NzI1OH0._fgstIY2k0s0zv-7_EnupEmFlExFsXRLZP7BAYHd_-c";
+        
+        // Gunakan pendeteksian instance supabase jika sudah ada global client
+        const _supabase = window._supabase || supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // 2. Element Selectors
+        const form = document.getElementById("formRegisterCabang");
+        const alertBox = document.getElementById("alertBox");
+        const btnSubmit = document.getElementById("btnSubmit");
+
+        // Helper untuk Menampilkan Alert
+        function showAlert(message, type = "success") {
+            alertBox.classList.remove("hidden", "bg-emerald-100", "text-emerald-800", "border-emerald-300", "bg-rose-100", "text-rose-800", "border-rose-300");
+            alertBox.classList.add("border");
+            if (type === "success") {
+                alertBox.classList.add("bg-emerald-100", "text-emerald-800", "border-emerald-300");
+            } else {
+                alertBox.classList.add("bg-rose-100", "text-rose-800", "border-rose-300");
+            }
+            alertBox.innerHTML = message;
+        }
+
+        // Helper untuk Membuat Kode Cabang Otomatis (misal: DPK-1234)
+        function generateKodeCabang(kota) {
+            const prefix = kota.substring(0, 3).toUpperCase().replace(/[^A-Z]/g, "CAB");
+            const randomNum = Math.floor(1000 + Math.random() * 9000);
+            return `${prefix}-${randomNum}`;
+        }
+
+        // 3. Event Handling Form Submit
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            // Ubah Status Tombol Loading
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = `
+                <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Mengirim Data...</span>
+            `;
+
+            // Ambil Nilai Form
+            const namaCabang = document.getElementById("namaCabang").value.trim();
+            const kota = document.getElementById("kota").value.trim();
+            const penanggungJawab = document.getElementById("penanggungJawab").value.trim();
+            const noWhatsapp = document.getElementById("noWhatsapp").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const alamat = document.getElementById("alamat").value.trim();
+
+            const kodeCabang = generateKodeCabang(kota);
+
+            // Payload fleksibel menampung nama kolom whatsapp / no_whatsapp
+            const payload = {
+                kode_cabang: kodeCabang,
+                nama_cabang: namaCabang,
+                penanggung_jawab: penanggungJawab,
+                whatsapp: noWhatsapp,
+                email: email,
+                status: 'Pending'
+            };
+
+            // Tambahkan kota & alamat jika kolomnya ada di Supabase
+            if (kota) payload.kota = kota;
+            if (alamat) payload.alamat = alamat;
+
+            try {
+                // Simpan Data ke Tabel Supabase 'data_cabang'
+                const { data, error } = await _supabase
+                    .from('data_cabang')
+                    .insert([payload]);
+
+                if (error) throw error;
+
+                // Tampilkan Pesan Berhasil
+                showAlert(`
+                    <strong>Pendaftaran Berhasil!</strong><br>
+                    Terima kasih <b>${penanggungJawab}</b>. Permohonan pendaftaran untuk <b>${namaCabang}</b> telah diterima dengan Kode Ref: <b>${kodeCabang}</b>.<br><br>
+                    Tim Admin TERABACA Pusat akan menghubungi Anda via WhatsApp/Email untuk verifikasi dan aktivasi.
+                `, "success");
+
+                // Reset Form
+                form.reset();
+
+            } catch (err) {
+                console.error("Error Registrasi Cabang:", err);
+                showAlert(`<strong>Gagal Mendaftar:</strong> ${err.message || 'Terjadi kesalahan sistem, coba lagi.'}`, "error");
+            } finally {
+                // Kembalikan Tombol Submit Ke Awal
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = `<span>Kirim Pendaftaran</span>`;
+            }
+        });
+    </script>
+</body>
+</html>
