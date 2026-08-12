@@ -38,16 +38,16 @@
       </div>
 
       <!-- Bottom Action -->
-      <div class="p-4 border-t border-slate-800 space-y-2">
-        <a href="index.html" class="flex items-center space-x-3 p-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-xl transition-all text-sm">
-          <i class="fas fa-globe"></i>
-          <span>Landing Page</span>
-        </a>
-        <button onclick="logoutAdmin()" class="flex items-center space-x-3 w-full p-3 text-red-400 hover:bg-red-500/10 rounded-xl transition-all text-sm font-medium">
-          <i class="fas fa-sign-out-alt"></i>
-          <span>Keluar Portal</span>
-        </button>
-      </div>
+        <div class="p-4 border-t border-slate-800 space-y-2">
+            <a href="index.html" class="flex items-center space-x-3 p-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-xl transition-all text-sm">
+                <i class="fas fa-globe"></i>
+                <span>Landing Page</span>
+            </a>
+            <button onclick="handleLogout()" class="flex items-center space-x-3 w-full p-3 text-red-400 hover:bg-red-500/10 rounded-xl transition-all text-sm font-medium">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Keluar Portal</span>
+            </button>
+        </div>
     </aside>
 
     <main class="ml-64 flex-1 p-6 bg-slate-100 min-h-screen">
@@ -170,6 +170,8 @@
                                 <option value="">-- Pilih Paket Tes --</option>
                                 <option value="Talent">Talent</option>
                                 <option value="Basic">Basic</option>
+                                <option value="Parent">Parent</option>
+                                <option value="BrainWave">BrainWave</option>
                             </select>
                         </div>
                         <div class="sm:col-span-2">
@@ -204,10 +206,14 @@
                             <label class="block font-medium mb-1">Level Pendidikan *</label>
                             <select id="level_pendidikan" required class="w-full border rounded p-2.5 bg-white">
                                 <option value="">-- Pilih Level --</option>
-                                <option value="SD">SD</option>
-                                <option value="SMP">SMP</option>
+                                <option value="TK A">TK A</option>
+                                <option value="TK B">TK B</option>
+                                <option value="PlayGroup">PlayGroup</option>
+                                <option value="SD Kelas 1-4">SD Kelas 1-4</option>
+                                <option value="SD Kelas 5-6 dan SMP">SD Kelas 5-6 dan SMP</option>
                                 <option value="SMA">SMA</option>
-                                <option value="Umum">Umum</option>
+                                <option value="Umum (Dewasa Belum Menikah)">Umum (Dewasa Belum Menikah)</option>
+                                <option value="Umum (Dewasa Sudah Menikah)">Umum (Dewasa Sudah Menikah)</option>
                             </select>
                         </div>
                         <div>
@@ -273,8 +279,10 @@
                             <select id="alat_gambar" required class="w-full border rounded p-2.5 bg-white">
                                 <option value="">-- Pilih Alat Gambar --</option>
                                 <option value="Pensil Warna">Pensil Warna</option>
-                                <option value="Pensil 2B">Pensil 2B</option>
+                                <option value="Cat Air">Cat Air</option>
                                 <option value="Spidol">Spidol</option>
+                                <option value="Crayon">Crayon</option>
+                                <option value="Cat Minyak">Cat Minyak</option>
                             </select>
                         </div>
                         <div class="sm:col-span-3">
@@ -457,18 +465,18 @@
             `).join('');
         }
 
-        // Download Template Excel Presisi 23 Kolom
+        // Download Template Excel Presisi 24 Kolom
         function downloadTemplateExcel() {
             const templateData = [{
                 "Cabang": currentCabang,
                 "Email Penginput": "penginput@gmail.com",
                 "Nama Penginput": "Nama Penginput",
                 "No WhatsApp Penginput": "08123456789",
-                "Status Paket": "Berbayar",
-                "Jenis Layanan": "Personal",
+                "Status Paket": "Berbayar/Bonus", 
+                "Jenis Layanan": "Personal/Kerjasama Lembaga",
                 "Nama Testee": "Contoh Nama Peserta",
                 "No Testee": "001",
-                "Paket Tes": "Talent",
+                "Paket Tes": "Basic/Parent/Talent/BrainWave",
                 "Lembaga / Institusi": "SD Negeri 1 Contoh",
                 "Tempat Lahir": "Tasikmalaya",
                 "Tanggal Lahir": "2015-05-12",
@@ -476,18 +484,19 @@
                 "Tanggal Tes": "2026-08-11",
                 "Jenis Kelamin": "Laki-laki",
                 "Level Pendidikan": "SD",
-                "Jurusan SMA": "",
+                "Jurusan SMA": "-",
                 "Jurusan Terlintas": "Kedokteran, Psikologi",
                 "Anak Ke": "1",
                 "Dari Bersaudara": "3",
                 "Bantuan Menggambar": "Mandiri",
-                "Kondisi Kertas": "tidak",
-                "Ganti Kertas": "tidak",
-                "Posisi Kertas": "Vertikal",
-                "Alat Gambar": "Pensil Warna",
+                "Kondisi Kertas": "Ya/tidak",
+                "Ganti Kertas": "Ya/tidak",
+                "Posisi Kertas": "Vertikal/Horizontal",
+                "Alat Gambar": "Pensil Warna/Crayon/Spidol/Cat Air/Cat Minyak",
                 "Dominasi Warna": "Biru / Hijau",
                 "Catatan Gambar": "Anak tampak antusias.",
                 "Catatan Khusus": "Mohon segera diproses",
+                "Link Bukti Transfer": "https://drive.google.com/file/d/contoh_link",
                 "Link Coretan Drive": "https://drive.google.com/file/d/contoh_link"
             }];
 
@@ -665,10 +674,25 @@
             }
         });
 
-        // Logout Session
-        function logout() {
-            sessionStorage.removeItem('user_session');
-            window.location.href = 'index.html';
+        // Logout Session (Sesuaikan nama fungsi menjadi logoutAdmin)
+        async function logoutAdmin() {
+            try {
+            // 1. Logout dari Supabase jika menggunakan Auth
+            if (typeof supabaseClient !== 'undefined') {
+              await supabaseClient.auth.signOut();
+            } else if (typeof supabase !== 'undefined') {
+              await supabase.auth.signOut();
+            }
+          } catch (err) {
+            console.log('Error signOut:', err);
+          }
+
+          // 2. Hapus session browser
+          sessionStorage.removeItem('user_session');
+          localStorage.clear();
+
+          // 3. Pindah ke Landing Page
+          window.location.href = 'index.html';
         }
     </script>
 </body>
