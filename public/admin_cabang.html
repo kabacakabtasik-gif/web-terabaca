@@ -457,7 +457,7 @@
         // Fetch Data Peserta Spesifik Cabang
         async function loadPesertaCabang() {
             const tbody = document.getElementById('tableBodyPeserta');
-            tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Memuat data...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Memuat data...</td></tr>';
 
             const { data, error } = await _supabase
                 .from('data_peserta')
@@ -466,16 +466,17 @@
                 .order('created_at', { ascending: false });
 
             if (error || !data || data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Belum ada data peserta yang dikirim.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Belum ada data peserta yang dikirim.</td></tr>';
                 return;
             }
 
             tbody.innerHTML = data.map(item => {
-                // Ambil URL file hasil tes dari Pusat (mendukung nama field file_hasil_url atau hasil_tes_url)
-                const hasilUrl = item.file_hasil_url || item.hasil_tes_url || item.file_hasil || '';
-
-                return `
+                // 1. Ambil URL file hasil tes (LOGIKA DI SINI, DI LUAR STRING HTML)
                 const hasilUrl = item.hasil_analisa_url || item.file_hasil_url || item.hasil_tes_url || item.file_hasil || '';
+
+                // 2. Kembalikan struktur HTML baris tabel
+                return `
+                <tr class="hover:bg-slate-50 transition border-b">
                     <td class="p-3 font-semibold text-slate-800">${item.nama_testee || '-'}</td>
                     <td class="p-3">${item.paket_tes || '-'}</td>
                     <td class="p-3">${item.tanggal_tes || '-'}</td>
@@ -483,7 +484,7 @@
                     <td class="p-3 text-center">
                         ${item.file_coretan_url ? `<a href="${item.file_coretan_url.split(',')[0]}" target="_blank" class="text-emerald-600 font-medium hover:underline">Lihat File</a>` : '<span class="text-slate-400">-</span>'}
                     </td>
-                    <!-- KOLOM BARU: HASIL TES DARI PUSAT -->
+                    <!-- KOLOM HASIL TES DARI PUSAT -->
                     <td class="p-3 text-center">
                         ${hasilUrl ? `
                             <a href="${hasilUrl}" target="_blank" class="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 font-semibold text-xs px-2.5 py-1 rounded-md border border-emerald-300 transition">
