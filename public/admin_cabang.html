@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,58 +17,67 @@
     <link rel="icon" type="image/png" href="/logo-terabaca.png">
     <link rel="apple-touch-icon" href="/logo-terabaca.png">
 </head>
+
 <body class="bg-slate-100 min-h-screen text-slate-800 flex">
 
 
     <!-- 1. SIDEBAR NAVIGASI CABANG -->
-    <aside id="sidebar" class="w-64 bg-slate-900 text-white flex flex-col justify-between h-screen fixed left-0 top-0 z-50 border-r border-slate-800 transform -translate-x-full md:translate-x-0 transition-transform duration-300">
-      <div>
-        <!-- Brand Info -->
-        <div class="p-5 border-b border-slate-800 flex justify-between items-center">
-            <div>
-                <h1 class="font-bold text-lg text-emerald-400 tracking-wider">TERABACA</h1>
-                <p class="text-xs text-slate-400 mt-1" id="userBranchInfo">Memuat data cabang...</p>
+    <aside id="sidebar"
+        class="w-64 bg-slate-900 text-white flex flex-col justify-between h-screen fixed left-0 top-0 z-50 border-r border-slate-800 transform -translate-x-full md:translate-x-0 transition-transform duration-300">
+        <div>
+            <!-- Brand Info -->
+            <div class="p-5 border-b border-slate-800 flex justify-between items-center">
+                <div>
+                    <h1 class="font-bold text-lg text-emerald-400 tracking-wider">TERABACA</h1>
+                    <p class="text-xs text-slate-400 mt-1" id="userBranchInfo">Memuat data cabang...</p>
+                </div>
+                <!-- Tombol Tutup X khusus di HP -->
+                <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white p-1">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
             </div>
-            <!-- Tombol Tutup X khusus di HP -->
-            <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white p-1">
-                <i class="fas fa-times text-lg"></i>
-            </button>
+
+            <!-- Navigation Menu -->
+            <nav class="p-4 space-y-2">
+                <!-- Menu 1: Dashboard Cabang -->
+                <a href="#"
+                    class="flex items-center space-x-3 p-3 rounded-xl bg-emerald-600/20 text-emerald-300 font-medium transition-all">
+                    <i class="fas fa-database text-emerald-400"></i>
+                    <span>Data Murid Cabang</span>
+                </a>
+
+                <!-- Menu 2: Pembayaran (Midtrans & WA) -->
+                <a href="bayar.html"
+                    class="flex items-center space-x-3 p-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all">
+                    <i class="fas fa-wallet text-indigo-400"></i>
+                    <span>Pembayaran</span>
+                </a>
+            </nav>
         </div>
 
-        <!-- Navigation Menu -->
-        <nav class="p-4 space-y-2">
-            <!-- Menu 1: Dashboard Cabang -->
-            <a href="#" class="flex items-center space-x-3 p-3 rounded-xl bg-emerald-600/20 text-emerald-300 font-medium transition-all">
-                <i class="fas fa-database text-emerald-400"></i>
-                <span>Data Murid Cabang</span>
-            </a>
-
-          <!-- Menu 2: Pembayaran (Midtrans & WA) -->
-          <a href="bayar.html" class="flex items-center space-x-3 p-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all">
-            <i class="fas fa-wallet text-indigo-400"></i>
-            <span>Pembayaran</span>
-          </a>
-        </nav>
-      </div>
-
-      <!-- Bottom Action -->
+        <!-- Bottom Action -->
         <div class="p-4 border-t border-slate-800 space-y-2">
-            <a href="index.html" class="flex items-center space-x-3 p-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-xl transition-all text-sm">
+            <a href="index.html"
+                class="flex items-center space-x-3 p-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-xl transition-all text-sm">
                 <i class="fas fa-globe"></i>
                 <span>Landing Page</span>
             </a>
-            <button onclick="logoutAdmin()" class="flex items-center space-x-3 w-full p-3 text-red-400 hover:bg-red-500/10 rounded-xl transition-all text-sm font-medium">
+            <button onclick="logoutAdmin()"
+                class="flex items-center space-x-3 w-full p-3 text-red-400 hover:bg-red-500/10 rounded-xl transition-all text-sm font-medium">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Keluar</span>
             </button>
         </div>
     </aside>
     <!-- Backdrop Gelap di Belakang Sidebar (Muncul cuma saat sidebar kebuka di HP) -->
-    <div id="sidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden md:hidden"></div>
+    <div id="sidebarBackdrop" onclick="toggleSidebar()"
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden md:hidden"></div>
 
     <main class="md:ml-64 flex-1 p-4 md:p-6 bg-slate-100 min-h-screen">
-        <header class="bg-white border border-slate-200 p-3.5 rounded-xl flex items-center justify-between mb-6 shadow-sm">
-            <button onclick="toggleSidebar()" class="md:hidden text-slate-600 hover:text-slate-900 p-2 rounded-lg bg-slate-100">
+        <header
+            class="bg-white border border-slate-200 p-3.5 rounded-xl flex items-center justify-between mb-6 shadow-sm">
+            <button onclick="toggleSidebar()"
+                class="md:hidden text-slate-600 hover:text-slate-900 p-2 rounded-lg bg-slate-100">
                 <i class="fas fa-bars text-xl"></i>
             </button>
             <div class="text-sm font-semibold text-slate-700">
@@ -75,10 +85,12 @@
             </div>
         </header>
         <div class="flex gap-2 mb-6 bg-slate-200 p-1.5 rounded-xl max-w-md">
-            <button id="btnTabMonitoring" onclick="switchMainTab('monitoring')" class="flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-emerald-800 shadow transition">
+            <button id="btnTabMonitoring" onclick="switchMainTab('monitoring')"
+                class="flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-emerald-800 shadow transition">
                 📊 Data Peserta
             </button>
-            <button id="btnTabUpload" onclick="switchMainTab('upload')" class="flex-1 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition">
+            <button id="btnTabUpload" onclick="switchMainTab('upload')"
+                class="flex-1 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition">
                 📝 Form Input / Upload
             </button>
         </div>
@@ -87,22 +99,27 @@
         <div id="tabMonitoring" class="block space-y-4">
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center">
                 <h2 class="font-semibold text-slate-700">Daftar Peserta Cabang Ini</h2>
-                <button onclick="loadPesertaCabang()" class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded border text-slate-600">🔄 Refresh Data</button>
+                <button onclick="loadPesertaCabang()"
+                    class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded border text-slate-600">🔄 Refresh
+                    Data</button>
             </div>
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
                 <table class="w-full text-left text-xs border-collapse min-w-[500px] whitespace-nowrap">
                     <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase font-semibold">
                         <tr>
                             <th class="p-3">Nama Testee</th>
+                            <th class="p-3">No. Testee</th>
                             <th class="p-3">Paket</th>
                             <th class="p-3">Tgl Tes</th>
                             <th class="p-3">Penginput</th>
                             <th class="p-3 text-center">Berkas</th>
-                            <th class="p-3 text-center">Hasil Tes</th> <!-- 👈 Kolom Baru Tambahan -->
+                            <th class="p-3 text-center">Hasil Tes</th>
                         </tr>
                     </thead>
                     <tbody id="tableBodyPeserta" class="divide-y divide-slate-100">
-                        <tr><td colspan="6" class="p-4 text-center text-slate-400">Memuat data...</td></tr> <!-- 👈 Ubah colspan dari 5 ke 6 -->
+                        <tr>
+                            <td colspan="6" class="p-4 text-center text-slate-400">Memuat data...</td>
+                        </tr> <!-- 👈 Ubah colspan dari 5 ke 6 -->
                     </tbody>
                 </table>
             </div>
@@ -115,11 +132,16 @@
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
                 <div>
                     <h2 class="font-bold text-slate-800 text-lg">Form Pengiriman Berkas & Data Tes</h2>
-                    <p class="text-xs text-slate-500">Pilih metode pengiriman: Input Satuan atau Upload Massal via Excel.</p>
+                    <p class="text-xs text-slate-500">Pilih metode pengiriman: Input Satuan atau Upload Massal via
+                        Excel.</p>
                 </div>
                 <div class="bg-slate-100 p-1 rounded-lg flex gap-1">
-                    <button id="btnModeSatuan" onclick="switchMode('satuan')" class="px-4 py-2 rounded-lg bg-white text-emerald-700 shadow-sm transition font-medium text-xs">Input Satuan</button>
-                    <button id="btnModeExcel" onclick="switchMode('excel')" class="px-4 py-2 rounded-lg text-slate-600 transition font-medium text-xs">Upload Excel (Massal)</button>
+                    <button id="btnModeSatuan" onclick="switchMode('satuan')"
+                        class="px-4 py-2 rounded-lg bg-white text-emerald-700 shadow-sm transition font-medium text-xs">Input
+                        Satuan</button>
+                    <button id="btnModeExcel" onclick="switchMode('excel')"
+                        class="px-4 py-2 rounded-lg text-slate-600 transition font-medium text-xs">Upload Excel
+                        (Massal)</button>
                 </div>
             </div>
 
@@ -131,19 +153,27 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                         <div>
                             <label class="block font-medium mb-1">Email Cabang / Penginput *</label>
-                            <input type="email" id="email_cabang" required class="w-full border rounded p-2.5 focus:ring-1 focus:ring-emerald-500 outline-none" placeholder="contoh@gmail.com">
+                            <input type="email" id="email_cabang" required
+                                class="w-full border rounded p-2.5 focus:ring-1 focus:ring-emerald-500 outline-none"
+                                placeholder="contoh@gmail.com">
                         </div>
                         <div>
                             <label class="block font-medium mb-1">Nama Penginput *</label>
-                            <input type="text" id="nama_penginput" required class="w-full border rounded p-2.5 focus:ring-1 focus:ring-emerald-500 outline-none" placeholder="Nama Anda">
+                            <input type="text" id="nama_penginput" required
+                                class="w-full border rounded p-2.5 focus:ring-1 focus:ring-emerald-500 outline-none"
+                                placeholder="Nama Anda">
                         </div>
                         <div>
                             <label class="block font-medium mb-1">No WhatsApp Penginput *</label>
-                            <input type="text" id="whatsapp_penginput" required class="w-full border rounded p-2.5 focus:ring-1 focus:ring-emerald-500 outline-none" placeholder="08xxxxxxxxxx">
+                            <input type="text" id="whatsapp_penginput" required
+                                class="w-full border rounded p-2.5 focus:ring-1 focus:ring-emerald-500 outline-none"
+                                placeholder="08xxxxxxxxxx">
                         </div>
                         <div>
                             <label class="block font-medium mb-1">Cabang / Wilayah *</label>
-                            <input type="text" id="cabang" readonly class="w-full border rounded p-2.5 bg-slate-100 text-slate-500 font-semibold" placeholder="Otomatis terisi">
+                            <input type="text" id="cabang" readonly
+                                class="w-full border rounded p-2.5 bg-slate-100 text-slate-500 font-semibold"
+                                placeholder="Otomatis terisi">
                         </div>
                         <div>
                             <label class="block font-medium mb-1">Paket Berbayar / Bonus *</label>
@@ -188,7 +218,8 @@
                         </div>
                         <div class="sm:col-span-2">
                             <label class="block font-medium mb-1">Nama Lembaga / Institusi / Komunitas *</label>
-                            <input type="text" id="lembaga_institusi" required class="w-full border rounded p-2.5" placeholder="Contoh: SD Negeri 1 / Umum">
+                            <input type="text" id="lembaga_institusi" required class="w-full border rounded p-2.5"
+                                placeholder="Contoh: SD Negeri 1 / Umum">
                         </div>
                         <div>
                             <label class="block font-medium mb-1">Tempat Lahir *</label>
@@ -200,7 +231,8 @@
                         </div>
                         <div>
                             <label class="block font-medium mb-1">Usia *</label>
-                            <input type="text" id="usia" required class="w-full border rounded p-2.5" placeholder="Contoh: 11 Tahun">
+                            <input type="text" id="usia" required class="w-full border rounded p-2.5"
+                                placeholder="Contoh: 11 Tahun">
                         </div>
                         <div>
                             <label class="block font-medium mb-1">Tanggal Tes *</label>
@@ -230,11 +262,13 @@
                         </div>
                         <div>
                             <label class="block font-medium mb-1">Jurusan (Khusus SMA/SLTA)</label>
-                            <input type="text" id="jurusan_sma" class="w-full border rounded p-2.5" placeholder="IPA/IPS/Bahasa">
+                            <input type="text" id="jurusan_sma" class="w-full border rounded p-2.5"
+                                placeholder="IPA/IPS/Bahasa">
                         </div>
                         <div>
                             <label class="block font-medium mb-1">Jurusan Pilihan / Terlintas</label>
-                            <input type="text" id="jurusan_terlintas" class="w-full border rounded p-2.5" placeholder="Kedokteran, Psikologi, dll">
+                            <input type="text" id="jurusan_terlintas" class="w-full border rounded p-2.5"
+                                placeholder="Kedokteran, Psikologi, dll">
                         </div>
                         <div>
                             <label class="block font-medium mb-1">Anak Ke- *</label>
@@ -299,36 +333,45 @@
                         </div>
                         <div class="sm:col-span-3">
                             <label class="block font-medium mb-1">Dominasi Warna *</label>
-                            <input type="text" id="dominasi_warna" required class="w-full border rounded p-2.5" placeholder="Contoh: Merah / Biru / Terang">
+                            <input type="text" id="dominasi_warna" required class="w-full border rounded p-2.5"
+                                placeholder="Contoh: Merah / Biru / Terang">
                         </div>
                         <div class="sm:col-span-3">
                             <label class="block font-medium mb-1">Catatan Temuan Khusus</label>
-                            <textarea id="catatan_gambar" rows="2" class="w-full border rounded p-2.5" placeholder="Tuliskan temuan khusus saat testee menggambar..."></textarea>
+                            <textarea id="catatan_gambar" rows="2" class="w-full border rounded p-2.5"
+                                placeholder="Tuliskan temuan khusus saat testee menggambar..."></textarea>
                         </div>
                     </div>
                 </div>
 
                 <!-- Section 4: Unggah Berkas -->
                 <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-200 space-y-4">
-                    <h3 class="font-semibold text-sm text-emerald-800">4. UNGGAH BERKAS (BUKTI TRANSFER & LEMBAR CORETAN)</h3>
+                    <h3 class="font-semibold text-sm text-emerald-800">4. UNGGAH BERKAS (BUKTI TRANSFER & LEMBAR
+                        CORETAN)</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                         <div>
-                            <label class="block font-medium text-emerald-900 mb-1">Upload Bukti Transfer (Opsional)</label>
-                            <input type="file" id="buktiTransferInput" accept="image/*,.pdf" class="w-full text-slate-600 border bg-white rounded p-1.5">
+                            <label class="block font-medium text-emerald-900 mb-1">Upload Bukti Transfer
+                                (Opsional)</label>
+                            <input type="file" id="buktiTransferInput" accept="image/*,.pdf"
+                                class="w-full text-slate-600 border bg-white rounded p-1.5">
                         </div>
                         <div>
-                            <label class="block font-medium text-emerald-900 mb-1">Upload Lembar Coretan (Bisa Banyak File) *</label>
-                            <input type="file" id="fileCoretanInput" multiple accept="image/*,.pdf" required class="w-full text-slate-600 border bg-white rounded p-1.5">
+                            <label class="block font-medium text-emerald-900 mb-1">Upload Lembar Coretan (Bisa Banyak
+                                File) *</label>
+                            <input type="file" id="fileCoretanInput" multiple accept="image/*,.pdf" required
+                                class="w-full text-slate-600 border bg-white rounded p-1.5">
                         </div>
                     </div>
                 </div>
 
                 <div class="text-xs">
                     <label class="block font-medium mb-1">Catatan Khusus untuk Pusat</label>
-                    <input type="text" id="catatan_khusus" class="w-full border rounded p-2.5" placeholder="Opsional...">
+                    <input type="text" id="catatan_khusus" class="w-full border rounded p-2.5"
+                        placeholder="Opsional...">
                 </div>
 
-                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-lg shadow-sm transition">
+                <button type="submit"
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-lg shadow-sm transition">
                     Kirim Seluruh Data & Berkas ke Pusat
                 </button>
             </form>
@@ -337,15 +380,19 @@
             <div id="sectionExcel" class="hidden bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
                 <div class="border-b pb-4">
                     <h3 class="font-bold text-slate-800 text-base">Upload Excel Massal (23 Kolom)</h3>
-                    <p class="text-xs text-slate-500 mt-1">Gunakan fitur ini untuk mengirimkan banyak data testee sekaligus menggunakan template standar.</p>
+                    <p class="text-xs text-slate-500 mt-1">Gunakan fitur ini untuk mengirimkan banyak data testee
+                        sekaligus menggunakan template standar.</p>
                 </div>
 
-                <div class="flex items-center justify-between bg-indigo-50 border border-indigo-200 p-4 rounded-xl text-xs">
+                <div
+                    class="flex items-center justify-between bg-indigo-50 border border-indigo-200 p-4 rounded-xl text-xs">
                     <div>
                         <p class="font-semibold text-indigo-900">Belum punya template format Excel terbaru?</p>
-                        <p class="text-indigo-700">Unduh template presisi 23 kolom untuk menghindari kesalahan upload.</p>
+                        <p class="text-indigo-700">Unduh template presisi 23 kolom untuk menghindari kesalahan upload.
+                        </p>
                     </div>
-                    <button onclick="downloadTemplateExcel()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg transition">
+                    <button onclick="downloadTemplateExcel()"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg transition">
                         📥 Download Template Excel
                     </button>
                 </div>
@@ -354,9 +401,11 @@
                     <input type="hidden" id="excel_cabang">
                     <div>
                         <label class="block font-medium mb-1 text-slate-700">Pilih File Excel (.xlsx / .xls)</label>
-                        <input type="file" id="excelFileInput" accept=".xlsx, .xls" required class="w-full border p-2 rounded bg-slate-50">
+                        <input type="file" id="excelFileInput" accept=".xlsx, .xls" required
+                            class="w-full border p-2 rounded bg-slate-50">
                     </div>
-                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow-sm transition">
+                    <button type="submit"
+                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow-sm transition">
                         Proses & Kirim Semua Data Excel ke Pusat
                     </button>
                 </form>
@@ -364,120 +413,124 @@
 
         </div>
 
-    </div>
+        </div>
 
-    <!-- SCRIPT UTAMA INTEGRASI -->
-    <script>
-        const SUPABASE_URL = 'https://zdealocdcweemecirdap.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkZWFsb2NkY3dlZW1lY2lyZGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5ODEyNTgsImV4cCI6MjA5NDU1NzI1OH0._fgstIY2k0s0zv-7_EnupEmFlExFsXRLZP7BAYHd_-c';
-        
-        const { createClient } = supabase;
-        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        <!-- SCRIPT UTAMA INTEGRASI -->
+        <script>
+            const SUPABASE_URL = 'https://zdealocdcweemecirdap.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkZWFsb2NkY3dlZW1lY2lyZGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5ODEyNTgsImV4cCI6MjA5NDU1NzI1OH0._fgstIY2k0s0zv-7_EnupEmFlExFsXRLZP7BAYHd_-c';
 
-        let currentCabang = '';
+            const { createClient } = supabase;
+            const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Autentikasi Pengguna Cabang (Mendukung Berbagai Format Kunci Storage)
-        window.addEventListener('DOMContentLoaded', async () => {
-            const rawSession = sessionStorage.getItem('user_session') || localStorage.getItem('user_session');
-            const userSession = rawSession ? JSON.parse(rawSession) : null;
+            let currentCabang = '';
 
-            if (!userSession) {
-                alert("Sesi tidak ditemukan, silakan login terlebih dahulu.");
-                window.location.href = 'index.html';
-                return;
+            // Autentikasi Pengguna Cabang (Mendukung Berbagai Format Kunci Storage)
+            window.addEventListener('DOMContentLoaded', async () => {
+                const rawSession = sessionStorage.getItem('user_session') || localStorage.getItem('user_session');
+                const userSession = rawSession ? JSON.parse(rawSession) : null;
+
+                if (!userSession) {
+                    alert("Sesi tidak ditemukan, silakan login terlebih dahulu.");
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                // PERBAIKAN DI SINI: Jika cabang tidak terdefinisi atau cuma bernilai 'Cabang', tentukan default-nya
+                let fixCabang = userSession.cabang;
+                if (!fixCabang || fixCabang === 'Cabang') {
+                    fixCabang = 'Kab. Tasikmalaya'; // <-- Samakan dengan nama cabang presisi di database
+                }
+
+                currentCabang = fixCabang;
+
+                // Tampilkan informasi user di header sidebar
+                const userBranchElem = document.getElementById('userBranchInfo');
+                if (userBranchElem) {
+                    const adminName = userSession.penanggung_jawab || userSession.nama || userSession.email || 'Admin';
+                    userBranchElem.textContent = `Cabang: ${currentCabang} | Admin: ${adminName}`;
+                    userBranchElem.setAttribute('onclick', 'openProfileModal()');
+                    userBranchElem.title = "Klik untuk Edit Profil & Password Cabang";
+                }
+
+                // Set otomatis nilai input hidden/dropdown cabang
+                if (document.getElementById('cabang')) document.getElementById('cabang').value = currentCabang;
+                if (document.getElementById('excel_cabang')) document.getElementById('excel_cabang').value = currentCabang;
+
+                // Panggil ulang muat data peserta dengan cabang yang sudah benar
+                if (typeof loadPesertaCabang === 'function') {
+                    loadPesertaCabang();
+                }
+            });
+
+            // Tab Navigation
+            function switchMainTab(tab) {
+                const tabMon = document.getElementById('tabMonitoring');
+                const tabUp = document.getElementById('tabUpload');
+                const btnMon = document.getElementById('btnTabMonitoring');
+                const btnUp = document.getElementById('btnTabUpload');
+
+                if (tab === 'monitoring') {
+                    tabMon.classList.remove('hidden');
+                    tabUp.classList.add('hidden');
+                    btnMon.className = "flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-emerald-800 shadow transition";
+                    btnUp.className = "flex-1 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition";
+                } else {
+                    tabMon.classList.add('hidden');
+                    tabUp.classList.remove('hidden');
+                    btnUp.className = "flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-emerald-800 shadow transition";
+                    btnMon.className = "flex-1 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition";
+                }
             }
 
-            // PERBAIKAN DI SINI: Jika cabang tidak terdefinisi atau cuma bernilai 'Cabang', tentukan default-nya
-            let fixCabang = userSession.cabang;
-            if (!fixCabang || fixCabang === 'Cabang') {
-                fixCabang = 'Kab. Tasikmalaya'; // <-- Samakan dengan nama cabang presisi di database
-            }
-            
-            currentCabang = fixCabang;
+            // Sub-Tab Mode Switcher (Satuan vs Excel)
+            function switchMode(mode) {
+                const formSatuan = document.getElementById('uploadForm');
+                const sectionExcel = document.getElementById('sectionExcel');
+                const btnSatuan = document.getElementById('btnModeSatuan');
+                const btnExcel = document.getElementById('btnModeExcel');
 
-            // Tampilkan informasi user di header sidebar
-            const userBranchElem = document.getElementById('userBranchInfo');
-            if (userBranchElem) {
-                const adminName = userSession.penanggung_jawab || userSession.nama || userSession.email || 'Admin';
-                userBranchElem.textContent = `Cabang: ${currentCabang} | Admin: ${adminName}`;
-                userBranchElem.setAttribute('onclick', 'openProfileModal()');
-                userBranchElem.title = "Klik untuk Edit Profil & Password Cabang";
-            }
-
-            // Set otomatis nilai input hidden/dropdown cabang
-            if (document.getElementById('cabang')) document.getElementById('cabang').value = currentCabang;
-            if (document.getElementById('excel_cabang')) document.getElementById('excel_cabang').value = currentCabang;
-
-            // Panggil ulang muat data peserta dengan cabang yang sudah benar
-            if (typeof loadPesertaCabang === 'function') {
-                loadPesertaCabang();
-            }
-        });
-
-        // Tab Navigation
-        function switchMainTab(tab) {
-            const tabMon = document.getElementById('tabMonitoring');
-            const tabUp = document.getElementById('tabUpload');
-            const btnMon = document.getElementById('btnTabMonitoring');
-            const btnUp = document.getElementById('btnTabUpload');
-
-            if (tab === 'monitoring') {
-                tabMon.classList.remove('hidden');
-                tabUp.classList.add('hidden');
-                btnMon.className = "flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-emerald-800 shadow transition";
-                btnUp.className = "flex-1 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition";
-            } else {
-                tabMon.classList.add('hidden');
-                tabUp.classList.remove('hidden');
-                btnUp.className = "flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-emerald-800 shadow transition";
-                btnMon.className = "flex-1 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition";
-            }
-        }
-
-        // Sub-Tab Mode Switcher (Satuan vs Excel)
-        function switchMode(mode) {
-            const formSatuan = document.getElementById('uploadForm');
-            const sectionExcel = document.getElementById('sectionExcel');
-            const btnSatuan = document.getElementById('btnModeSatuan');
-            const btnExcel = document.getElementById('btnModeExcel');
-
-            if (mode === 'satuan') {
-                formSatuan.classList.remove('hidden');
-                sectionExcel.classList.add('hidden');
-                btnSatuan.className = "px-4 py-2 rounded-lg bg-white text-emerald-700 shadow-sm transition font-medium text-xs";
-                btnExcel.className = "px-4 py-2 rounded-lg text-slate-600 transition font-medium text-xs";
-            } else {
-                formSatuan.classList.add('hidden');
-                sectionExcel.classList.remove('hidden');
-                btnExcel.className = "px-4 py-2 rounded-lg bg-white text-indigo-700 shadow-sm transition font-medium text-xs";
-                btnSatuan.className = "px-4 py-2 rounded-lg text-slate-600 transition font-medium text-xs";
-            }
-        }
-
-        // Fetch Data Peserta Spesifik Cabang
-        async function loadPesertaCabang() {
-            const tbody = document.getElementById('tableBodyPeserta');
-            tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Memuat data...</td></tr>';
-
-            const { data, error } = await _supabase
-                .from('data_peserta')
-                .select('*')
-                .eq('cabang', currentCabang)
-                .order('created_at', { ascending: false });
-
-            if (error || !data || data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Belum ada data peserta yang dikirim.</td></tr>';
-                return;
+                if (mode === 'satuan') {
+                    formSatuan.classList.remove('hidden');
+                    sectionExcel.classList.add('hidden');
+                    btnSatuan.className = "px-4 py-2 rounded-lg bg-white text-emerald-700 shadow-sm transition font-medium text-xs";
+                    btnExcel.className = "px-4 py-2 rounded-lg text-slate-600 transition font-medium text-xs";
+                } else {
+                    formSatuan.classList.add('hidden');
+                    sectionExcel.classList.remove('hidden');
+                    btnExcel.className = "px-4 py-2 rounded-lg bg-white text-indigo-700 shadow-sm transition font-medium text-xs";
+                    btnSatuan.className = "px-4 py-2 rounded-lg text-slate-600 transition font-medium text-xs";
+                }
             }
 
-            tbody.innerHTML = data.map(item => {
-                // 1. Ambil URL file hasil tes (LOGIKA DI SINI, DI LUAR STRING HTML)
-                const hasilUrl = item.hasil_analisa_url || item.file_hasil_url || item.hasil_tes_url || item.file_hasil || '';
+            // Fetch Data Peserta Spesifik Cabang
+            async function loadPesertaCabang() {
+                const tbody = document.getElementById('tableBodyPeserta');
+                tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Memuat data...</td></tr>';
 
-                // 2. Kembalikan struktur HTML baris tabel
-                return `
+                const { data, error } = await _supabase
+                    .from('data_peserta')
+                    .select('*')
+                    .eq('cabang', currentCabang)
+                    .order('created_at', { ascending: false });
+
+                if (error || !data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Belum ada data peserta yang dikirim.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.map(item => {
+                    // 1. Ambil URL file hasil tes (LOGIKA DI SINI, DI LUAR STRING HTML)
+                    const hasilUrl = item.hasil_analisa_url || item.file_hasil_url || item.hasil_tes_url || item.file_hasil || '';
+
+                    // 2. Kembalikan struktur HTML baris tabel
+                    return `
                 <tr class="hover:bg-slate-50 transition border-b">
                     <td class="p-3 font-semibold text-slate-800">${item.nama_testee || '-'}</td>
+                    
+                    <!-- KOLOM BARU: NO TESTEE -->
+                    <td class="p-3 font-mono text-xs font-bold text-indigo-600">${item.no_testee || '-'}</td>
+                    
                     <td class="p-3">${item.paket_tes || '-'}</td>
                     <td class="p-3">${item.tanggal_tes || '-'}</td>
                     <td class="p-3">${item.nama_penginput || '-'}</td>
@@ -494,510 +547,527 @@
                     </td>
                 </tr>
                 `;
-            }).join('');
-        }
-
-        // Download Template Excel Presisi 24 Kolom
-        function downloadTemplateExcel() {
-            const templateData = [{
-                "Cabang": currentCabang,
-                "Email Penginput": "penginput@gmail.com",
-                "Nama Penginput": "Nama Penginput",
-                "No WhatsApp Penginput": "08123456789",
-                "Status Paket": "Berbayar/Bonus", 
-                "Jenis Layanan": "Personal/Kerjasama Lembaga",
-                "Nama Testee": "Contoh Nama Peserta",
-                "No Testee": "001",
-                "Paket Tes": "Basic/Parent/Talent/BrainWave",
-                "Lembaga / Institusi": "SD Negeri 1 Contoh",
-                "Tempat Lahir": "Tasikmalaya",
-                "Tanggal Lahir": "2015-05-12",
-                "Usia": "11 Tahun",
-                "Tanggal Tes": "2026-08-11",
-                "Jenis Kelamin": "Laki-laki",
-                "Level Pendidikan": "SD",
-                "Jurusan SMA": "-",
-                "Jurusan Terlintas": "Kedokteran, Psikologi",
-                "Anak Ke": "1",
-                "Dari Bersaudara": "3",
-                "Bantuan Menggambar": "Mandiri",
-                "Kondisi Kertas": "Ya/tidak",
-                "Ganti Kertas": "Ya/tidak",
-                "Posisi Kertas": "Vertikal/Horizontal",
-                "Alat Gambar": "Pensil Warna/Crayon/Spidol/Cat Air/Cat Minyak",
-                "Dominasi Warna": "Biru / Hijau",
-                "Catatan Gambar": "Anak tampak antusias.",
-                "Catatan Khusus": "Mohon segera diproses",
-                "Link Bukti Transfer": "https://drive.google.com/file/d/contoh_link",
-                "Link Coretan Drive": "https://drive.google.com/file/d/contoh_link"
-            }];
-
-            const worksheet = XLSX.utils.json_to_sheet(templateData);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Template TERABACA");
-            XLSX.writeFile(workbook, `template_upload_${currentCabang.replace(/[^a-zA-Z0-9]/g, '_')}.xlsx`);
-        }
-
-        // Submit Form Satuan
-        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            submitBtn.disabled = true;
-            submitBtn.textContent = "Sedang Mengunggah Berkas ke Pusat...";
-
-            try {
-                const cabang = document.getElementById('cabang').value;
-                const namaTestee = document.getElementById('nama_testee').value;
-                const cleanName = namaTestee.replace(/[^a-zA-Z0-9]/g, '_');
-
-                let buktiTransferUrl = '';
-                const transferFile = document.getElementById('buktiTransferInput').files[0];
-                if (transferFile) {
-                    const ext = transferFile.name.split('.').pop();
-                    const path = `${cabang}/transfer_${cleanName}_${Date.now()}.${ext}`;
-                    const { error: errUpload } = await _supabase.storage.from('bukti-bayar').upload(path, transferFile);
-                    if (!errUpload) {
-                        const { data } = _supabase.storage.from('bukti-bayar').getPublicUrl(path);
-                        buktiTransferUrl = data.publicUrl;
-                    }
-                }
-
-                let listFileUrls = [];
-                const coretanFiles = document.getElementById('fileCoretanInput').files;
-                for (let i = 0; i < coretanFiles.length; i++) {
-                    const file = coretanFiles[i];
-                    const ext = file.name.split('.').pop();
-                    const path = `${cabang}/${cleanName}_hal_${i+1}_${Date.now()}.${ext}`;
-                    const { error: errUpload } = await _supabase.storage.from('lembar-coretan').upload(path, file);
-                    if (!errUpload) {
-                        const { data } = _supabase.storage.from('lembar-coretan').getPublicUrl(path);
-                        listFileUrls.push(data.publicUrl);
-                    }
-                }
-
-                const { error: dbError } = await _supabase.from('data_peserta').insert([{
-                    email_cabang: document.getElementById('email_cabang').value,
-                    nama_penginput: document.getElementById('nama_penginput').value,
-                    whatsapp_penginput: document.getElementById('whatsapp_penginput').value,
-                    cabang: cabang,
-                    jenis_paket_bayar: document.getElementById('jenis_paket_bayar').value,
-                    jenis_layanan: document.getElementById('jenis_layanan').value,
-                    catatan_khusus: document.getElementById('catatan_khusus').value,
-                    nama_testee: namaTestee,
-                    no_testee: document.getElementById('no_testee').value,
-                    paket_tes: document.getElementById('paket_tes').value,
-                    lembaga_institusi: document.getElementById('lembaga_institusi').value,
-                    tempat_lahir: document.getElementById('tempat_lahir').value,
-                    tanggal_lahir: document.getElementById('tanggal_lahir').value,
-                    usia: document.getElementById('usia').value,
-                    tanggal_tes: document.getElementById('tanggal_tes').value,
-                    jenis_kelamin: document.getElementById('jenis_kelamin').value,
-                    level_pendidikan: document.getElementById('level_pendidikan').value,
-                    jurusan_sma: document.getElementById('jurusan_sma').value,
-                    jurusan_terlintas: document.getElementById('jurusan_terlintas').value,
-                    anak_ke: document.getElementById('anak_ke').value,
-                    dari_bersaudara: document.getElementById('dari_bersaudara').value,
-                    bantuan_menggambar: document.getElementById('dibantu_ortu').value === 'ya' ? 'Orangtua' : (document.getElementById('dibantu_orang_lain').value === 'ya' ? 'Orang lain' : 'Mandiri'),
-                    dibantu_ortu: document.getElementById('dibantu_ortu').value,
-                    dibantu_orang_lain: document.getElementById('dibantu_orang_lain').value,
-                    kondisi_kertas: document.getElementById('kondisi_kertas').value,
-                    ganti_kertas: document.getElementById('ganti_kertas').value,
-                    posisi_kertas: document.getElementById('posisi_kertas').value,
-                    alat_gambar: document.getElementById('alat_gambar').value,
-                    dominasi_warna: document.getElementById('dominasi_warna').value,
-                    catatan_gambar: document.getElementById('catatan_gambar').value,
-                    bukti_transfer_url: buktiTransferUrl,
-                    file_coretan_url: listFileUrls.join(', ')
-                }]);
-
-                if (dbError) throw dbError;
-
-                alert("Alhamdulillah! Data peserta dan berkas berhasil dikirim ke pusat.");
-                document.getElementById('uploadForm').reset();
-                document.getElementById('cabang').value = currentCabang;
-                loadPesertaCabang();
-                switchMainTab('monitoring');
-
-            } catch (error) {
-                console.error('Error uploading data:', error);
-                alert("Gagal mengirim data: " + error.message);
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = "Kirim Seluruh Data & Berkas ke Pusat";
+                }).join('');
             }
-        });
 
-        // Submit Form Excel Massal
-        document.getElementById('excelUploadForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            submitBtn.disabled = true;
-            submitBtn.textContent = "Sedang Memproses File Excel...";
+            // Download Template Excel Presisi 24 Kolom
+            function downloadTemplateExcel() {
+                const templateData = [{
+                    "Cabang": currentCabang,
+                    "Email Penginput": "penginput@gmail.com",
+                    "Nama Penginput": "Nama Penginput",
+                    "No WhatsApp Penginput": "08123456789",
+                    "Status Paket": "Berbayar/Bonus",
+                    "Jenis Layanan": "Personal/Kerjasama Lembaga",
+                    "Nama Testee": "Contoh Nama Peserta",
+                    "No Testee": "001",
+                    "Paket Tes": "Basic/Parent/Talent/BrainWave",
+                    "Lembaga / Institusi": "SD Negeri 1 Contoh",
+                    "Tempat Lahir": "Tasikmalaya",
+                    "Tanggal Lahir": "2015-05-12",
+                    "Usia": "11 Tahun",
+                    "Tanggal Tes": "2026-08-11",
+                    "Jenis Kelamin": "Laki-laki",
+                    "Level Pendidikan": "SD",
+                    "Jurusan SMA": "-",
+                    "Jurusan Terlintas": "Kedokteran, Psikologi",
+                    "Anak Ke": "1",
+                    "Dari Bersaudara": "3",
+                    "Bantuan Menggambar": "Mandiri",
+                    "Kondisi Kertas": "Ya/tidak",
+                    "Ganti Kertas": "Ya/tidak",
+                    "Posisi Kertas": "Vertikal/Horizontal",
+                    "Alat Gambar": "Pensil Warna/Crayon/Spidol/Cat Air/Cat Minyak",
+                    "Dominasi Warna": "Biru / Hijau",
+                    "Catatan Gambar": "Anak tampak antusias.",
+                    "Catatan Khusus": "Mohon segera diproses",
+                    "Link Bukti Transfer": "https://drive.google.com/file/d/contoh_link",
+                    "Link Coretan Drive": "https://drive.google.com/file/d/contoh_link"
+                }];
 
-            try {
-                const cabangForm = document.getElementById('excel_cabang').value;
-                const fileInput = document.getElementById('excelFileInput');
-                const file = fileInput.files[0];
+                const worksheet = XLSX.utils.json_to_sheet(templateData);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Template TERABACA");
+                XLSX.writeFile(workbook, `template_upload_${currentCabang.replace(/[^a-zA-Z0-9]/g, '_')}.xlsx`);
+            }
 
-                if (!file) {
-                    alert("Silakan pilih file Excel terlebih dahulu.");
-                    return;
-                }
+            // Submit Form Satuan
+            document.getElementById('uploadForm').addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.textContent = "Sedang Mengunggah Berkas ke Pusat...";
 
-                // ==========================================
-                // STEP 1: UNGGAH FILE ASLI KE SUPABASE STORAGE
-                // ==========================================
-                const timeStamp = Date.now();
-                const cleanCabang = cabangForm.replace(/[^a-zA-Z0-9]/g, '_');
-                const filePathInStorage = `${cleanCabang}/${timeStamp}_${file.name}`;
+                try {
+                    const cabang = document.getElementById('cabang').value;
+                    const namaTestee = document.getElementById('nama_testee').value;
+                    const cleanName = namaTestee.replace(/[^a-zA-Z0-9]/g, '_');
 
-                const { data: storageData, error: storageErr } = await _supabase
-                    .storage
-                    .from('berkas-excel')
-                    .upload(filePathInStorage, file, { cacheControl: '3600', upsert: false });
-
-                if (storageErr) throw new Error("Gagal menyimpan file ke Storage: " + storageErr.message);
-
-                // Dapatkan URL Download File
-                const { data: publicUrlData } = _supabase
-                    .storage
-                    .from('berkas-excel')
-                    .getPublicUrl(filePathInStorage);
-
-                const fileUrl = publicUrlData.publicUrl;
-
-                // ==========================================
-                // STEP 2: PARSE ISI EXCEL KE DATASET (Kode Lama Kamu)
-                // ==========================================
-                const dataBuffer = await file.arrayBuffer();
-                const workbook = XLSX.read(dataBuffer, { type: 'array' });
-                const firstSheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[firstSheetName];
-                const rows = XLSX.utils.sheet_to_json(worksheet);
-
-                if (rows.length === 0) {
-                    alert("File Excel kosong atau format tidak sesuai.");
-                    return;
-                }
-
-                let successCount = 0;
-                let namaPenginputPertama = '';
-
-                for (let row of rows) {
-                    if (!namaPenginputPertama) {
-                        namaPenginputPertama = row['Nama Penginput'] || row.nama_penginput || 'Admin Cabang';
+                    let buktiTransferUrl = '';
+                    const transferFile = document.getElementById('buktiTransferInput').files[0];
+                    if (transferFile) {
+                        const ext = transferFile.name.split('.').pop();
+                        const path = `${cabang}/transfer_${cleanName}_${Date.now()}.${ext}`;
+                        const { error: errUpload } = await _supabase.storage.from('bukti-bayar').upload(path, transferFile);
+                        if (!errUpload) {
+                            const { data } = _supabase.storage.from('bukti-bayar').getPublicUrl(path);
+                            buktiTransferUrl = data.publicUrl;
+                        }
                     }
 
-                    const { error: insertErr } = await _supabase.from('data_peserta').insert([{
-                        cabang: cabangForm,
-                        email_cabang: row['Email Penginput'] || row.email_cabang || '',
-                        nama_penginput: row['Nama Penginput'] || row.nama_penginput || '',
-                        whatsapp_penginput: row['No WhatsApp Penginput'] || row.whatsapp_penginput || '',
-                        jenis_paket_bayar: row['Status Paket'] || row.jenis_paket_bayar || 'Berbayar',
-                        jenis_layanan: row['Jenis Layanan'] || row.jenis_layanan || 'Personal',
-                        nama_testee: row['Nama Testee'] || row.nama_testee || 'Tanpa_Nama',
-                        no_testee: row['No Testee'] || row.no_testee || '',
-                        paket_tes: row['Paket Tes'] || row.paket_tes || 'Basic',
-                        lembaga_institusi: row['Lembaga / Institusi'] || row.lembaga_institusi || '-',
-                        tempat_lahir: row['Tempat Lahir'] || row.tempat_lahir || '-',
-                        tanggal_lahir: row['Tanggal Lahir'] || row.tanggal_lahir || '',
-                        usia: row['Usia'] ? row['Usia'].toString() : (row.usia ? row.usia.toString() : ''),
-                        tanggal_tes: row['Tanggal Tes'] || row.tanggal_tes || '',
-                        jenis_kelamin: row['Jenis Kelamin'] || row.jenis_kelamin || '',
-                        level_pendidikan: row['Level Pendidikan'] || row.level_pendidikan || '',
-                        jurusan_sma: row['Jurusan SMA'] || row.jurusan_sma || '',
-                        jurusan_terlintas: row['Jurusan Terlintas'] || row.jurusan_terlintas || '-',
-                        anak_ke: row['Anak Ke'] || row.anak_ke || '',
-                        dari_bersaudara: row['Dari Bersaudara'] || row.dari_bersaudara || '',
-                        bantuan_menggambar: row['Bantuan Menggambar'] || row.bantuan_menggambar || 'Mandiri',
-                        kondisi_kertas: row['Kondisi Kertas'] || row.kondisi_kertas || 'tidak',
-                        ganti_kertas: row['Ganti Kertas'] || row.ganti_kertas || 'tidak',
-                        posisi_kertas: row['Posisi Kertas'] || row.posisi_kertas || 'Vertikal',
-                        alat_gambar: row['Alat Gambar'] || row.alat_gambar || 'Pensil Warna',
-                        dominasi_warna: row['Dominasi Warna'] || row.dominasi_warna || '',
-                        catatan_gambar: row['Catatan Gambar'] || row.catatan_gambar || '',
-                        catatan_khusus: row['Catatan Khusus'] || row.catatan_khusus || '',
-                        file_coretan_url: row['Link Coretan Drive'] || row.link_coretan_drive || row.file_coretan_url || ''
+                    let listFileUrls = [];
+                    const coretanFiles = document.getElementById('fileCoretanInput').files;
+                    for (let i = 0; i < coretanFiles.length; i++) {
+                        const file = coretanFiles[i];
+                        const ext = file.name.split('.').pop();
+                        const path = `${cabang}/${cleanName}_hal_${i + 1}_${Date.now()}.${ext}`;
+                        const { error: errUpload } = await _supabase.storage.from('lembar-coretan').upload(path, file);
+                        if (!errUpload) {
+                            const { data } = _supabase.storage.from('lembar-coretan').getPublicUrl(path);
+                            listFileUrls.push(data.publicUrl);
+                        }
+                    }
+
+                    const { error: dbError } = await _supabase.from('data_peserta').insert([{
+                        email_cabang: document.getElementById('email_cabang').value,
+                        nama_penginput: document.getElementById('nama_penginput').value,
+                        whatsapp_penginput: document.getElementById('whatsapp_penginput').value,
+                        cabang: cabang,
+                        jenis_paket_bayar: document.getElementById('jenis_paket_bayar').value,
+                        jenis_layanan: document.getElementById('jenis_layanan').value,
+                        catatan_khusus: document.getElementById('catatan_khusus').value,
+                        nama_testee: namaTestee,
+                        no_testee: document.getElementById('no_testee').value,
+                        paket_tes: document.getElementById('paket_tes').value,
+                        lembaga_institusi: document.getElementById('lembaga_institusi').value,
+                        tempat_lahir: document.getElementById('tempat_lahir').value,
+                        tanggal_lahir: document.getElementById('tanggal_lahir').value,
+                        usia: document.getElementById('usia').value,
+                        tanggal_tes: document.getElementById('tanggal_tes').value,
+                        jenis_kelamin: document.getElementById('jenis_kelamin').value,
+                        level_pendidikan: document.getElementById('level_pendidikan').value,
+                        jurusan_sma: document.getElementById('jurusan_sma').value,
+                        jurusan_terlintas: document.getElementById('jurusan_terlintas').value,
+                        anak_ke: document.getElementById('anak_ke').value,
+                        dari_bersaudara: document.getElementById('dari_bersaudara').value,
+                        bantuan_menggambar: document.getElementById('dibantu_ortu').value === 'ya' ? 'Orangtua' : (document.getElementById('dibantu_orang_lain').value === 'ya' ? 'Orang lain' : 'Mandiri'),
+                        dibantu_ortu: document.getElementById('dibantu_ortu').value,
+                        dibantu_orang_lain: document.getElementById('dibantu_orang_lain').value,
+                        kondisi_kertas: document.getElementById('kondisi_kertas').value,
+                        ganti_kertas: document.getElementById('ganti_kertas').value,
+                        posisi_kertas: document.getElementById('posisi_kertas').value,
+                        alat_gambar: document.getElementById('alat_gambar').value,
+                        dominasi_warna: document.getElementById('dominasi_warna').value,
+                        catatan_gambar: document.getElementById('catatan_gambar').value,
+                        bukti_transfer_url: buktiTransferUrl,
+                        file_coretan_url: listFileUrls.join(', ')
                     }]);
-                    if (!insertErr) successCount++;
-                }
-
-                // ==========================================
-                // STEP 3: CATAT RIWAYAT FILE MENTAH KE `batch_upload`
-                // ==========================================
-                const { error: batchErr } = await _supabase.from('batch_upload').insert([{
-                    nama_file_asli: file.name,
-                    file_url: fileUrl,
-                    kode_cabang: cabangForm, // Pastikan kolom di DB bernama kode_cabang
-                    nama_penginput: namaPenginputPertama,
-                    jumlah_data: successCount
-                }]);
-
-                if (batchErr) console.error("Gagal mencatat riwayat batch upload:", batchErr);
-
-                alert(`Alhamdulillah! Berhasil memproses ${successCount} dari ${rows.length} data peserta via Excel, serta file mentah tersimpan di server Pusat.`);
-                document.getElementById('excelUploadForm').reset();
-                loadPesertaCabang();
-                switchMainTab('monitoring');
-
-            } catch (err) {
-                console.error(err);
-                alert("Gagal proses Excel: " + err.message);
-    } finally {
-        // Tombol PASTI kembali aktif dalam kondisi/error apapun
-        submitBtn.textContent = "Proses & Kirim Semua Data Excel ke Pusat";
-        submitBtn.disabled = false;
-    }
-});
-
-        // Logout Session
-        async function logoutAdmin() {
-            try {
-                if (typeof _supabase !== 'undefined' && _supabase.auth) {
-                    await _supabase.auth.signOut();
-                } else if (typeof supabaseClient !== 'undefined') {
-                    await supabaseClient.auth.signOut();
-                } else if (typeof supabase !== 'undefined') {
-                    await supabase.auth.signOut();
-                }
-            } catch (err) {
-                console.log('Error signOut:', err);
-            }
-
-            // Hapus session browser
-            sessionStorage.removeItem('user_session');
-            sessionStorage.removeItem('user_terabaca');
-            localStorage.clear();
-
-            // Pindah ke Landing Page
-            window.location.href = 'index.html';
-        }
-
-        // Bikin alias supaya jika dipanggil logout() TETAP JALAN!
-        const logout = logoutAdmin;
-
-        // Fungsi Buka-Tutup Sidebar khusus di HP
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const backdrop = document.getElementById('sidebarBackdrop');
-    
-            if (sidebar && backdrop) {
-                // Toggle class translate untuk geser sidebar masuk/keluar
-                sidebar.classList.toggle('-translate-x-full');
-                // Toggle backdrop gelap di belakangnya
-                backdrop.classList.toggle('hidden');
-            }
-        }
-    </script>
-
-<!-- Modal Profil & Ubah Password (Admin Cabang) -->
-    <div id="profileModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-6">
-            <!-- Header -->
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="text-base font-bold text-slate-800">Pengaturan Profil Cabang</h3>
-                <button onclick="closeProfileModal()" class="text-slate-400 hover:text-slate-600 font-bold p-1">✕</button>
-            </div>
-
-            <!-- Tab Navigasi -->
-            <div class="flex border-b border-slate-200 text-xs font-semibold">
-                <button id="tabBtnProfile" onclick="switchProfileTab('info')" class="py-2 px-4 border-b-2 border-indigo-600 text-indigo-600 font-semibold">Info Profil</button>
-                <button id="tabBtnPassword" onclick="switchProfileTab('password')" class="py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-600 font-semibold">Ubah Password</button>
-            </div>
-
-            <!-- Section 1: Form Edit Info Profil Cabang -->
-            <form id="formEditProfile" onsubmit="simpanProfilCabang(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Email Cabang (Akun)</label>
-                    <input type="email" id="profileEmail" disabled class="w-full text-xs px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-500 cursor-not-allowed">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Nama Penanggung Jawab Cabang</label>
-                    <input type="text" id="profileNama" required class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">No. WhatsApp Cabang</label>
-                    <input type="tel" id="profileWA" required class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
-                </div>
-                <button type="submit" id="btnSimpanProfil" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
-                    Simpan Perubahan
-                </button>
-            </form>
-
-            <!-- Section 2: Form Ubah Password Cabang -->
-            <form id="formUbahPassword" onsubmit="simpanPasswordCabang(event)" class="space-y-4 hidden">
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Password Baru</label>
-                    <input type="password" id="inputNewPassword" minlength="6" required placeholder="Minimal 6 karakter" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Konfirmasi Password Baru</label>
-                    <input type="password" id="inputConfirmPassword" minlength="6" required placeholder="Ulangi password baru" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
-                </div>
-                <button type="submit" id="btnSimpanPassword" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
-                    Update Password
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        // Open Modal Profil Cabang
-        async function openProfileModal() {
-            const modal = document.getElementById('profileModal');
-            modal.classList.remove('hidden');
-            switchProfileTab('info');
-
-            try {
-                // Cek semua kemungkinan lokasi & nama key session login
-                const rawSession = sessionStorage.getItem('user_session') || 
-                                   localStorage.getItem('user_session') || 
-                                   sessionStorage.getItem('user_terabaca') || 
-                                   localStorage.getItem('user_terabaca');
-                
-                const localUser = rawSession ? JSON.parse(rawSession) : {};
-                
-                // Ambil email dari berbagai kemungkinan nama properti
-                const email = localUser.email || localUser.user_email || localUser.username || '';
-
-                // Isikan email ke input form modal
-                document.getElementById('profileEmail').value = email;
-
-                if (email && typeof _supabase !== 'undefined') {
-                    const { data } = await _supabase
-                        .from('data_cabang')
-                        .select('penanggung_jawab, whatsapp, nama_cabang')
-                        .eq('email', email)
-                        .maybeSingle();
-
-                    if (data) {
-                        document.getElementById('profileNama').value = data.penanggung_jawab || '';
-                        document.getElementById('profileWA').value = data.whatsapp || '';
-                        return;
-                    }
-                }
-
-                // Fallback jika tidak ada data di DB
-                document.getElementById('profileNama').value = localUser.nama || localUser.penanggung_jawab || '';
-                document.getElementById('profileWA').value = localUser.whatsapp || localUser.no_whatsapp || '';
-            } catch (err) {
-                console.log("Error memuat profil cabang:", err);
-            }
-        }
-
-        // Close Modal Profil
-        function closeProfileModal() {
-            document.getElementById('profileModal').classList.add('hidden');
-        }
-
-        // Switch Tab Info / Password
-        function switchProfileTab(tab) {
-            const formProfile = document.getElementById('formEditProfile');
-            const formPassword = document.getElementById('formUbahPassword');
-            const tabBtnProfile = document.getElementById('tabBtnProfile');
-            const tabBtnPassword = document.getElementById('tabBtnPassword');
-
-            if (tab === 'info') {
-                formProfile.classList.remove('hidden');
-                formPassword.classList.add('hidden');
-                tabBtnProfile.className = "py-2 px-4 border-b-2 border-indigo-600 text-indigo-600 font-semibold";
-                tabBtnPassword.className = "py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-600 font-semibold";
-            } else {
-                formProfile.classList.add('hidden');
-                formPassword.classList.remove('hidden');
-                tabBtnPassword.className = "py-2 px-4 border-b-2 border-indigo-600 text-indigo-600 font-semibold";
-                tabBtnProfile.className = "py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-600 font-semibold";
-            }
-        }
-
-        // Simpan Profil Cabang
-        async function simpanProfilCabang(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnSimpanProfil');
-            btn.disabled = true;
-            btn.textContent = "Menyimpan...";
-
-            const email = document.getElementById('profileEmail').value;
-            const nama = document.getElementById('profileNama').value.trim();
-            const wa = document.getElementById('profileWA').value.trim();
-
-            try {
-                if (email && typeof _supabase !== 'undefined') {
-                    await _supabase
-                        .from('data_cabang')
-                        .update({ penanggung_jawab: nama, whatsapp: wa })
-                        .eq('email', email);
-                }
-
-                // Update session lokal
-                const localUser = JSON.parse(sessionStorage.getItem('user_terabaca') || localStorage.getItem('user_terabaca') || '{}');
-                localUser.penanggung_jawab = nama;
-                localUser.whatsapp = wa;
-                if (sessionStorage.getItem('user_terabaca')) sessionStorage.setItem('user_terabaca', JSON.stringify(localUser));
-                if (localStorage.getItem('user_terabaca')) localStorage.setItem('user_terabaca', JSON.stringify(localUser));
-
-                alert("Alhamdulillah! Profil cabang berhasil diperbarui.");
-                closeProfileModal();
-
-            } catch (err) {
-                alert("Gagal memperbarui profil: " + err.message);
-            } finally {
-                btn.disabled = false;
-                btn.textContent = "Simpan Perubahan";
-            }
-        }
-
-        // Simpan Ubah Password Cabang
-        async function simpanPasswordCabang(e) {
-            e.preventDefault();
-            const newPass = document.getElementById('inputNewPassword').value.trim();
-            const confirmPass = document.getElementById('inputConfirmPassword').value.trim();
-            const email = document.getElementById('profileEmail').value.trim();
-
-            if (!newPass || newPass.length < 6) {
-                alert("Password minimal harus 6 karakter!");
-                return;
-            }
-
-            if (newPass !== confirmPass) {
-                alert("Konfirmasi password baru tidak cocok!");
-                return;
-            }
-
-            if (!email) {
-                alert("Gagal: Email cabang tidak terdeteksi.");
-                return;
-            }
-
-            const btn = document.getElementById('btnSimpanPassword');
-            btn.disabled = true;
-            btn.textContent = "Memproses...";
-
-            try {
-                // Update password di tabel data_cabang
-                if (typeof _supabase !== 'undefined') {
-                    const { error: dbError } = await _supabase
-                        .from('data_cabang')
-                        .update({ password: newPass })
-                        .eq('email', email);
 
                     if (dbError) throw dbError;
 
-                    // Update juga ke Supabase Auth jika session Auth aktif
-                    await _supabase.auth.updateUser({ password: newPass }).catch(() => {});
+                    alert("Alhamdulillah! Data peserta dan berkas berhasil dikirim ke pusat.");
+                    document.getElementById('uploadForm').reset();
+                    document.getElementById('cabang').value = currentCabang;
+                    loadPesertaCabang();
+                    switchMainTab('monitoring');
+
+                } catch (error) {
+                    console.error('Error uploading data:', error);
+                    alert("Gagal mengirim data: " + error.message);
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "Kirim Seluruh Data & Berkas ke Pusat";
+                }
+            });
+
+            // Submit Form Excel Massal
+            document.getElementById('excelUploadForm').addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.textContent = "Sedang Memproses File Excel...";
+
+                try {
+                    const cabangForm = document.getElementById('excel_cabang').value;
+                    const fileInput = document.getElementById('excelFileInput');
+                    const file = fileInput.files[0];
+
+                    if (!file) {
+                        alert("Silakan pilih file Excel terlebih dahulu.");
+                        return;
+                    }
+
+                    // ==========================================
+                    // STEP 1: UNGGAH FILE ASLI KE SUPABASE STORAGE
+                    // ==========================================
+                    const timeStamp = Date.now();
+                    const cleanCabang = cabangForm.replace(/[^a-zA-Z0-9]/g, '_');
+                    const filePathInStorage = `${cleanCabang}/${timeStamp}_${file.name}`;
+
+                    const { data: storageData, error: storageErr } = await _supabase
+                        .storage
+                        .from('berkas-excel')
+                        .upload(filePathInStorage, file, { cacheControl: '3600', upsert: false });
+
+                    if (storageErr) throw new Error("Gagal menyimpan file ke Storage: " + storageErr.message);
+
+                    // Dapatkan URL Download File
+                    const { data: publicUrlData } = _supabase
+                        .storage
+                        .from('berkas-excel')
+                        .getPublicUrl(filePathInStorage);
+
+                    const fileUrl = publicUrlData.publicUrl;
+
+                    // ==========================================
+                    // STEP 2: PARSE ISI EXCEL KE DATASET (Kode Lama Kamu)
+                    // ==========================================
+                    const dataBuffer = await file.arrayBuffer();
+                    const workbook = XLSX.read(dataBuffer, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const rows = XLSX.utils.sheet_to_json(worksheet);
+
+                    if (rows.length === 0) {
+                        alert("File Excel kosong atau format tidak sesuai.");
+                        return;
+                    }
+
+                    let successCount = 0;
+                    let namaPenginputPertama = '';
+
+                    for (let row of rows) {
+                        if (!namaPenginputPertama) {
+                            namaPenginputPertama = row['Nama Penginput'] || row.nama_penginput || 'Admin Cabang';
+                        }
+
+                        const { error: insertErr } = await _supabase.from('data_peserta').insert([{
+                            cabang: cabangForm,
+                            email_cabang: row['Email Penginput'] || row.email_cabang || '',
+                            nama_penginput: row['Nama Penginput'] || row.nama_penginput || '',
+                            whatsapp_penginput: row['No WhatsApp Penginput'] || row.whatsapp_penginput || '',
+                            jenis_paket_bayar: row['Status Paket'] || row.jenis_paket_bayar || 'Berbayar',
+                            jenis_layanan: row['Jenis Layanan'] || row.jenis_layanan || 'Personal',
+                            nama_testee: row['Nama Testee'] || row.nama_testee || 'Tanpa_Nama',
+                            no_testee: row['No Testee'] || row.no_testee || '',
+                            paket_tes: row['Paket Tes'] || row.paket_tes || 'Basic',
+                            lembaga_institusi: row['Lembaga / Institusi'] || row.lembaga_institusi || '-',
+                            tempat_lahir: row['Tempat Lahir'] || row.tempat_lahir || '-',
+                            tanggal_lahir: row['Tanggal Lahir'] || row.tanggal_lahir || '',
+                            usia: row['Usia'] ? row['Usia'].toString() : (row.usia ? row.usia.toString() : ''),
+                            tanggal_tes: row['Tanggal Tes'] || row.tanggal_tes || '',
+                            jenis_kelamin: row['Jenis Kelamin'] || row.jenis_kelamin || '',
+                            level_pendidikan: row['Level Pendidikan'] || row.level_pendidikan || '',
+                            jurusan_sma: row['Jurusan SMA'] || row.jurusan_sma || '',
+                            jurusan_terlintas: row['Jurusan Terlintas'] || row.jurusan_terlintas || '-',
+                            anak_ke: row['Anak Ke'] || row.anak_ke || '',
+                            dari_bersaudara: row['Dari Bersaudara'] || row.dari_bersaudara || '',
+                            bantuan_menggambar: row['Bantuan Menggambar'] || row.bantuan_menggambar || 'Mandiri',
+                            kondisi_kertas: row['Kondisi Kertas'] || row.kondisi_kertas || 'tidak',
+                            ganti_kertas: row['Ganti Kertas'] || row.ganti_kertas || 'tidak',
+                            posisi_kertas: row['Posisi Kertas'] || row.posisi_kertas || 'Vertikal',
+                            alat_gambar: row['Alat Gambar'] || row.alat_gambar || 'Pensil Warna',
+                            dominasi_warna: row['Dominasi Warna'] || row.dominasi_warna || '',
+                            catatan_gambar: row['Catatan Gambar'] || row.catatan_gambar || '',
+                            catatan_khusus: row['Catatan Khusus'] || row.catatan_khusus || '',
+                            file_coretan_url: row['Link Coretan Drive'] || row.link_coretan_drive || row.file_coretan_url || ''
+                        }]);
+                        if (!insertErr) successCount++;
+                    }
+
+                    // ==========================================
+                    // STEP 3: CATAT RIWAYAT FILE MENTAH KE `batch_upload`
+                    // ==========================================
+                    const { error: batchErr } = await _supabase.from('batch_upload').insert([{
+                        nama_file_asli: file.name,
+                        file_url: fileUrl,
+                        kode_cabang: cabangForm, // Pastikan kolom di DB bernama kode_cabang
+                        nama_penginput: namaPenginputPertama,
+                        jumlah_data: successCount
+                    }]);
+
+                    if (batchErr) console.error("Gagal mencatat riwayat batch upload:", batchErr);
+
+                    alert(`Alhamdulillah! Berhasil memproses ${successCount} dari ${rows.length} data peserta via Excel, serta file mentah tersimpan di server Pusat.`);
+                    document.getElementById('excelUploadForm').reset();
+                    loadPesertaCabang();
+                    switchMainTab('monitoring');
+
+                } catch (err) {
+                    console.error(err);
+                    alert("Gagal proses Excel: " + err.message);
+                } finally {
+                    // Tombol PASTI kembali aktif dalam kondisi/error apapun
+                    submitBtn.textContent = "Proses & Kirim Semua Data Excel ke Pusat";
+                    submitBtn.disabled = false;
+                }
+            });
+
+            // Logout Session
+            async function logoutAdmin() {
+                try {
+                    if (typeof _supabase !== 'undefined' && _supabase.auth) {
+                        await _supabase.auth.signOut();
+                    } else if (typeof supabaseClient !== 'undefined') {
+                        await supabaseClient.auth.signOut();
+                    } else if (typeof supabase !== 'undefined') {
+                        await supabase.auth.signOut();
+                    }
+                } catch (err) {
+                    console.log('Error signOut:', err);
                 }
 
-                alert("Alhamdulillah! Password cabang berhasil diperbarui.");
-                document.getElementById('formUbahPassword').reset();
-                closeProfileModal();
+                // Hapus session browser
+                sessionStorage.removeItem('user_session');
+                sessionStorage.removeItem('user_terabaca');
+                localStorage.clear();
 
-            } catch (err) {
-                alert("Gagal memperbarui password: " + err.message);
-            } finally {
-                btn.disabled = false;
-                btn.textContent = "Update Password";
+                // Pindah ke Landing Page
+                window.location.href = 'index.html';
             }
-        }
-    </script>
+
+            // Bikin alias supaya jika dipanggil logout() TETAP JALAN!
+            const logout = logoutAdmin;
+
+            // Fungsi Buka-Tutup Sidebar khusus di HP
+            function toggleSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                const backdrop = document.getElementById('sidebarBackdrop');
+
+                if (sidebar && backdrop) {
+                    // Toggle class translate untuk geser sidebar masuk/keluar
+                    sidebar.classList.toggle('-translate-x-full');
+                    // Toggle backdrop gelap di belakangnya
+                    backdrop.classList.toggle('hidden');
+                }
+            }
+        </script>
+
+        <!-- Modal Profil & Ubah Password (Admin Cabang) -->
+        <div id="profileModal"
+            class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+            <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-6">
+                <!-- Header -->
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h3 class="text-base font-bold text-slate-800">Pengaturan Profil Cabang</h3>
+                    <button onclick="closeProfileModal()"
+                        class="text-slate-400 hover:text-slate-600 font-bold p-1">✕</button>
+                </div>
+
+                <!-- Tab Navigasi -->
+                <div class="flex border-b border-slate-200 text-xs font-semibold">
+                    <button id="tabBtnProfile" onclick="switchProfileTab('info')"
+                        class="py-2 px-4 border-b-2 border-indigo-600 text-indigo-600 font-semibold">Info
+                        Profil</button>
+                    <button id="tabBtnPassword" onclick="switchProfileTab('password')"
+                        class="py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-600 font-semibold">Ubah
+                        Password</button>
+                </div>
+
+                <!-- Section 1: Form Edit Info Profil Cabang -->
+                <form id="formEditProfile" onsubmit="simpanProfilCabang(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Email Cabang (Akun)</label>
+                        <input type="email" id="profileEmail" disabled
+                            class="w-full text-xs px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-500 cursor-not-allowed">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Nama Penanggung Jawab
+                            Cabang</label>
+                        <input type="text" id="profileNama" required
+                            class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">No. WhatsApp Cabang</label>
+                        <input type="tel" id="profileWA" required
+                            class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <button type="submit" id="btnSimpanProfil"
+                        class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
+                        Simpan Perubahan
+                    </button>
+                </form>
+
+                <!-- Section 2: Form Ubah Password Cabang -->
+                <form id="formUbahPassword" onsubmit="simpanPasswordCabang(event)" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Password Baru</label>
+                        <input type="password" id="inputNewPassword" minlength="6" required
+                            placeholder="Minimal 6 karakter"
+                            class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Konfirmasi Password Baru</label>
+                        <input type="password" id="inputConfirmPassword" minlength="6" required
+                            placeholder="Ulangi password baru"
+                            class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <button type="submit" id="btnSimpanPassword"
+                        class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
+                        Update Password
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            // Open Modal Profil Cabang
+            async function openProfileModal() {
+                const modal = document.getElementById('profileModal');
+                modal.classList.remove('hidden');
+                switchProfileTab('info');
+
+                try {
+                    // Cek semua kemungkinan lokasi & nama key session login
+                    const rawSession = sessionStorage.getItem('user_session') ||
+                        localStorage.getItem('user_session') ||
+                        sessionStorage.getItem('user_terabaca') ||
+                        localStorage.getItem('user_terabaca');
+
+                    const localUser = rawSession ? JSON.parse(rawSession) : {};
+
+                    // Ambil email dari berbagai kemungkinan nama properti
+                    const email = localUser.email || localUser.user_email || localUser.username || '';
+
+                    // Isikan email ke input form modal
+                    document.getElementById('profileEmail').value = email;
+
+                    if (email && typeof _supabase !== 'undefined') {
+                        const { data } = await _supabase
+                            .from('data_cabang')
+                            .select('penanggung_jawab, whatsapp, nama_cabang')
+                            .eq('email', email)
+                            .maybeSingle();
+
+                        if (data) {
+                            document.getElementById('profileNama').value = data.penanggung_jawab || '';
+                            document.getElementById('profileWA').value = data.whatsapp || '';
+                            return;
+                        }
+                    }
+
+                    // Fallback jika tidak ada data di DB
+                    document.getElementById('profileNama').value = localUser.nama || localUser.penanggung_jawab || '';
+                    document.getElementById('profileWA').value = localUser.whatsapp || localUser.no_whatsapp || '';
+                } catch (err) {
+                    console.log("Error memuat profil cabang:", err);
+                }
+            }
+
+            // Close Modal Profil
+            function closeProfileModal() {
+                document.getElementById('profileModal').classList.add('hidden');
+            }
+
+            // Switch Tab Info / Password
+            function switchProfileTab(tab) {
+                const formProfile = document.getElementById('formEditProfile');
+                const formPassword = document.getElementById('formUbahPassword');
+                const tabBtnProfile = document.getElementById('tabBtnProfile');
+                const tabBtnPassword = document.getElementById('tabBtnPassword');
+
+                if (tab === 'info') {
+                    formProfile.classList.remove('hidden');
+                    formPassword.classList.add('hidden');
+                    tabBtnProfile.className = "py-2 px-4 border-b-2 border-indigo-600 text-indigo-600 font-semibold";
+                    tabBtnPassword.className = "py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-600 font-semibold";
+                } else {
+                    formProfile.classList.add('hidden');
+                    formPassword.classList.remove('hidden');
+                    tabBtnPassword.className = "py-2 px-4 border-b-2 border-indigo-600 text-indigo-600 font-semibold";
+                    tabBtnProfile.className = "py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-600 font-semibold";
+                }
+            }
+
+            // Simpan Profil Cabang
+            async function simpanProfilCabang(e) {
+                e.preventDefault();
+                const btn = document.getElementById('btnSimpanProfil');
+                btn.disabled = true;
+                btn.textContent = "Menyimpan...";
+
+                const email = document.getElementById('profileEmail').value;
+                const nama = document.getElementById('profileNama').value.trim();
+                const wa = document.getElementById('profileWA').value.trim();
+
+                try {
+                    if (email && typeof _supabase !== 'undefined') {
+                        await _supabase
+                            .from('data_cabang')
+                            .update({ penanggung_jawab: nama, whatsapp: wa })
+                            .eq('email', email);
+                    }
+
+                    // Update session lokal
+                    const localUser = JSON.parse(sessionStorage.getItem('user_terabaca') || localStorage.getItem('user_terabaca') || '{}');
+                    localUser.penanggung_jawab = nama;
+                    localUser.whatsapp = wa;
+                    if (sessionStorage.getItem('user_terabaca')) sessionStorage.setItem('user_terabaca', JSON.stringify(localUser));
+                    if (localStorage.getItem('user_terabaca')) localStorage.setItem('user_terabaca', JSON.stringify(localUser));
+
+                    alert("Alhamdulillah! Profil cabang berhasil diperbarui.");
+                    closeProfileModal();
+
+                } catch (err) {
+                    alert("Gagal memperbarui profil: " + err.message);
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = "Simpan Perubahan";
+                }
+            }
+
+            // Simpan Ubah Password Cabang
+            async function simpanPasswordCabang(e) {
+                e.preventDefault();
+                const newPass = document.getElementById('inputNewPassword').value.trim();
+                const confirmPass = document.getElementById('inputConfirmPassword').value.trim();
+                const email = document.getElementById('profileEmail').value.trim();
+
+                if (!newPass || newPass.length < 6) {
+                    alert("Password minimal harus 6 karakter!");
+                    return;
+                }
+
+                if (newPass !== confirmPass) {
+                    alert("Konfirmasi password baru tidak cocok!");
+                    return;
+                }
+
+                if (!email) {
+                    alert("Gagal: Email cabang tidak terdeteksi.");
+                    return;
+                }
+
+                const btn = document.getElementById('btnSimpanPassword');
+                btn.disabled = true;
+                btn.textContent = "Memproses...";
+
+                try {
+                    // Update password di tabel data_cabang
+                    if (typeof _supabase !== 'undefined') {
+                        const { error: dbError } = await _supabase
+                            .from('data_cabang')
+                            .update({ password: newPass })
+                            .eq('email', email);
+
+                        if (dbError) throw dbError;
+
+                        // Update juga ke Supabase Auth jika session Auth aktif
+                        await _supabase.auth.updateUser({ password: newPass }).catch(() => { });
+                    }
+
+                    alert("Alhamdulillah! Password cabang berhasil diperbarui.");
+                    document.getElementById('formUbahPassword').reset();
+                    closeProfileModal();
+
+                } catch (err) {
+                    alert("Gagal memperbarui password: " + err.message);
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = "Update Password";
+                }
+            }
+        </script>
 </body>
+
 </html>
