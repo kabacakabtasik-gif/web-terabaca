@@ -51,6 +51,10 @@
 
         <!-- Tombol Logout & Landing Page -->
         <div class="border-t border-slate-800 pt-4 space-y-2">
+            <button onclick="openProfileModal()" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">
+                <i class="fas fa-user-cog w-4 text-center text-indigo-400"></i> Pengaturan Profil
+            </button>
+            </button>
             <a href="index.html" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">
                 <i class="fas fa-globe w-4 text-center"></i> Landing Page
             </a>
@@ -252,11 +256,11 @@
                     <div class="p-4 border-b border-slate-100 flex items-center justify-between">
                         <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Daftar Cabang Terdaftar</h2>
                         <div class="flex items-center gap-2">
-                            <!-- Tombol Link Form Registrasi (Baru) -->
-                            <a href="/register-cabang.html" target="_blank" 
-                            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-xs font-semibold transition border border-indigo-200 shadow-sm">
-                                <i class="fas fa-external-link-alt"></i> Link Form Registrasi
-                            </a>
+                            <!-- Tombol Bagikan Link Registrasi (Diperbarui) -->
+                            <button onclick="shareRegistrationLink()" type="button" 
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-xs font-semibold transition border border-indigo-200 shadow-sm cursor-pointer">
+                                <i class="fas fa-share-alt"></i> Bagikan Form Registrasi
+                            </button>
 
                             <!-- Tombol Tambah Cabang Baru (Eksisting) -->
                             <button onclick="toggleModalCabang(true)" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-xl font-semibold transition flex items-center gap-1.5 shadow-sm">
@@ -858,6 +862,325 @@
                 backdrop.classList.toggle('hidden');
             }
         }
+
+        // Link Target Pendaftaran Cabang
+        const REGISTRATION_URL = `${window.location.origin}/register-cabang.html`;
+        const SHARE_MESSAGE = `Halo! Silakan lakukan pendaftaran cabang baru TERABACA melalui tautan resmi berikut:\n\n${REGISTRATION_URL}`;
+
+        // Fungsi Utama Tombol Bagikan
+        async function shareRegistrationLink() {
+            // Jika di HP / Browser yang mendukung Web Share API bawaan
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'Form Registrasi Cabang TERABACA',
+                        text: 'Silakan isi form pendaftaran cabang TERABACA di link berikut:',
+                        url: REGISTRATION_URL,
+                    });
+                    return;
+                } catch (err) {
+                    // User membatalkan share -> lanjut tampilkan modal cadangan
+                }
+            }
+
+            // Jika di Laptop/Desktop -> Tampilkan modal pilihan
+            document.getElementById('directRegLink').href = REGISTRATION_URL;
+            document.getElementById('shareLinkModal').classList.remove('hidden');
+        }
+
+        // Fungsi Tutup Modal
+        function closeShareModal() {
+            document.getElementById('shareLinkModal').classList.add('hidden');
+        }
+
+        // Fungsi Kirim ke WA
+        function shareToWhatsApp() {
+            const waUrl = `https://wa.me/?text=${encodeURIComponent(SHARE_MESSAGE)}`;
+            window.open(waUrl, '_blank');
+            closeShareModal();
+        }
+
+        // Fungsi Copy Link
+        async function copyRegistrationLink() {
+            try {
+                await navigator.clipboard.writeText(REGISTRATION_URL);
+                alert('Alhamdulillah! Link registrasi cabang berhasil disalin ke clipboard.');
+                closeShareModal();
+            } catch (err) {
+                alert('Gagal menyalin link: ' + err.message);
+            }
+        }
+
+        let currentUser = null;
+
+        // Open & Close Modal Profil
+        async function openProfileModal() {
+            const modal = document.getElementById('profileModal');
+            modal.classList.remove('hidden');
+            switchProfileTab('info');
+
+            try {
+                // 1. Coba ambil dari Supabase Auth dulu
+                const { data: { user } } = await _supabase.auth.getUser();
+            if (user) {
+                currentUser = user;
+                document.getElementById('profileEmail').value = user.email || '';
+                document.getElementById('profileNama').value = user.user_metadata?.full_name || '';
+                document.getElementById('profileWA').value = user.user_metadata?.whatsapp || '';
+                return;
+            }
+
+            // 2. Jika Supabase Auth null, ambil dari Storage Lokal aplikasi (tergantung sistem login kamu)
+            const localUser = JSON.parse(sessionStorage.getItem('user_terabaca') || localStorage.getItem('user_terabaca') || '{}');
+        
+            document.getElementById('profileEmail').value = localUser.email || 'admin@terabaca.com';
+            document.getElementById('profileNama').value = localUser.nama || localUser.penanggung_jawab || '';
+            document.getElementById('profileWA').value = localUser.whatsapp || localUser.no_whatsapp || '';
+
+        } catch (err) {
+            console.log("Error memuat profil:", err);
+        }
+    }
+
+    // Simpan Profil
+    async function simpanProfil(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnSimpanProfil');
+        btn.disabled = true;
+        btn.textContent = "Menyimpan...";
+
+        const email = document.getElementById('profileEmail').value;
+        const nama = document.getElementById('profileNama').value.trim();
+        const wa = document.getElementById('profileWA').value.trim();
+
+        try {
+            // Update ke Supabase Auth jika session aktif
+            await _supabase.auth.updateUser({
+                data: { full_name: nama, whatsapp: wa }
+            }).catch(() => {});
+
+            // Update langsung ke database data_cabang
+            if (email) {
+                await _supabase
+                    .from('data_cabang')
+                    .update({ penanggung_jawab: nama, whatsapp: wa })
+                    .eq('email', email);
+            }
+
+            // Simpan pembaruan ke Session Storage lokal
+            const localUser = JSON.parse(sessionStorage.getItem('user_terabaca') || '{}');
+            localUser.nama = nama;
+            localUser.whatsapp = wa;
+            sessionStorage.setItem('user_terabaca', JSON.stringify(localUser));
+
+            alert("Alhamdulillah! Profil berhasil diperbarui.");
+            closeProfileModal();
+        
+            if (typeof loadDataCabang === 'function') loadDataCabang();
+
+        } catch (err) {
+            alert("Gagal memperbarui profil: " + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = "Simpan Perubahan";
+        }
+    }
+
+    // Switch Tab Info / Password
+        function switchProfileTab(tab) {
+            const formProfile = document.getElementById('formEditProfile');
+            const formPassword = document.getElementById('formUbahPassword');
+            const tabBtnProfile = document.getElementById('tabBtnProfile');
+            const tabBtnPassword = document.getElementById('tabBtnPassword');
+
+            if (tab === 'info') {
+                formProfile.classList.remove('hidden');
+                formPassword.classList.add('hidden');
+                tabBtnProfile.className = "py-2 px-4 border-b-2 border-indigo-600 text-indigo-600 font-semibold";
+                tabBtnPassword.className = "py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-600 font-semibold";
+            } else {
+                formProfile.classList.add('hidden');
+                formPassword.classList.remove('hidden');
+                tabBtnPassword.className = "py-2 px-4 border-b-2 border-indigo-600 text-indigo-600 font-semibold";
+                tabBtnProfile.className = "py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-600 font-semibold";
+            }
+        }
+
+        // Simpan Profil
+        async function simpanProfil(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSimpanProfil');
+            btn.disabled = true;
+            btn.textContent = "Menyimpan...";
+
+            const nama = document.getElementById('profileNama').value.trim();
+            const wa = document.getElementById('profileWA').value.trim();
+
+            try {
+                const { error } = await _supabase.auth.updateUser({
+                    data: { full_name: nama, whatsapp: wa }
+                });
+
+                if (error) throw error;
+
+                alert("Alhamdulillah! Profil berhasil diperbarui.");
+                closeProfileModal();
+        
+                // Refresh tabel jika ada fungsi loadDataCabang
+                if (typeof loadDataCabang === 'function') loadDataCabang();
+
+            } catch (err) {
+                alert("Gagal memperbarui profil: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Simpan Perubahan";
+            }
+        }
+
+  
+        // Simpan Ubah Password (Mendukung Supabase Auth & Direct DB Update)
+        async function simpanPasswordBaru(e) {
+            e.preventDefault();
+            const newPass = document.getElementById('inputNewPassword').value;
+            const confirmPass = document.getElementById('inputConfirmPassword').value;
+
+            if (newPass !== confirmPass) {
+                alert("Konfirmasi password baru tidak cocok!");
+                return;
+            }
+
+            const btn = document.getElementById('btnSimpanPassword');
+            btn.disabled = true;
+            btn.textContent = "Memproses...";
+
+            try {
+                // 1. Coba update via Supabase Auth resmi
+                const { error: authError } = await _supabase.auth.updateUser({
+                    password: newPass
+                });
+
+                // Jika berhasil via Auth resmi
+                if (!authError) {
+                    alert("Alhamdulillah! Password berhasil diubah.");
+                    document.getElementById('formUbahPassword').reset();
+                    closeProfileModal();
+                    return;
+                }
+
+                // 2. Jika Auth session missing, update password ke tabel staff_users / data_cabang
+                const email = document.getElementById('profileEmail').value;
+
+                if (!email) {
+                    throw new Error("Email akun tidak ditemukan untuk pembaruan password.");
+                }
+
+                // Update di tabel staff_users
+                const { error: staffError } = await _supabase
+                    .from('staff_users')
+                    .update({ password: newPass })
+                    .eq('email', email);
+
+                if (staffError) {
+                    // Alternatif jika tersimpan di data_cabang
+                    await _supabase
+                        .from('data_cabang')
+                        .update({ password: newPass })
+                        .eq('email', email);
+                }
+
+                alert("Alhamdulillah! Password berhasil diperbarui.");
+                document.getElementById('formUbahPassword').reset();
+                closeProfileModal();
+
+            } catch (err) {
+                alert("Gagal memperbarui password: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Update Password";
+        }
+    }
+        
     </script>
+    <!-- Modal Bagikan Link Registrasi Cabang -->
+    <div id="shareLinkModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-800">Bagikan Form Registrasi</h3>
+                <button onclick="closeShareModal()" class="text-slate-400 hover:text-slate-600 font-bold p-1">✕</button>
+            </div>
+
+            <p class="text-xs text-slate-500">Pilih metode untuk membagikan tautan pendaftaran cabang baru:</p>
+
+            <div class="space-y-2.5">
+                <!-- Pilihan 1: Kirim WA Langsung -->
+                <button onclick="shareToWhatsApp()" class="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
+                    <i class="fab fa-whatsapp text-base"></i> Kirim via WhatsApp
+                </button>
+
+                <!-- Pilihan 2: Copy Link -->
+                <button onclick="copyRegistrationLink()" class="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition">
+                    📋 Salin Link Pendaftaran
+                </button>
+
+                <!-- Pilihan 3: Buka Halaman Direct -->
+                <a id="directRegLink" href="#" target="_blank" class="w-full flex items-center justify-center gap-2 py-2 px-4 text-slate-500 hover:text-slate-700 font-medium text-xs rounded-xl transition">
+                    ↗️ Buka Form di Tab Baru
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Profil & Ubah Password -->
+    <div id="profileModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-6">
+            <!-- Header -->
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-800">Pengaturan Akun & Profil</h3>
+                <button onclick="closeProfileModal()" class="text-slate-400 hover:text-slate-600 font-bold p-1">✕</button>
+            </div>
+
+            <!-- Tab Navigasi -->
+            <div class="flex border-b border-slate-200 text-xs font-semibold">
+                <button id="tabBtnProfile" onclick="switchProfileTab('info')" class="py-2 px-4 border-b-2 border-indigo-600 text-indigo-600">Info Profil</button>
+                <button id="tabBtnPassword" onclick="switchProfileTab('password')" class="py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-600">Ubah Password</button>
+            </div>
+
+            <!-- Section 1: Form Edit Info Profil -->
+            <form id="formEditProfile" onsubmit="simpanProfil(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Email (Akun)</label>
+                    <input type="email" id="profileEmail" disabled class="w-full text-xs px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-500 cursor-not-allowed">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Nama Lengkap / Penanggung Jawab</label>
+                    <input type="text" id="profileNama" required class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">No. WhatsApp</label>
+                    <input type="tel" id="profileWA" required class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                </div>
+                <button type="submit" id="btnSimpanProfil" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
+                    Simpan Perubahan
+                </button>
+            </form>
+
+            <!-- Section 2: Form Ubah Password -->
+            <form id="formUbahPassword" onsubmit="simpanPasswordBaru(event)" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Password Baru</label>
+                    <input type="password" id="inputNewPassword" minlength="6" required placeholder="Minimal 6 karakter" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Konfirmasi Password Baru</label>
+                    <input type="password" id="inputConfirmPassword" minlength="6" required placeholder="Ulangi password baru" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                </div>
+                <button type="submit" id="btnSimpanPassword" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
+                    Update Password
+                </button>
+            </form>
+        </div>
+    </div>
+
+
 </body>
 </html>
