@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,26 +9,34 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+    </style>
     <!-- Link Manifest PWA -->
     <link rel="manifest" href="/manifest.json">
 
     <!-- Link Icon Browser & PWA -->
     <link rel="icon" type="image/png" href="/logo-terabaca.png">
-    <link rel="apple-touch-icon" href="/logo-terabaca.png">    
+    <link rel="apple-touch-icon" href="/logo-terabaca.png">
 </head>
+
 <body class="bg-slate-100 min-h-screen flex text-slate-800">
 
     <!-- SIDEBAR UTAMA -->
-<!-- SIDEBAR UTAMA PUSAT -->
-    <aside id="sidebar" class="w-64 bg-slate-900 text-white flex flex-col justify-between p-4 h-screen fixed left-0 top-0 z-50 border-r border-slate-800 shrink-0 transform -translate-x-full md:translate-x-0 transition-transform duration-300">
+    <!-- SIDEBAR UTAMA PUSAT -->
+    <aside id="sidebar"
+        class="w-64 bg-slate-900 text-white flex flex-col justify-between p-4 h-screen fixed left-0 top-0 z-50 border-r border-slate-800 shrink-0 transform -translate-x-full md:translate-x-0 transition-transform duration-300">
         <div>
             <!-- Header Brand -->
             <div class="flex items-center justify-between px-2 py-3 border-b border-slate-800 mb-6">
                 <div class="flex items-center gap-3">
                     <span class="font-bold text-xl tracking-wide text-emerald-400">TERABACA</span>
-                    <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/30">Pusat</span>
+                    <span
+                        class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/30">Pusat</span>
                 </div>
                 <!-- Tombol Tutup X khusus di HP -->
                 <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white p-1">
@@ -37,13 +46,16 @@
 
             <!-- Menu Navigasi Sidebar -->
             <nav class="space-y-1">
-                <button onclick="switchTab('approval')" id="btn-tab-approval" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold bg-emerald-600 text-white shadow-sm transition">
+                <button onclick="switchTab('approval')" id="btn-tab-approval"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold bg-emerald-600 text-white shadow-sm transition">
                     <i class="fas fa-check-circle w-4 text-center"></i> Ruang Approval & Berkas
                 </button>
-                <button onclick="switchTab('database')" id="btn-tab-database" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">
+                <button onclick="switchTab('database')" id="btn-tab-database"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">
                     <i class="fas fa-database w-4 text-center"></i> Database Testee (Master)
                 </button>
-                <button onclick="switchTab('cabang')" id="btn-tab-cabang" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">
+                <button onclick="switchTab('cabang')" id="btn-tab-cabang"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">
                     <i class="fas fa-network-wired w-4 text-center"></i> Ruang Kontrol Cabang
                 </button>
             </nav>
@@ -51,36 +63,44 @@
 
         <!-- Tombol Logout & Landing Page -->
         <div class="border-t border-slate-800 pt-4 space-y-2">
-            <button onclick="openProfileModal()" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">
+            <button onclick="openProfileModal()"
+                class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">
                 <i class="fas fa-user-cog w-4 text-center text-indigo-400"></i> Pengaturan Profil
             </button>
             </button>
-            <a href="index.html" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">
+            <a href="index.html"
+                class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">
                 <i class="fas fa-globe w-4 text-center"></i> Landing Page
             </a>
-            <button onclick="logoutAdmin()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold bg-rose-900/30 hover:bg-rose-800/50 text-rose-300 border border-rose-800/50 transition">
+            <button onclick="logoutAdmin()"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold bg-rose-900/30 hover:bg-rose-800/50 text-rose-300 border border-rose-800/50 transition">
                 <i class="fas fa-sign-out-alt w-4 text-center"></i> Keluar Portal
             </button>
         </div>
     </aside>
 
-<!-- Backdrop Gelap (Tempel tepat di bawah </aside>) -->
-<div id="sidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden md:hidden"></div>
+    <!-- Backdrop Gelap (Tempel tepat di bawah </aside>) -->
+    <div id="sidebarBackdrop" onclick="toggleSidebar()"
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden md:hidden"></div>
 
     <!-- AREA KONTEN UTAMA -->
     <div class="flex-1 flex flex-col min-h-screen overflow-y-auto">
-        
+
         <!-- Header Top Bar -->
-        <header class="bg-white border-b border-slate-200 py-4 px-8 flex justify-between items-center sticky top-0 z-10">
+        <header
+            class="bg-white border-b border-slate-200 py-4 px-8 flex justify-between items-center sticky top-0 z-10">
             <div>
                 <h1 id="page-title" class="text-lg font-bold text-slate-800">Ruang Approval & Control Berkas</h1>
-                <p id="page-subtitle" class="text-xs text-slate-500">Verifikasi keuangan, download lembar kerja, dan unggah hasil analisa.</p>
+                <p id="page-subtitle" class="text-xs text-slate-500">Verifikasi keuangan, download lembar kerja, dan
+                    unggah hasil analisa.</p>
             </div>
             <div class="flex items-center gap-3">
-                <button onclick="downloadRekapExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3.5 py-2 rounded-xl transition font-semibold shadow-sm flex items-center gap-1.5">
+                <button onclick="downloadRekapExcel()"
+                    class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3.5 py-2 rounded-xl transition font-semibold shadow-sm flex items-center gap-1.5">
                     <i class="fas fa-file-excel"></i> Unduh Excel (.xlsx)
                 </button>
-                <button onclick="refreshData()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs px-3 py-2 rounded-xl border border-slate-200 transition">
+                <button onclick="refreshData()"
+                    class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs px-3 py-2 rounded-xl border border-slate-200 transition">
                     <i class="fas fa-sync-alt"></i> Refresh
                 </button>
             </div>
@@ -89,8 +109,10 @@
         <!-- Main Content -->
         <main class="md:ml-64 flex-1 p-4 md:p-6 bg-slate-100 min-h-screen">
             <!-- Header Admin Pusat -->
-            <header class="bg-white border border-slate-200 p-3.5 rounded-xl flex items-center justify-between mb-6 shadow-sm">
-                <button onclick="toggleSidebar()" class="md:hidden text-slate-600 hover:text-slate-900 p-2 rounded-lg bg-slate-100">
+            <header
+                class="bg-white border border-slate-200 p-3.5 rounded-xl flex items-center justify-between mb-6 shadow-sm">
+                <button onclick="toggleSidebar()"
+                    class="md:hidden text-slate-600 hover:text-slate-900 p-2 rounded-lg bg-slate-100">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
                 <div class="text-sm font-semibold text-slate-700">
@@ -100,11 +122,14 @@
 
             <!-- TAB 1: RUANG APPROVAL & CONTROL BERKAS -->
             <section id="tab-approval" class="space-y-6">
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div
+                    class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <span class="text-xs font-semibold text-slate-600">Filter Sesi Tanggal Input:</span>
                     <div class="flex items-center gap-2">
-                        <input type="date" id="filterTanggal" onchange="loadDataPeserta()" class="px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-slate-50 outline-none">
-                        <button onclick="document.getElementById('filterTanggal').value=''; loadDataPeserta();" class="text-xs text-indigo-600 hover:underline">Reset</button>
+                        <input type="date" id="filterTanggal" onchange="loadDataPeserta()"
+                            class="px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-slate-50 outline-none">
+                        <button onclick="document.getElementById('filterTanggal').value=''; loadDataPeserta();"
+                            class="text-xs text-indigo-600 hover:underline">Reset</button>
                     </div>
                 </div>
 
@@ -112,7 +137,8 @@
                     <div class="w-full overflow-x-auto">
                         <table class="w-full text-left border-collapse min-w-[600px]">
                             <thead>
-                                <tr class="bg-slate-50 text-slate-600 text-xs uppercase tracking-wider border-b border-slate-200">
+                                <tr
+                                    class="bg-slate-50 text-slate-600 text-xs uppercase tracking-wider border-b border-slate-200">
                                     <th class="py-3 px-4">Penginput & Cabang</th>
                                     <th class="py-3 px-4">Identitas Testee</th>
                                     <th class="py-3 px-4">Paket & Status Bayar</th>
@@ -122,7 +148,8 @@
                             </thead>
                             <tbody id="tabelDataApproval" class="divide-y divide-slate-100 text-sm text-slate-700">
                                 <tr>
-                                    <td colspan="5" class="text-center py-8 text-slate-400">Memuat data dari database pusat...</td>
+                                    <td colspan="5" class="text-center py-8 text-slate-400">Memuat data dari database
+                                        pusat...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -151,15 +178,20 @@
                     </div>
                 </div>
 
-                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+                <div
+                    class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
                     <div class="w-full md:w-1/3">
-                        <input type="text" id="searchInput" onkeyup="applyMasterFilter()" placeholder="Cari nama murid atau lembaga..." class="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-900">
+                        <input type="text" id="searchInput" onkeyup="applyMasterFilter()"
+                            placeholder="Cari nama murid atau lembaga..."
+                            class="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-900">
                     </div>
                     <div class="flex items-center gap-2 w-full md:w-auto justify-end">
-                        <select id="filterCabang" onchange="applyMasterFilter()" class="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-medium">
+                        <select id="filterCabang" onchange="applyMasterFilter()"
+                            class="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-medium">
                             <option value="">Semua Cabang</option>
                         </select>
-                        <select id="filterPaket" onchange="applyMasterFilter()" class="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-medium">
+                        <select id="filterPaket" onchange="applyMasterFilter()"
+                            class="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-medium">
                             <option value="">Semua Paket</option>
                             <option value="Basic">Basic</option>
                             <option value="Parent">Parent</option>
@@ -171,10 +203,12 @@
 
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="p-4 border-b border-slate-100 flex items-center justify-between">
-                        <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Data Peserta Terdaftar (<span id="countTable">0</span>)</h2>
-                        <span id="loadingStatusMaster" class="text-xs text-amber-600 font-bold hidden">⏳ Memuat data...</span>
+                        <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Data Peserta Terdaftar
+                            (<span id="countTable">0</span>)</h2>
+                        <span id="loadingStatusMaster" class="text-xs text-amber-600 font-bold hidden">⏳ Memuat
+                            data...</span>
                     </div>
-                    
+
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-[11px] text-slate-600 whitespace-nowrap min-w-[1800px]">
                             <thead class="bg-slate-50 text-slate-700 uppercase font-bold border-b border-slate-200">
@@ -221,16 +255,19 @@
             <section id="tab-cabang" class="hidden space-y-6">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl font-bold">
+                        <div
+                            class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl font-bold">
                             <i class="fas fa-store"></i>
                         </div>
                         <div>
                             <span class="text-[10px] font-bold text-slate-400 uppercase">Total Cabang Terdaftar</span>
-                            <div id="statTotalCabangKoneksi" class="text-2xl font-extrabold text-slate-800 mt-0.5">0</div>
+                            <div id="statTotalCabangKoneksi" class="text-2xl font-extrabold text-slate-800 mt-0.5">0
+                            </div>
                         </div>
                     </div>
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl font-bold">
+                        <div
+                            class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl font-bold">
                             <i class="fas fa-user-check"></i>
                         </div>
                         <div>
@@ -239,7 +276,8 @@
                         </div>
                     </div>
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl font-bold">
+                        <div
+                            class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl font-bold">
                             <i class="fas fa-signal"></i>
                         </div>
                         <div>
@@ -254,16 +292,18 @@
                 <!-- Tabel Monitoring & Tombol Tambah Cabang -->
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="p-4 border-b border-slate-100 flex items-center justify-between">
-                        <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Daftar Cabang Terdaftar</h2>
+                        <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Daftar Cabang Terdaftar
+                        </h2>
                         <div class="flex items-center gap-2">
                             <!-- Tombol Bagikan Link Registrasi (Diperbarui) -->
-                            <button onclick="shareRegistrationLink()" type="button" 
-                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-xs font-semibold transition border border-indigo-200 shadow-sm cursor-pointer">
+                            <button onclick="shareRegistrationLink()" type="button"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-xs font-semibold transition border border-indigo-200 shadow-sm cursor-pointer">
                                 <i class="fas fa-share-alt"></i> Bagikan Form Registrasi
                             </button>
 
                             <!-- Tombol Tambah Cabang Baru (Eksisting) -->
-                            <button onclick="toggleModalCabang(true)" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-xl font-semibold transition flex items-center gap-1.5 shadow-sm">
+                            <button onclick="toggleModalCabang(true)"
+                                class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-xl font-semibold transition flex items-center gap-1.5 shadow-sm">
                                 <i class="fas fa-plus-circle"></i> Tambah Cabang Baru
                             </button>
                         </div>
@@ -295,9 +335,11 @@
         </main>
 
         <!-- MODAL FORM TAMBAH CABANG BARU -->
-        <div id="modalCabang" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div id="modalCabang"
+            class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
             <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md p-6 relative">
-                <button onclick="toggleModalCabang(false)" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <button onclick="toggleModalCabang(false)"
+                    class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
                     <i class="fas fa-times text-base"></i>
                 </button>
                 <h3 class="text-base font-bold text-slate-800 mb-1">Tambah Cabang Baru</h3>
@@ -306,23 +348,30 @@
                 <form id="formTambahCabang" onsubmit="simpanCabangBaru(event)" class="space-y-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Kode Cabang</label>
-                        <input type="text" id="inputKodeCabang" placeholder="Contoh: DPK-01" required class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:border-indigo-600">
+                        <input type="text" id="inputKodeCabang" placeholder="Contoh: DPK-01" required
+                            class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:border-indigo-600">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Cabang / Unit</label>
-                        <input type="text" id="inputNamaCabang" placeholder="Contoh: Kota Depok" required class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:border-indigo-600">
+                        <input type="text" id="inputNamaCabang" placeholder="Contoh: Kota Depok" required
+                            class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:border-indigo-600">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Penanggung Jawab</label>
-                        <input type="text" id="inputPJ" placeholder="Contoh: Ahmad Hidayat" required class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:border-indigo-600">
+                        <input type="text" id="inputPJ" placeholder="Contoh: Ahmad Hidayat" required
+                            class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:border-indigo-600">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Nomor WhatsApp</label>
-                        <input type="text" id="inputWA" placeholder="Contoh: 08123456789" required class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:border-indigo-600">
+                        <input type="text" id="inputWA" placeholder="Contoh: 08123456789" required
+                            class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:border-indigo-600">
                     </div>
                     <div class="pt-2 flex justify-end gap-2">
-                        <button type="button" onclick="toggleModalCabang(false)" class="px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition">Batal</button>
-                        <button type="submit" id="btnSubmitCabang" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-sm transition">Simpan Cabang</button>
+                        <button type="button" onclick="toggleModalCabang(false)"
+                            class="px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition">Batal</button>
+                        <button type="submit" id="btnSubmitCabang"
+                            class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-sm transition">Simpan
+                            Cabang</button>
                     </div>
                 </form>
             </div>
@@ -338,7 +387,7 @@
     <script>
         const SUPABASE_URL = 'https://zdealocdcweemecirdap.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkZWFsb2NkY3dlZW1lY2lyZGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5ODEyNTgsImV4cCI6MjA5NDU1NzI1OH0._fgstIY2k0s0zv-7_EnupEmFlExFsXRLZP7BAYHd_-c';
-        
+
         const { createClient } = supabase;
         const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -402,7 +451,7 @@
         async function loadDataPeserta() {
             const tbodyApproval = document.getElementById('tabelDataApproval');
             const statusMaster = document.getElementById('loadingStatusMaster');
-            
+
             tbodyApproval.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400">Sedang menyinkronkan data...</td></tr>`;
             statusMaster.classList.remove('hidden');
 
@@ -429,7 +478,7 @@
         function renderApprovalTable(data) {
             const tbody = document.getElementById('tabelDataApproval');
             const filterTgl = document.getElementById('filterTanggal').value;
-            
+
             let filtered = data;
             if (filterTgl) {
                 filtered = data.filter(row => row.created_at && row.created_at.startsWith(filterTgl));
@@ -447,17 +496,18 @@
 
                 const tanggalInput = new Date(row.created_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
 
-                let statusTransferHTML = `<span class="inline-block bg-amber-50 text-amber-700 text-[11px] font-semibold px-2 py-0.5 rounded border border-amber-200 mb-1">⚠️ Belum Bukti Bayar</span>`;
-                if (row.bukti_transfer_url) {
-                    statusTransferHTML = `<a href="${row.bukti_transfer_url}" target="_blank" class="inline-block bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-[11px] font-semibold px-2.5 py-0.5 rounded border border-emerald-200 mb-1"><i class="fas fa-receipt mr-1"></i> Valid (Bukti Transfer)</a>`;
-                }
+                let statusTransferHTML = row.bukti_transfer_url
+                    ? `<a href="${row.bukti_transfer_url}" target="_blank" class="inline-block bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-[11px] font-semibold px-2.5 py-0.5 rounded border border-emerald-200 mb-1"><i class="fas fa-receipt mr-1"></i> Valid (Bukti Transfer)</a>`
+                    : row.is_valid_pembayaran
+                        ? `<span class="inline-block bg-emerald-50 text-emerald-700 text-[11px] font-semibold px-2.5 py-0.5 rounded border border-emerald-200 mb-1"><i class="fas fa-check-circle mr-1"></i> Valid (Manual)</span>`
+                        : `<div class="flex items-center gap-1.5 mb-1"><span class="inline-block bg-amber-50 text-amber-700 text-[11px] font-semibold px-2 py-0.5 rounded border border-amber-200">⚠️ Belum Bukti Bayar</span><button onclick="setValidManual(${row.id})" class="text-[10px] font-bold bg-blue-600 hover:bg-blue-700 text-white px-2 py-0.5 rounded shadow-sm">+ Set Valid</button></div>`;
 
                 let linkCoretanHTML = '<span class="text-xs text-slate-400 block">Tidak ada file coretan</span>';
                 if (row.file_coretan_url) {
                     linkCoretanHTML = `<a href="${row.file_coretan_url.trim()}" target="_blank" class="inline-block bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-semibold px-2.5 py-0.5 rounded border border-indigo-200"><i class="fas fa-file-download mr-1"></i> Unduh Lembar Work</a>`;
                 }
 
-                let analisaHTML = row.hasil_analisa_url ? 
+                let analisaHTML = row.hasil_analisa_url ?
                     `<div class="space-y-1">
                         <a href="${row.hasil_analisa_url}" target="_blank" class="block bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-semibold px-2.5 py-1 rounded border border-blue-200 text-center"><i class="fas fa-download"></i> Hasil Analisa</a>
                         <button onclick="unggahAnalisa(${row.id}, '${row.nama_testee}')" class="text-[11px] text-slate-500 hover:text-slate-700 underline block text-center w-full">Ganti File</button>
@@ -498,7 +548,7 @@
 
         function updateStatistics(data) {
             document.getElementById('statTotalPeserta').textContent = data.length;
-            
+
             const cabangSet = new Set(data.map(i => i.cabang).filter(Boolean));
             document.getElementById('statTotalCabang').textContent = cabangSet.size;
 
@@ -519,7 +569,7 @@
             const select = document.getElementById('filterCabang');
             select.innerHTML = '<option value="">Semua Cabang</option>';
             const cabangList = [...new Set(data.map(i => i.cabang).filter(Boolean))];
-            
+
             cabangList.forEach(cab => {
                 const opt = document.createElement('option');
                 opt.value = cab;
@@ -682,7 +732,7 @@
             alert("Cabang baru berhasil ditambahkan!");
             document.getElementById('formTambahCabang').reset();
             toggleModalCabang(false);
-    
+
             // Refresh data tabel cabang dan peserta
             loadDataCabang();
             if (typeof loadDataPeserta === 'function') loadDataPeserta();
@@ -813,7 +863,7 @@
             const input = document.createElement('input');
             input.type = 'file';
             input.accept = 'image/*,.pdf';
-            
+
             input.onchange = async e => {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -845,7 +895,7 @@
             const worksheet = XLSX.utils.json_to_sheet(rawData);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Master TERABACA");
-            XLSX.writeFile(workbook, `Rekap_Pusat_TERABACA_${new Date().toISOString().slice(0,10)}.xlsx`);
+            XLSX.writeFile(workbook, `Rekap_Pusat_TERABACA_${new Date().toISOString().slice(0, 10)}.xlsx`);
         }
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -856,7 +906,7 @@
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const backdrop = document.getElementById('sidebarBackdrop');
-            
+
             if (sidebar && backdrop) {
                 sidebar.classList.toggle('-translate-x-full');
                 backdrop.classList.toggle('hidden');
@@ -922,71 +972,71 @@
             try {
                 // 1. Coba ambil dari Supabase Auth dulu
                 const { data: { user } } = await _supabase.auth.getUser();
-            if (user) {
-                currentUser = user;
-                document.getElementById('profileEmail').value = user.email || '';
-                document.getElementById('profileNama').value = user.user_metadata?.full_name || '';
-                document.getElementById('profileWA').value = user.user_metadata?.whatsapp || '';
-                return;
+                if (user) {
+                    currentUser = user;
+                    document.getElementById('profileEmail').value = user.email || '';
+                    document.getElementById('profileNama').value = user.user_metadata?.full_name || '';
+                    document.getElementById('profileWA').value = user.user_metadata?.whatsapp || '';
+                    return;
+                }
+
+                // 2. Jika Supabase Auth null, ambil dari Storage Lokal aplikasi (tergantung sistem login kamu)
+                const localUser = JSON.parse(sessionStorage.getItem('user_terabaca') || localStorage.getItem('user_terabaca') || '{}');
+
+                document.getElementById('profileEmail').value = localUser.email || 'admin@terabaca.com';
+                document.getElementById('profileNama').value = localUser.nama || localUser.penanggung_jawab || '';
+                document.getElementById('profileWA').value = localUser.whatsapp || localUser.no_whatsapp || '';
+
+            } catch (err) {
+                console.log("Error memuat profil:", err);
             }
-
-            // 2. Jika Supabase Auth null, ambil dari Storage Lokal aplikasi (tergantung sistem login kamu)
-            const localUser = JSON.parse(sessionStorage.getItem('user_terabaca') || localStorage.getItem('user_terabaca') || '{}');
-        
-            document.getElementById('profileEmail').value = localUser.email || 'admin@terabaca.com';
-            document.getElementById('profileNama').value = localUser.nama || localUser.penanggung_jawab || '';
-            document.getElementById('profileWA').value = localUser.whatsapp || localUser.no_whatsapp || '';
-
-        } catch (err) {
-            console.log("Error memuat profil:", err);
         }
-    }
 
-    // Simpan Profil
-    async function simpanProfil(e) {
-        e.preventDefault();
-        const btn = document.getElementById('btnSimpanProfil');
-        btn.disabled = true;
-        btn.textContent = "Menyimpan...";
+        // Simpan Profil
+        async function simpanProfil(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSimpanProfil');
+            btn.disabled = true;
+            btn.textContent = "Menyimpan...";
 
-        const email = document.getElementById('profileEmail').value;
-        const nama = document.getElementById('profileNama').value.trim();
-        const wa = document.getElementById('profileWA').value.trim();
+            const email = document.getElementById('profileEmail').value;
+            const nama = document.getElementById('profileNama').value.trim();
+            const wa = document.getElementById('profileWA').value.trim();
 
-        try {
-            // Update ke Supabase Auth jika session aktif
-            await _supabase.auth.updateUser({
-                data: { full_name: nama, whatsapp: wa }
-            }).catch(() => {});
+            try {
+                // Update ke Supabase Auth jika session aktif
+                await _supabase.auth.updateUser({
+                    data: { full_name: nama, whatsapp: wa }
+                }).catch(() => { });
 
-            // Update langsung ke database data_cabang
-            if (email) {
-                await _supabase
-                    .from('data_cabang')
-                    .update({ penanggung_jawab: nama, whatsapp: wa })
-                    .eq('email', email);
+                // Update langsung ke database data_cabang
+                if (email) {
+                    await _supabase
+                        .from('data_cabang')
+                        .update({ penanggung_jawab: nama, whatsapp: wa })
+                        .eq('email', email);
+                }
+
+                // Simpan pembaruan ke Session Storage lokal
+                const localUser = JSON.parse(sessionStorage.getItem('user_terabaca') || '{}');
+                localUser.nama = nama;
+                localUser.whatsapp = wa;
+                sessionStorage.setItem('user_terabaca', JSON.stringify(localUser));
+
+                alert("Alhamdulillah! Profil berhasil diperbarui.");
+                closeProfileModal();
+
+                if (typeof loadDataCabang === 'function') loadDataCabang();
+
+            } catch (err) {
+                alert("Gagal memperbarui profil: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Simpan Perubahan";
             }
-
-            // Simpan pembaruan ke Session Storage lokal
-            const localUser = JSON.parse(sessionStorage.getItem('user_terabaca') || '{}');
-            localUser.nama = nama;
-            localUser.whatsapp = wa;
-            sessionStorage.setItem('user_terabaca', JSON.stringify(localUser));
-
-            alert("Alhamdulillah! Profil berhasil diperbarui.");
-            closeProfileModal();
-        
-            if (typeof loadDataCabang === 'function') loadDataCabang();
-
-        } catch (err) {
-            alert("Gagal memperbarui profil: " + err.message);
-        } finally {
-            btn.disabled = false;
-            btn.textContent = "Simpan Perubahan";
         }
-    }
 
-    // Switch Tab Info / Password
+        // Switch Tab Info / Password
         function switchProfileTab(tab) {
             const formProfile = document.getElementById('formEditProfile');
             const formPassword = document.getElementById('formUbahPassword');
@@ -1025,7 +1075,7 @@
 
                 alert("Alhamdulillah! Profil berhasil diperbarui.");
                 closeProfileModal();
-        
+
                 // Refresh tabel jika ada fungsi loadDataCabang
                 if (typeof loadDataCabang === 'function') loadDataCabang();
 
@@ -1037,69 +1087,70 @@
             }
         }
 
-  
+
         // Simpan Ubah Password (Mendukung Supabase Auth & Direct DB Update)
-async function simpanPasswordBaru(e) {
-    e.preventDefault();
-    const newPass = document.getElementById('inputNewPassword').value.trim();
-    const confirmPass = document.getElementById('inputConfirmPassword').value.trim();
-    const email = document.getElementById('profileEmail').value.trim();
+        async function simpanPasswordBaru(e) {
+            e.preventDefault();
+            const newPass = document.getElementById('inputNewPassword').value.trim();
+            const confirmPass = document.getElementById('inputConfirmPassword').value.trim();
+            const email = document.getElementById('profileEmail').value.trim();
 
-    if (!newPass || newPass.length < 6) {
-        alert("Password minimal harus 6 karakter!");
-        return;
-    }
+            if (!newPass || newPass.length < 6) {
+                alert("Password minimal harus 6 karakter!");
+                return;
+            }
 
-    if (newPass !== confirmPass) {
-        alert("Konfirmasi password baru tidak cocok!");
-        return;
-    }
+            if (newPass !== confirmPass) {
+                alert("Konfirmasi password baru tidak cocok!");
+                return;
+            }
 
-    if (!email) {
-        alert("Gagal: Email pengguna tidak terdeteksi.");
-        return;
-    }
+            if (!email) {
+                alert("Gagal: Email pengguna tidak terdeteksi.");
+                return;
+            }
 
-    const btn = document.getElementById('btnSimpanPassword');
-    btn.disabled = true;
-    btn.textContent = "Memproses...";
+            const btn = document.getElementById('btnSimpanPassword');
+            btn.disabled = true;
+            btn.textContent = "Memproses...";
 
-    try {
-        // 1. Coba via Supabase Auth
-        const { error: authError } = await _supabase.auth.updateUser({
-            password: newPass
-        });
+            try {
+                // 1. Coba via Supabase Auth
+                const { error: authError } = await _supabase.auth.updateUser({
+                    password: newPass
+                });
 
-        if (!authError) {
-            alert("Alhamdulillah! Password berhasil diubah via Auth.");
-            document.getElementById('formUbahPassword').reset();
-            closeProfileModal();
-            return;
+                if (!authError) {
+                    alert("Alhamdulillah! Password berhasil diubah via Auth.");
+                    document.getElementById('formUbahPassword').reset();
+                    closeProfileModal();
+                    return;
+                }
+
+                // 2. Fallback: Eksekusi RPC Function Database yang dijamin bypass RLS
+                const { error: rpcError } = await _supabase.rpc('update_user_password', {
+                    user_email: email,
+                    new_password: newPass
+                });
+
+                if (rpcError) throw rpcError;
+
+                alert("Alhamdulillah! Password berhasil diperbarui.");
+                document.getElementById('formUbahPassword').reset();
+                closeProfileModal();
+
+            } catch (err) {
+                alert("Gagal memperbarui password: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Update Password";
+            }
         }
 
-        // 2. Fallback: Eksekusi RPC Function Database yang dijamin bypass RLS
-        const { error: rpcError } = await _supabase.rpc('update_user_password', {
-            user_email: email,
-            new_password: newPass
-        });
-
-        if (rpcError) throw rpcError;
-
-        alert("Alhamdulillah! Password berhasil diperbarui.");
-        document.getElementById('formUbahPassword').reset();
-        closeProfileModal();
-
-    } catch (err) {
-        alert("Gagal memperbarui password: " + err.message);
-    } finally {
-        btn.disabled = false;
-        btn.textContent = "Update Password";
-    }
-}
-        
     </script>
     <!-- Modal Bagikan Link Registrasi Cabang -->
-    <div id="shareLinkModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+    <div id="shareLinkModal"
+        class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
         <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-5">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                 <h3 class="text-base font-bold text-slate-800">Bagikan Form Registrasi</h3>
@@ -1110,53 +1161,65 @@ async function simpanPasswordBaru(e) {
 
             <div class="space-y-2.5">
                 <!-- Pilihan 1: Kirim WA Langsung -->
-                <button onclick="shareToWhatsApp()" class="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
+                <button onclick="shareToWhatsApp()"
+                    class="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
                     <i class="fab fa-whatsapp text-base"></i> Kirim via WhatsApp
                 </button>
 
                 <!-- Pilihan 2: Copy Link -->
-                <button onclick="copyRegistrationLink()" class="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition">
+                <button onclick="copyRegistrationLink()"
+                    class="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition">
                     📋 Salin Link Pendaftaran
                 </button>
 
                 <!-- Pilihan 3: Buka Halaman Direct -->
-                <a id="directRegLink" href="#" target="_blank" class="w-full flex items-center justify-center gap-2 py-2 px-4 text-slate-500 hover:text-slate-700 font-medium text-xs rounded-xl transition">
+                <a id="directRegLink" href="#" target="_blank"
+                    class="w-full flex items-center justify-center gap-2 py-2 px-4 text-slate-500 hover:text-slate-700 font-medium text-xs rounded-xl transition">
                     ↗️ Buka Form di Tab Baru
                 </a>
             </div>
         </div>
     </div>
 
-<!-- Modal Profil & Ubah Password -->
-    <div id="profileModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+    <!-- Modal Profil & Ubah Password -->
+    <div id="profileModal"
+        class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
         <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-6">
             <!-- Header -->
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                 <h3 class="text-base font-bold text-slate-800">Pengaturan Akun & Profil</h3>
-                <button onclick="closeProfileModal()" class="text-slate-400 hover:text-slate-600 font-bold p-1">✕</button>
+                <button onclick="closeProfileModal()"
+                    class="text-slate-400 hover:text-slate-600 font-bold p-1">✕</button>
             </div>
 
             <!-- Tab Navigasi -->
             <div class="flex border-b border-slate-200 text-xs font-semibold">
-                <button id="tabBtnProfile" onclick="switchProfileTab('info')" class="py-2 px-4 border-b-2 border-indigo-600 text-indigo-600">Info Profil</button>
-                <button id="tabBtnPassword" onclick="switchProfileTab('password')" class="py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-600">Ubah Password</button>
+                <button id="tabBtnProfile" onclick="switchProfileTab('info')"
+                    class="py-2 px-4 border-b-2 border-indigo-600 text-indigo-600">Info Profil</button>
+                <button id="tabBtnPassword" onclick="switchProfileTab('password')"
+                    class="py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-600">Ubah
+                    Password</button>
             </div>
 
             <!-- Section 1: Form Edit Info Profil -->
             <form id="formEditProfile" onsubmit="simpanProfil(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-medium text-slate-600 mb-1">Email (Akun)</label>
-                    <input type="email" id="profileEmail" disabled class="w-full text-xs px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-500 cursor-not-allowed">
+                    <input type="email" id="profileEmail" disabled
+                        class="w-full text-xs px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-500 cursor-not-allowed">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-slate-600 mb-1">Nama Lengkap / Penanggung Jawab</label>
-                    <input type="text" id="profileNama" required class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                    <input type="text" id="profileNama" required
+                        class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-slate-600 mb-1">No. WhatsApp</label>
-                    <input type="tel" id="profileWA" required class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                    <input type="tel" id="profileWA" required
+                        class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
                 </div>
-                <button type="submit" id="btnSimpanProfil" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
+                <button type="submit" id="btnSimpanProfil"
+                    class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
                     Simpan Perubahan
                 </button>
             </form>
@@ -1165,13 +1228,17 @@ async function simpanPasswordBaru(e) {
             <form id="formUbahPassword" onsubmit="simpanPasswordBaru(event)" class="space-y-4 hidden">
                 <div>
                     <label class="block text-xs font-medium text-slate-600 mb-1">Password Baru</label>
-                    <input type="password" id="inputNewPassword" minlength="6" required placeholder="Minimal 6 karakter" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                    <input type="password" id="inputNewPassword" minlength="6" required placeholder="Minimal 6 karakter"
+                        class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-slate-600 mb-1">Konfirmasi Password Baru</label>
-                    <input type="password" id="inputConfirmPassword" minlength="6" required placeholder="Ulangi password baru" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                    <input type="password" id="inputConfirmPassword" minlength="6" required
+                        placeholder="Ulangi password baru"
+                        class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
                 </div>
-                <button type="submit" id="btnSimpanPassword" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
+                <button type="submit" id="btnSimpanPassword"
+                    class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
                     Update Password
                 </button>
             </form>
@@ -1242,7 +1309,7 @@ async function simpanPasswordBaru(e) {
             try {
                 await _supabase.auth.updateUser({
                     data: { full_name: nama, whatsapp: wa }
-                }).catch(() => {});
+                }).catch(() => { });
 
                 if (email) {
                     await _supabase
@@ -1322,6 +1389,13 @@ async function simpanPasswordBaru(e) {
                 btn.textContent = "Update Password";
             }
         }
+
+        async function setValidManual(id) {
+            if (!confirm("Tandai pembayaran peserta ini sebagai Valid (Manual)?")) return;
+            const { error } = await _supabase.from('data_peserta').update({ is_valid_pembayaran: true }).eq('id', id);
+            if (!error) { alert("Berhasil!"); loadDataPeserta(); } else { alert("Gagal: " + error.message); }
+        }
     </script>
 </body>
+
 </html>
