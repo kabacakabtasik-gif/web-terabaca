@@ -1039,70 +1039,63 @@
 
   
         // Simpan Ubah Password (Mendukung Supabase Auth & Direct DB Update)
-        async function simpanPasswordBaru(e) {
-            e.preventDefault();
-            const newPass = document.getElementById('inputNewPassword').value;
-            const confirmPass = document.getElementById('inputConfirmPassword').value;
+async function simpanPasswordBaru(e) {
+    e.preventDefault();
+    const newPass = document.getElementById('inputNewPassword').value.trim();
+    const confirmPass = document.getElementById('inputConfirmPassword').value.trim();
+    const email = document.getElementById('profileEmail').value.trim();
 
-            if (newPass !== confirmPass) {
-                alert("Konfirmasi password baru tidak cocok!");
-                return;
-            }
-
-            const btn = document.getElementById('btnSimpanPassword');
-            btn.disabled = true;
-            btn.textContent = "Memproses...";
-
-            try {
-                // 1. Coba update via Supabase Auth resmi
-                const { error: authError } = await _supabase.auth.updateUser({
-                    password: newPass
-                });
-
-                // Jika berhasil via Auth resmi
-                if (!authError) {
-                    alert("Alhamdulillah! Password berhasil diubah.");
-                    document.getElementById('formUbahPassword').reset();
-                    closeProfileModal();
-                    return;
-                }
-
-                // 2. Jika Auth Error (misal Session Missing), coba update ke tabel database manual
-                const email = document.getElementById('profileEmail').value;
-                if (!email) {
-                alert("Gagal: Email akun tidak ditemukan.");
-                    return;
-                }
-
-                // Update password ke tabel staff_users
-                const { error: dbError } = await _supabase
-                    .from('staff_users')
-                    .update({ password: newPass })
-                    .eq('email', email);
-
-                if (dbError) {
-                    // Jika di staff_users gagal, coba di data_cabang
-                    const { error: cabangError } = await _supabase
-                        .from('data_cabang')
-                        .update({ password: newPass })
-                        .eq('email', email);
-
-                    if (cabangError) {
-                        throw new Error("Sesi Auth tidak ditemukan & gagal update ke tabel database.");
-                    }
-                }
-
-                alert("Alhamdulillah! Password berhasil diperbarui di database.");
-                document.getElementById('formUbahPassword').reset();
-                closeProfileModal();
-
-            } catch (err) {
-                alert("Gagal memperbarui password: " + err.message);
-            } finally {
-                btn.disabled = false;
-                btn.textContent = "Update Password";
-        }
+    if (!newPass || newPass.length < 6) {
+        alert("Password minimal harus 6 karakter!");
+        return;
     }
+
+    if (newPass !== confirmPass) {
+        alert("Konfirmasi password baru tidak cocok!");
+        return;
+    }
+
+    if (!email) {
+        alert("Gagal: Email pengguna tidak terdeteksi.");
+        return;
+    }
+
+    const btn = document.getElementById('btnSimpanPassword');
+    btn.disabled = true;
+    btn.textContent = "Memproses...";
+
+    try {
+        // 1. Coba via Supabase Auth
+        const { error: authError } = await _supabase.auth.updateUser({
+            password: newPass
+        });
+
+        if (!authError) {
+            alert("Alhamdulillah! Password berhasil diubah via Auth.");
+            document.getElementById('formUbahPassword').reset();
+            closeProfileModal();
+            return;
+        }
+
+        // 2. Fallback: Eksekusi RPC Function Database yang dijamin bypass RLS
+        const { error: rpcError } = await _supabase.rpc('update_user_password', {
+            user_email: email,
+            new_password: newPass
+        });
+
+        if (rpcError) throw rpcError;
+
+        alert("Alhamdulillah! Password berhasil diperbarui.");
+        document.getElementById('formUbahPassword').reset();
+        closeProfileModal();
+
+    } catch (err) {
+        alert("Gagal memperbarui password: " + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "Update Password";
+    }
+}
         
     </script>
     <!-- Modal Bagikan Link Registrasi Cabang -->
@@ -1134,7 +1127,7 @@
         </div>
     </div>
 
-    <!-- Modal Profil & Ubah Password -->
+<!-- Modal Profil & Ubah Password -->
     <div id="profileModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
         <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-6">
             <!-- Header -->
@@ -1185,6 +1178,150 @@
         </div>
     </div>
 
+    <script>
+        // Open Modal Profil
+        async function openProfileModal() {
+            const modal = document.getElementById('profileModal');
+            modal.classList.remove('hidden');
+            switchProfileTab('info');
 
+            try {
+                const { data: { user } } = await _supabase.auth.getUser();
+                if (user) {
+                    document.getElementById('profileEmail').value = user.email || '';
+                    document.getElementById('profileNama').value = user.user_metadata?.full_name || '';
+                    document.getElementById('profileWA').value = user.user_metadata?.whatsapp || '';
+                    return;
+                }
+
+                const localUser = JSON.parse(sessionStorage.getItem('user_terabaca') || localStorage.getItem('user_terabaca') || '{}');
+                document.getElementById('profileEmail').value = localUser.email || 'admin@terabaca.com';
+                document.getElementById('profileNama').value = localUser.nama || localUser.penanggung_jawab || '';
+                document.getElementById('profileWA').value = localUser.whatsapp || localUser.no_whatsapp || '';
+            } catch (err) {
+                console.log("Error memuat profil:", err);
+            }
+        }
+
+        // Close Modal Profil
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.add('hidden');
+        }
+
+        // Switch Tab Info / Password
+        function switchProfileTab(tab) {
+            const formProfile = document.getElementById('formEditProfile');
+            const formPassword = document.getElementById('formUbahPassword');
+            const tabBtnProfile = document.getElementById('tabBtnProfile');
+            const tabBtnPassword = document.getElementById('tabBtnPassword');
+
+            if (tab === 'info') {
+                formProfile.classList.remove('hidden');
+                formPassword.classList.add('hidden');
+                tabBtnProfile.className = "py-2 px-4 border-b-2 border-indigo-600 text-indigo-600 font-semibold";
+                tabBtnPassword.className = "py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-600 font-semibold";
+            } else {
+                formProfile.classList.add('hidden');
+                formPassword.classList.remove('hidden');
+                tabBtnPassword.className = "py-2 px-4 border-b-2 border-indigo-600 text-indigo-600 font-semibold";
+                tabBtnProfile.className = "py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-600 font-semibold";
+            }
+        }
+
+        // Simpan Profil
+        async function simpanProfil(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSimpanProfil');
+            btn.disabled = true;
+            btn.textContent = "Menyimpan...";
+
+            const email = document.getElementById('profileEmail').value;
+            const nama = document.getElementById('profileNama').value.trim();
+            const wa = document.getElementById('profileWA').value.trim();
+
+            try {
+                await _supabase.auth.updateUser({
+                    data: { full_name: nama, whatsapp: wa }
+                }).catch(() => {});
+
+                if (email) {
+                    await _supabase
+                        .from('data_cabang')
+                        .update({ penanggung_jawab: nama, whatsapp: wa })
+                        .eq('email', email);
+                }
+
+                alert("Alhamdulillah! Profil berhasil diperbarui.");
+                closeProfileModal();
+
+                if (typeof loadDataCabang === 'function') loadDataCabang();
+
+            } catch (err) {
+                alert("Gagal memperbarui profil: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Simpan Perubahan";
+            }
+        }
+
+        // Simpan Ubah Password
+        async function simpanPasswordBaru(e) {
+            e.preventDefault();
+            const newPass = document.getElementById('inputNewPassword').value.trim();
+            const confirmPass = document.getElementById('inputConfirmPassword').value.trim();
+            const email = document.getElementById('profileEmail').value.trim();
+
+            if (!newPass || newPass.length < 6) {
+                alert("Password minimal harus 6 karakter!");
+                return;
+            }
+
+            if (newPass !== confirmPass) {
+                alert("Konfirmasi password baru tidak cocok!");
+                return;
+            }
+
+            if (!email) {
+                alert("Gagal: Email pengguna tidak terdeteksi.");
+                return;
+            }
+
+            const btn = document.getElementById('btnSimpanPassword');
+            btn.disabled = true;
+            btn.textContent = "Memproses...";
+
+            try {
+                // 1. Coba via Supabase Auth
+                const { error: authError } = await _supabase.auth.updateUser({
+                    password: newPass
+                });
+
+                if (!authError) {
+                    alert("Alhamdulillah! Password berhasil diubah via Auth.");
+                    document.getElementById('formUbahPassword').reset();
+                    closeProfileModal();
+                    return;
+                }
+
+                // 2. Fallback: RPC Database jika Auth session missing
+                const { error: rpcError } = await _supabase.rpc('update_user_password', {
+                    user_email: email,
+                    new_password: newPass
+                });
+
+                if (rpcError) throw rpcError;
+
+                alert("Alhamdulillah! Password berhasil diperbarui.");
+                document.getElementById('formUbahPassword').reset();
+                closeProfileModal();
+
+            } catch (err) {
+                alert("Gagal memperbarui password: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Update Password";
+            }
+        }
+    </script>
 </body>
 </html>

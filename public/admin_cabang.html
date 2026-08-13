@@ -83,16 +83,6 @@
             </button>
         </div>
 
-        <!-- Tab Switching Buttons -->
-        <div class="flex gap-2 mb-6 bg-slate-200 p-1.5 rounded-xl max-w-md">
-            <button id="btnTabMonitoring" onclick="switchMainTab('monitoring')" class="flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-emerald-800 shadow transition">
-                📊 Data Peserta
-            </button>
-            <button id="btnTabUpload" onclick="switchMainTab('upload')" class="flex-1 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition">
-                📝 Form Input / Upload
-            </button>
-        </div>
-
         <!-- TAB 1: MONITORING DATA CABANG -->
         <div id="tabMonitoring" class="block space-y-4">
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center">
@@ -387,31 +377,37 @@
 
         // Autentikasi Pengguna Cabang (Mendukung Berbagai Format Kunci Storage)
         window.addEventListener('DOMContentLoaded', async () => {
-            // Ambil data sesi (Cek sessionStorage DULU, lalu localStorage)
             const rawSession = sessionStorage.getItem('user_session') || localStorage.getItem('user_session');
             const userSession = rawSession ? JSON.parse(rawSession) : null;
 
-            // Cek apakah userSession ada
             if (!userSession) {
                 alert("Sesi tidak ditemukan, silakan login terlebih dahulu.");
                 window.location.href = 'index.html';
                 return;
             }
 
-            // Ambil cabang dari session, jika tidak ada pakai default
-            currentCabang = userSession.cabang || 'Kab. Tasikmalaya';
+            // PERBAIKAN DI SINI: Jika cabang tidak terdefinisi atau cuma bernilai 'Cabang', tentukan default-nya
+            let fixCabang = userSession.cabang;
+            if (!fixCabang || fixCabang === 'Cabang') {
+                fixCabang = 'Kab. Tasikmalaya'; // <-- Samakan dengan nama cabang presisi di database
+            }
+            
+            currentCabang = fixCabang;
 
-            // Tampilkan informasi user di header/halaman
+            // Tampilkan informasi user di header sidebar
             const userBranchElem = document.getElementById('userBranchInfo');
             if (userBranchElem) {
-                userBranchElem.textContent = `Cabang: ${currentCabang} | Admin: ${userSession.nama || userSession.email}`;
+                const adminName = userSession.penanggung_jawab || userSession.nama || userSession.email || 'Admin';
+                userBranchElem.textContent = `Cabang: ${currentCabang} | Admin: ${adminName}`;
+                userBranchElem.setAttribute('onclick', 'openProfileModal()');
+                userBranchElem.title = "Klik untuk Edit Profil & Password Cabang";
             }
 
-            // Set otomatis nilai input hidden/dropdown cabang jika ada
+            // Set otomatis nilai input hidden/dropdown cabang
             if (document.getElementById('cabang')) document.getElementById('cabang').value = currentCabang;
             if (document.getElementById('excel_cabang')) document.getElementById('excel_cabang').value = currentCabang;
 
-            // Panggil fungsi muat data peserta
+            // Panggil ulang muat data peserta dengan cabang yang sudah benar
             if (typeof loadPesertaCabang === 'function') {
                 loadPesertaCabang();
             }
@@ -732,48 +728,256 @@
             } catch (err) {
                 console.error(err);
                 alert("Gagal proses Excel: " + err.message);
-            } finally {
-                // Tombol PASTI kembali aktif dalam kondisi/error apapun
-                submitBtn.textContent = "Proses & Kirim Semua Data Excel ke Pusat";
-                submitBtn.disabled = false;
-            }
-        });
+    } finally {
+        // Tombol PASTI kembali aktif dalam kondisi/error apapun
+        submitBtn.textContent = "Proses & Kirim Semua Data Excel ke Pusat";
+        submitBtn.disabled = false;
+    }
+});
 
         // Logout Session (Sesuaikan nama fungsi menjadi logoutAdmin)
         async function logoutAdmin() {
-            if (!confirm("Apakah Anda yakin ingin keluar dari Dashboard Cabang?")) return;
-            
             try {
-            // 1. Logout dari Supabase jika session auth aktif
-            if (typeof _supabase !== 'undefined' && _supabase.auth) {
-                await _supabase.auth.signOut();
-            } else if (typeof supabaseClient !== 'undefined' && supabaseClient.auth) {
-                await supabaseClient.auth.signOut();
-            } else if (typeof supabase !== 'undefined' && supabase.auth) {
-                await supabase.auth.signOut();
+            // 1. Logout dari Supabase jika menggunakan Auth
+            if (typeof supabaseClient !== 'undefined') {
+              await supabaseClient.auth.signOut();
+            } else if (typeof supabase !== 'undefined') {
+              await supabase.auth.signOut();
             }
-        } catch (err) {
+          } catch (err) {
             console.log('Error signOut:', err);
-        } finally {
-            // 2. Hapus session browser
-            sessionStorage.clear();
-            localStorage.clear();
+          }
 
-            // 3. Pindah ke Landing Page
-            window.location.href = 'index.html';
+          // 2. Hapus session browser
+          sessionStorage.removeItem('user_session');
+          localStorage.clear();
+
+          // 3. Pindah ke Landing Page
+          window.location.href = 'index.html';
         }
-    }
 
-    // Fungsi Buka-Tutup Sidebar khusus di HP
-    function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        const backdrop = document.getElementById('sidebarBackdrop');
-
-        if (sidebar && backdrop) {
-            sidebar.classList.toggle('-translate-x-full');
-            backdrop.classList.toggle('hidden');
+        // Fungsi Buka-Tutup Sidebar khusus di HP
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+    
+            if (sidebar && backdrop) {
+                // Toggle class translate untuk geser sidebar masuk/keluar
+                sidebar.classList.toggle('-translate-x-full');
+                // Toggle backdrop gelap di belakangnya
+                backdrop.classList.toggle('hidden');
+            }
         }
-    }
+    </script>
+
+<!-- Modal Profil & Ubah Password (Admin Cabang) -->
+    <div id="profileModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-6">
+            <!-- Header -->
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-800">Pengaturan Profil Cabang</h3>
+                <button onclick="closeProfileModal()" class="text-slate-400 hover:text-slate-600 font-bold p-1">✕</button>
+            </div>
+
+            <!-- Tab Navigasi -->
+            <div class="flex border-b border-slate-200 text-xs font-semibold">
+                <button id="tabBtnProfile" onclick="switchProfileTab('info')" class="py-2 px-4 border-b-2 border-indigo-600 text-indigo-600 font-semibold">Info Profil</button>
+                <button id="tabBtnPassword" onclick="switchProfileTab('password')" class="py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-600 font-semibold">Ubah Password</button>
+            </div>
+
+            <!-- Section 1: Form Edit Info Profil Cabang -->
+            <form id="formEditProfile" onsubmit="simpanProfilCabang(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Email Cabang (Akun)</label>
+                    <input type="email" id="profileEmail" disabled class="w-full text-xs px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-500 cursor-not-allowed">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Nama Penanggung Jawab Cabang</label>
+                    <input type="text" id="profileNama" required class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">No. WhatsApp Cabang</label>
+                    <input type="tel" id="profileWA" required class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                </div>
+                <button type="submit" id="btnSimpanProfil" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
+                    Simpan Perubahan
+                </button>
+            </form>
+
+            <!-- Section 2: Form Ubah Password Cabang -->
+            <form id="formUbahPassword" onsubmit="simpanPasswordCabang(event)" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Password Baru</label>
+                    <input type="password" id="inputNewPassword" minlength="6" required placeholder="Minimal 6 karakter" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Konfirmasi Password Baru</label>
+                    <input type="password" id="inputConfirmPassword" minlength="6" required placeholder="Ulangi password baru" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                </div>
+                <button type="submit" id="btnSimpanPassword" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
+                    Update Password
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Open Modal Profil Cabang
+        async function openProfileModal() {
+            const modal = document.getElementById('profileModal');
+            modal.classList.remove('hidden');
+            switchProfileTab('info');
+
+            try {
+                // Cek semua kemungkinan lokasi & nama key session login
+                const rawSession = sessionStorage.getItem('user_session') || 
+                                   localStorage.getItem('user_session') || 
+                                   sessionStorage.getItem('user_terabaca') || 
+                                   localStorage.getItem('user_terabaca');
+                
+                const localUser = rawSession ? JSON.parse(rawSession) : {};
+                
+                // Ambil email dari berbagai kemungkinan nama properti
+                const email = localUser.email || localUser.user_email || localUser.username || '';
+
+                // Isikan email ke input form modal
+                document.getElementById('profileEmail').value = email;
+
+                if (email && typeof _supabase !== 'undefined') {
+                    const { data } = await _supabase
+                        .from('data_cabang')
+                        .select('penanggung_jawab, whatsapp, nama_cabang')
+                        .eq('email', email)
+                        .maybeSingle();
+
+                    if (data) {
+                        document.getElementById('profileNama').value = data.penanggung_jawab || '';
+                        document.getElementById('profileWA').value = data.whatsapp || '';
+                        return;
+                    }
+                }
+
+                // Fallback jika tidak ada data di DB
+                document.getElementById('profileNama').value = localUser.nama || localUser.penanggung_jawab || '';
+                document.getElementById('profileWA').value = localUser.whatsapp || localUser.no_whatsapp || '';
+            } catch (err) {
+                console.log("Error memuat profil cabang:", err);
+            }
+        }
+
+        // Close Modal Profil
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.add('hidden');
+        }
+
+        // Switch Tab Info / Password
+        function switchProfileTab(tab) {
+            const formProfile = document.getElementById('formEditProfile');
+            const formPassword = document.getElementById('formUbahPassword');
+            const tabBtnProfile = document.getElementById('tabBtnProfile');
+            const tabBtnPassword = document.getElementById('tabBtnPassword');
+
+            if (tab === 'info') {
+                formProfile.classList.remove('hidden');
+                formPassword.classList.add('hidden');
+                tabBtnProfile.className = "py-2 px-4 border-b-2 border-indigo-600 text-indigo-600 font-semibold";
+                tabBtnPassword.className = "py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-600 font-semibold";
+            } else {
+                formProfile.classList.add('hidden');
+                formPassword.classList.remove('hidden');
+                tabBtnPassword.className = "py-2 px-4 border-b-2 border-indigo-600 text-indigo-600 font-semibold";
+                tabBtnProfile.className = "py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-600 font-semibold";
+            }
+        }
+
+        // Simpan Profil Cabang
+        async function simpanProfilCabang(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSimpanProfil');
+            btn.disabled = true;
+            btn.textContent = "Menyimpan...";
+
+            const email = document.getElementById('profileEmail').value;
+            const nama = document.getElementById('profileNama').value.trim();
+            const wa = document.getElementById('profileWA').value.trim();
+
+            try {
+                if (email && typeof _supabase !== 'undefined') {
+                    await _supabase
+                        .from('data_cabang')
+                        .update({ penanggung_jawab: nama, whatsapp: wa })
+                        .eq('email', email);
+                }
+
+                // Update session lokal
+                const localUser = JSON.parse(sessionStorage.getItem('user_terabaca') || localStorage.getItem('user_terabaca') || '{}');
+                localUser.penanggung_jawab = nama;
+                localUser.whatsapp = wa;
+                if (sessionStorage.getItem('user_terabaca')) sessionStorage.setItem('user_terabaca', JSON.stringify(localUser));
+                if (localStorage.getItem('user_terabaca')) localStorage.setItem('user_terabaca', JSON.stringify(localUser));
+
+                alert("Alhamdulillah! Profil cabang berhasil diperbarui.");
+                closeProfileModal();
+
+            } catch (err) {
+                alert("Gagal memperbarui profil: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Simpan Perubahan";
+            }
+        }
+
+        // Simpan Ubah Password Cabang
+        async function simpanPasswordCabang(e) {
+            e.preventDefault();
+            const newPass = document.getElementById('inputNewPassword').value.trim();
+            const confirmPass = document.getElementById('inputConfirmPassword').value.trim();
+            const email = document.getElementById('profileEmail').value.trim();
+
+            if (!newPass || newPass.length < 6) {
+                alert("Password minimal harus 6 karakter!");
+                return;
+            }
+
+            if (newPass !== confirmPass) {
+                alert("Konfirmasi password baru tidak cocok!");
+                return;
+            }
+
+            if (!email) {
+                alert("Gagal: Email cabang tidak terdeteksi.");
+                return;
+            }
+
+            const btn = document.getElementById('btnSimpanPassword');
+            btn.disabled = true;
+            btn.textContent = "Memproses...";
+
+            try {
+                // Update password di tabel data_cabang
+                if (typeof _supabase !== 'undefined') {
+                    const { error: dbError } = await _supabase
+                        .from('data_cabang')
+                        .update({ password: newPass })
+                        .eq('email', email);
+
+                    if (dbError) throw dbError;
+
+                    // Update juga ke Supabase Auth jika session Auth aktif
+                    await _supabase.auth.updateUser({ password: newPass }).catch(() => {});
+                }
+
+                alert("Alhamdulillah! Password cabang berhasil diperbarui.");
+                document.getElementById('formUbahPassword').reset();
+                closeProfileModal();
+
+            } catch (err) {
+                alert("Gagal memperbarui password: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Update Password";
+            }
+        }
     </script>
 </body>
 </html>
