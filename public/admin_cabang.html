@@ -97,11 +97,12 @@
                             <th class="p-3">Paket</th>
                             <th class="p-3">Tgl Tes</th>
                             <th class="p-3">Penginput</th>
-                            <th class="p-3">Berkas</th>
+                            <th class="p-3 text-center">Berkas</th>
+                            <th class="p-3 text-center">Hasil Tes</th> <!-- 👈 Kolom Baru Tambahan -->
                         </tr>
                     </thead>
                     <tbody id="tableBodyPeserta" class="divide-y divide-slate-100">
-                        <tr><td colspan="5" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
+                        <tr><td colspan="6" class="p-4 text-center text-slate-400">Memuat data...</td></tr> <!-- 👈 Ubah colspan dari 5 ke 6 -->
                     </tbody>
                 </table>
             </div>
@@ -469,17 +470,30 @@
                 return;
             }
 
-            tbody.innerHTML = data.map(item => `
+            tbody.innerHTML = data.map(item => {
+                // Ambil URL file hasil tes dari Pusat (mendukung nama field file_hasil_url atau hasil_tes_url)
+                const hasilUrl = item.file_hasil_url || item.hasil_tes_url || item.file_hasil || '';
+
+                return `
                 <tr class="hover:bg-slate-50 transition border-b">
                     <td class="p-3 font-semibold text-slate-800">${item.nama_testee || '-'}</td>
                     <td class="p-3">${item.paket_tes || '-'}</td>
                     <td class="p-3">${item.tanggal_tes || '-'}</td>
                     <td class="p-3">${item.nama_penginput || '-'}</td>
-                    <td class="p-3">
-                        ${item.file_coretan_url ? `<a href="${item.file_coretan_url.split(',')[0]}" target="_blank" class="text-emerald-600 hover:underline">Lihat File</a>` : '<span class="text-slate-400">-</span>'}
+                    <td class="p-3 text-center">
+                        ${item.file_coretan_url ? `<a href="${item.file_coretan_url.split(',')[0]}" target="_blank" class="text-emerald-600 font-medium hover:underline">Lihat File</a>` : '<span class="text-slate-400">-</span>'}
+                    </td>
+                    <!-- KOLOM BARU: HASIL TES DARI PUSAT -->
+                    <td class="p-3 text-center">
+                        ${hasilUrl ? `
+                            <a href="${hasilUrl}" target="_blank" class="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 font-semibold text-xs px-2.5 py-1 rounded-md border border-emerald-300 transition">
+                                📥 Download Hasil
+                            </a>
+                        ` : `<span class="text-slate-400 text-xs italic">Belum Diunggah</span>`}
                     </td>
                 </tr>
-            `).join('');
+                `;
+            }).join('');
         }
 
         // Download Template Excel Presisi 24 Kolom
