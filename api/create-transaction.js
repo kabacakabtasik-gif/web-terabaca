@@ -21,7 +21,7 @@ module.exports = async function handler(req, res) {
     }
     body = body || {};
 
-    const { nama, email, phone, whatsapp, cabang, nominal, gross_amount, paket } = body;
+    const { nama, email, phone, whatsapp, cabang, nominal, gross_amount, paket, tipe_bayar, catatan } = body;
 
     // Nilai fallback
     const cleanNama = nama || 'Pelanggan';
@@ -30,6 +30,8 @@ module.exports = async function handler(req, res) {
     const cleanCabang = cabang || 'Pusat';
     const cleanPaket = paket || 'Umum';
     const cleanNominal = Number(nominal || gross_amount) || 10000;
+    const cleanTipeBayar = tipe_bayar || 'personal';
+    const cleanCatatan = catatan || null;
 
     const orderId = 'TERA-' + Date.now();
 
@@ -49,6 +51,8 @@ module.exports = async function handler(req, res) {
             cabang: cleanCabang,
             paket: cleanPaket,
             gross_amount: cleanNominal,
+            tipe_bayar: cleanTipeBayar, // <--- TAMBAHAN
+            catatan: cleanCatatan,       // <--- TAMBAHAN
             status_pembayaran: 'pending'
           }
         ]);
@@ -75,7 +79,7 @@ module.exports = async function handler(req, res) {
         phone: cleanPhone
       },
       item_details: [{
-        id: cleanPaket.toLowerCase().replace(/\s+/g, '-'),
+        id: cleanPaket.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 50),
         price: cleanNominal,
         quantity: 1,
         name: `Paket TERABACA - ${cleanPaket}`.substring(0, 50)
