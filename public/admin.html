@@ -10,16 +10,29 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
+    <!-- Link Manifest PWA -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Link Icon Browser & PWA -->
+    <link rel="icon" type="image/png" href="/logo-terabaca.png">
+    <link rel="apple-touch-icon" href="/logo-terabaca.png">    
 </head>
 <body class="bg-slate-100 min-h-screen flex text-slate-800">
 
     <!-- SIDEBAR UTAMA -->
-    <aside class="w-64 bg-slate-900 text-white min-h-screen flex flex-col justify-between p-4 sticky top-0 h-screen shrink-0">
+<!-- SIDEBAR UTAMA PUSAT -->
+    <aside id="sidebar" class="w-64 bg-slate-900 text-white flex flex-col justify-between p-4 h-screen fixed left-0 top-0 z-50 border-r border-slate-800 shrink-0 transform -translate-x-full md:translate-x-0 transition-transform duration-300">
         <div>
             <!-- Header Brand -->
-            <div class="flex items-center gap-3 px-2 py-3 border-b border-slate-800 mb-6">
-                <span class="font-bold text-xl tracking-wide text-emerald-400">TERABACA</span>
-                <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/30">Pusat</span>
+            <div class="flex items-center justify-between px-2 py-3 border-b border-slate-800 mb-6">
+                <div class="flex items-center gap-3">
+                    <span class="font-bold text-xl tracking-wide text-emerald-400">TERABACA</span>
+                    <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/30">Pusat</span>
+                </div>
+                <!-- Tombol Tutup X khusus di HP -->
+                <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white p-1">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
             </div>
 
             <!-- Menu Navigasi Sidebar -->
@@ -47,6 +60,9 @@
         </div>
     </aside>
 
+<!-- Backdrop Gelap (Tempel tepat di bawah </aside>) -->
+<div id="sidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden md:hidden"></div>
+
     <!-- AREA KONTEN UTAMA -->
     <div class="flex-1 flex flex-col min-h-screen overflow-y-auto">
         
@@ -67,11 +83,20 @@
         </header>
 
         <!-- Main Content -->
-        <main class="p-8 flex-grow space-y-6">
+        <main class="md:ml-64 flex-1 p-4 md:p-6 bg-slate-100 min-h-screen">
+            <!-- Header Admin Pusat -->
+            <header class="bg-white border border-slate-200 p-3.5 rounded-xl flex items-center justify-between mb-6 shadow-sm">
+                <button onclick="toggleSidebar()" class="md:hidden text-slate-600 hover:text-slate-900 p-2 rounded-lg bg-slate-100">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <div class="text-sm font-semibold text-slate-700">
+                    Dashboard Pusat
+                </div>
+            </header>
 
             <!-- TAB 1: RUANG APPROVAL & CONTROL BERKAS -->
             <section id="tab-approval" class="space-y-6">
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex justify-between items-center">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <span class="text-xs font-semibold text-slate-600">Filter Sesi Tanggal Input:</span>
                     <div class="flex items-center gap-2">
                         <input type="date" id="filterTanggal" onchange="loadDataPeserta()" class="px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-slate-50 outline-none">
@@ -80,8 +105,8 @@
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
+                    <div class="w-full overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[600px]">
                             <thead>
                                 <tr class="bg-slate-50 text-slate-600 text-xs uppercase tracking-wider border-b border-slate-200">
                                     <th class="py-3 px-4">Penginput & Cabang</th>
@@ -147,7 +172,7 @@
                     </div>
                     
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-[11px] text-slate-600 whitespace-nowrap">
+                        <table class="w-full text-left text-[11px] text-slate-600 whitespace-nowrap min-w-[1800px]">
                             <thead class="bg-slate-50 text-slate-700 uppercase font-bold border-b border-slate-200">
                                 <tr>
                                     <th class="p-3 text-center">#</th>
@@ -240,7 +265,7 @@
                         </div>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs text-slate-600">
+                        <table class="w-full text-left text-xs text-slate-600 min-w-[700px] whitespace-nowrap">
                             <thead class="bg-slate-50 text-slate-700 uppercase font-bold border-b border-slate-200">
                                 <tr>
                                     <th class="p-3 text-center">#</th>
@@ -822,6 +847,17 @@
         window.addEventListener('DOMContentLoaded', () => {
             loadDataPeserta();
         });
+
+        // --- TEMPELKAN FUNGSI INI DI PALING BAWAH DI DALAM TAG <SCRIPT> ---
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            
+            if (sidebar && backdrop) {
+                sidebar.classList.toggle('-translate-x-full');
+                backdrop.classList.toggle('hidden');
+            }
+        }
     </script>
 </body>
 </html>

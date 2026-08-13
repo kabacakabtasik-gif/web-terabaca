@@ -9,30 +9,43 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- FontAwesome untuk ikon menu -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Link Manifest PWA -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Link Icon Browser & PWA -->
+    <link rel="icon" type="image/png" href="/logo-terabaca.png">
+    <link rel="apple-touch-icon" href="/logo-terabaca.png">
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 flex">
 
+
     <!-- 1. SIDEBAR NAVIGASI CABANG -->
-    <aside class="w-64 bg-slate-900 text-white flex flex-col justify-between h-screen fixed left-0 top-0 z-50 border-r border-slate-800">
+    <aside id="sidebar" class="w-64 bg-slate-900 text-white flex flex-col justify-between h-screen fixed left-0 top-0 z-50 border-r border-slate-800 transform -translate-x-full md:translate-x-0 transition-transform duration-300">
       <div>
         <!-- Brand Info -->
-        <div class="p-5 border-b border-slate-800">
-          <h1 class="font-bold text-lg text-emerald-400 tracking-wider">TERABACA</h1>
-          <p class="text-xs text-slate-400 mt-1" id="userBranchInfo">Memuat data cabang...</p>
+        <div class="p-5 border-b border-slate-800 flex justify-between items-center">
+            <div>
+                <h1 class="font-bold text-lg text-emerald-400 tracking-wider">TERABACA</h1>
+                <p class="text-xs text-slate-400 mt-1" id="userBranchInfo">Memuat data cabang...</p>
+            </div>
+            <!-- Tombol Tutup X khusus di HP -->
+            <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white p-1">
+                <i class="fas fa-times text-lg"></i>
+            </button>
         </div>
 
         <!-- Navigation Menu -->
         <nav class="p-4 space-y-2">
-          <!-- Menu 1: Dashboard Cabang -->
-          <a href="#" class="flex items-center space-x-3 p-3 rounded-xl bg-emerald-600/20 text-emerald-300 font-medium transition-all">
-            <i class="fas fa-database text-emerald-400"></i>
-            <span>Data Murid Cabang</span>
-          </a>
+            <!-- Menu 1: Dashboard Cabang -->
+            <a href="#" class="flex items-center space-x-3 p-3 rounded-xl bg-emerald-600/20 text-emerald-300 font-medium transition-all">
+                <i class="fas fa-database text-emerald-400"></i>
+                <span>Data Murid Cabang</span>
+            </a>
 
           <!-- Menu 2: Pembayaran (Midtrans & WA) -->
           <a href="bayar.html" class="flex items-center space-x-3 p-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all">
             <i class="fas fa-wallet text-indigo-400"></i>
-            <span>Pembayaran & Kas</span>
+            <span>Pembayaran</span>
           </a>
         </nav>
       </div>
@@ -45,12 +58,22 @@
             </a>
             <button onclick="handleLogout()" class="flex items-center space-x-3 w-full p-3 text-red-400 hover:bg-red-500/10 rounded-xl transition-all text-sm font-medium">
                 <i class="fas fa-sign-out-alt"></i>
-                <span>Keluar Portal</span>
+                <span>Keluar</span>
             </button>
         </div>
     </aside>
+    <!-- Backdrop Gelap di Belakang Sidebar (Muncul cuma saat sidebar kebuka di HP) -->
+    <div id="sidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden md:hidden"></div>
 
-    <main class="ml-64 flex-1 p-6 bg-slate-100 min-h-screen">
+    <main class="md:ml-64 flex-1 p-4 md:p-6 bg-slate-100 min-h-screen">
+        <header class="bg-white border border-slate-200 p-3.5 rounded-xl flex items-center justify-between mb-6 shadow-sm">
+            <button onclick="toggleSidebar()" class="md:hidden text-slate-600 hover:text-slate-900 p-2 rounded-lg bg-slate-100">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+            <div class="text-sm font-semibold text-slate-700">
+                Portal Admin Cabang
+            </div>
+        </header>
         <div class="flex gap-2 mb-6 bg-slate-200 p-1.5 rounded-xl max-w-md">
             <button id="btnTabMonitoring" onclick="switchMainTab('monitoring')" class="flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-emerald-800 shadow transition">
                 📊 Data Peserta
@@ -59,8 +82,6 @@
                 📝 Form Input / Upload
             </button>
         </div>
-    <!-- Main Content Container -->
-    <main class="ml-64 flex-1 p-6 bg-slate-100 min-h-screen">
 
         <!-- Tab Switching Buttons -->
         <div class="flex gap-2 mb-6 bg-slate-200 p-1.5 rounded-xl max-w-md">
@@ -79,7 +100,7 @@
                 <button onclick="loadPesertaCabang()" class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded border text-slate-600">🔄 Refresh Data</button>
             </div>
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
-                <table class="w-full text-left text-xs border-collapse">
+                <table class="w-full text-left text-xs border-collapse min-w-[500px] whitespace-nowrap">
                     <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase font-semibold">
                         <tr>
                             <th class="p-3">Nama Testee</th>
@@ -693,6 +714,19 @@
 
           // 3. Pindah ke Landing Page
           window.location.href = 'index.html';
+        }
+
+        // Fungsi Buka-Tutup Sidebar khusus di HP
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+    
+            if (sidebar && backdrop) {
+                // Toggle class translate untuk geser sidebar masuk/keluar
+                sidebar.classList.toggle('-translate-x-full');
+                // Toggle backdrop gelap di belakangnya
+                backdrop.classList.toggle('hidden');
+            }
         }
     </script>
 </body>
