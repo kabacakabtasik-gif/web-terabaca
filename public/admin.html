@@ -26,7 +26,6 @@
 
 <body class="bg-slate-100 min-h-screen flex text-slate-800">
 
-    <!-- SIDEBAR UTAMA -->
     <!-- SIDEBAR UTAMA PUSAT -->
     <aside id="sidebar"
         class="w-64 bg-slate-900 text-white flex flex-col justify-between p-4 h-screen fixed left-0 top-0 z-50 border-r border-slate-800 shrink-0 transform -translate-x-full md:translate-x-0 transition-transform duration-300">
@@ -140,6 +139,7 @@
                                 <tr
                                     class="bg-slate-50 text-slate-600 text-xs uppercase tracking-wider border-b border-slate-200">
                                     <th class="py-3 px-4">Penginput & Cabang</th>
+                                    <th class="py-3 px-4">NO TESTEE</th>
                                     <th class="py-3 px-4">Identitas Testee</th>
                                     <th class="py-3 px-4">Paket & Status Bayar</th>
                                     <th class="py-3 px-4">Coretan & Verifikasi Transfer</th>
@@ -520,6 +520,9 @@
                         <div class="text-xs text-slate-400 mt-0.5">${tanggalInput}</div>
                         <div class="text-xs text-slate-500 mt-1">Penginput: ${row.nama_penginput || '-'}</div>
                     </td>
+                    <td class="py-4 px-4 align-top font-mono text-xs font-bold text-indigo-600">
+                        ${row.no_testee || '-'}
+                    </td>
                     <td class="py-4 px-4 align-top">
                         <div class="font-bold text-slate-900">${row.nama_testee || row.nama || '-'}</div>
                         <div class="text-xs text-slate-600 mt-0.5">Lembaga: ${row.lembaga_institusi || row.nama_lembaga || '-'}</div>
@@ -868,6 +871,9 @@
                 const file = e.target.files[0];
                 if (!file) return;
 
+                // 1. TAMBAHKAN BARIS INI: Minta Pusat input No Testee
+                const inputNoTestee = prompt(`Masukkan No. Testee untuk ${namaTestee}:`);
+                if (inputNoTestee === null) return; // Batal upload kalau Pusat pencet Cancel
                 const cleanName = namaTestee.replace(/[^a-zA-Z0-9]/g, '_');
                 const ext = file.name.split('.').pop();
                 const filePath = `hasil_analisa/${cleanName}_${idData}_${Date.now()}.${ext}`;
@@ -877,7 +883,11 @@
                     if (uploadError) throw uploadError;
 
                     const { data: publicURLData } = _supabase.storage.from('lembar-coretan').getPublicUrl(filePath);
-                    const { error: dbError } = await _supabase.from('data_peserta').update({ hasil_analisa_url: publicURLData.publicUrl }).eq('id', idData);
+                    const { error: dbError } = await _supabase.from('data_peserta').update({ 
+                        hasil_analisa_url: publicURLData.publicUrl,
+                        no_testee: inputNoTestee // <-- TAMBAHKAN INI AKAR TERSIMPAN DI SUPABASE
+                    }).eq('id', idData);
+        
                     if (dbError) throw dbError;
 
                     alert(`Hasil analisa untuk ${namaTestee} berhasil diunggah.`);
