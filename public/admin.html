@@ -1067,28 +1067,32 @@
                     return;
                 }
 
-                // 2. Jika Auth session missing, update password ke tabel staff_users / data_cabang
+                // 2. Jika Auth Error (misal Session Missing), coba update ke tabel database manual
                 const email = document.getElementById('profileEmail').value;
-
                 if (!email) {
-                    throw new Error("Email akun tidak ditemukan untuk pembaruan password.");
+                alert("Gagal: Email akun tidak ditemukan.");
+                    return;
                 }
 
-                // Update di tabel staff_users
-                const { error: staffError } = await _supabase
+                // Update password ke tabel staff_users
+                const { error: dbError } = await _supabase
                     .from('staff_users')
                     .update({ password: newPass })
                     .eq('email', email);
 
-                if (staffError) {
-                    // Alternatif jika tersimpan di data_cabang
-                    await _supabase
+                if (dbError) {
+                    // Jika di staff_users gagal, coba di data_cabang
+                    const { error: cabangError } = await _supabase
                         .from('data_cabang')
                         .update({ password: newPass })
                         .eq('email', email);
+
+                    if (cabangError) {
+                        throw new Error("Sesi Auth tidak ditemukan & gagal update ke tabel database.");
+                    }
                 }
 
-                alert("Alhamdulillah! Password berhasil diperbarui.");
+                alert("Alhamdulillah! Password berhasil diperbarui di database.");
                 document.getElementById('formUbahPassword').reset();
                 closeProfileModal();
 
