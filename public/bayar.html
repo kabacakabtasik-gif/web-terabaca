@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pembayaran Online - TERABACA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="Mid-client-2-2L5XUm_r2zrd6p"></script>
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://app.sandbox.midtrans.com https://app.midtrans.com https://snap-assets.sandbox.midtrans.com https://api.sandbox.midtrans.com https://pay.google.com https://gwk.gopayapi.com;">
+    <meta http-equiv="Content-Security-Policy"
+        content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://app.sandbox.midtrans.com https://app.midtrans.com https://snap-assets.sandbox.midtrans.com https://api.sandbox.midtrans.com https://pay.google.com https://gwk.gopayapi.com;">
     <!-- Link Manifest PWA -->
     <link rel="manifest" href="/manifest.json">
 
@@ -14,77 +16,145 @@
     <link rel="icon" type="image/png" href="/logo-terabaca.png">
     <link rel="apple-touch-icon" href="/logo-terabaca.png">
 </head>
+
 <body class="bg-slate-50 min-h-screen font-sans flex flex-col justify-between">
 
-    <!-- HEADER (Responsif + Tombol Kembalikan/Dashboard) -->
-    <header class="bg-white shadow-sm py-3 px-4 sm:px-6 border-b border-slate-100 sticky top-0 z-10">
+    <!-- HEADER (Warna Biru TERABACA + Mobile Friendly) -->
+    <header class="bg-blue-700 text-white shadow-md py-3 px-4 sm:px-6 sticky top-0 z-10">
         <div class="max-w-4xl mx-auto flex items-center justify-between gap-2">
-            <span class="font-bold text-xl sm:text-2xl text-emerald-700 tracking-wide">TERABACA</span>
-            
-            <div class="flex items-center gap-2 sm:gap-3">
-                <span class="hidden md:inline-block text-xs bg-emerald-100 text-emerald-800 font-semibold px-3 py-1 rounded-full">
+            <div class="flex items-center gap-2">
+                <span class="font-bold text-xl sm:text-2xl tracking-wider text-white">TERABACA</span>
+                <span
+                    class="hidden md:inline-block text-[10px] bg-blue-800 text-blue-100 font-semibold px-2.5 py-1 rounded-full border border-blue-600">
                     Portal Pembayaran Resmi
                 </span>
-                
-                <!-- Tombol Navigasi Keluar / Kembali -->
-                <button type="button" onclick="goBackOrDashboard()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 text-xs font-semibold rounded-lg transition">
-                    ⬅️ <span class="hidden sm:inline">Kembali</span>
-                </button>
             </div>
+
+            <!-- Tombol Navigasi Keluar / Kembali -->
+            <button type="button" onclick="goBackOrDashboard()"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-800 hover:bg-blue-900 active:scale-95 text-blue-50 text-xs font-semibold rounded-lg transition border border-blue-600">
+                ⬅️ <span class="hidden sm:inline">Kembali</span>
+            </button>
         </div>
     </header>
 
     <!-- MAIN CONTENT (Mobile Friendly) -->
     <main class="max-w-xl mx-auto p-3 sm:p-6 w-full flex-grow flex items-center justify-center">
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sm:p-8 space-y-6 w-full">
-            
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-8 space-y-5 w-full">
+
             <div class="text-center space-y-1">
                 <h1 class="text-lg sm:text-xl font-bold text-slate-800">Form Pembayaran Tes</h1>
-                <p class="text-xs text-slate-500">Silakan lengkapi data untuk memproses pembayaran via Midtrans</p>
+                <p class="text-xs text-slate-500">Silakan pilih kategori dan lengkapi data pembayaran via Midtrans</p>
             </div>
 
             <!-- Form Pembayaran -->
             <form id="paymentForm" class="space-y-4">
-                
+
+                <!-- TIPE PEMBAYARAN (PERSONAL vs LEMBAGA MOU) -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Pembayar / Orang Tua *</label>
-                    <input type="text" id="pay_nama" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none transition" placeholder="Masukkan nama lengkap">
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Tipe Pembayaran *</label>
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <label
+                            class="flex items-center gap-2 p-2.5 border rounded-xl cursor-pointer hover:bg-blue-50/50 transition border-slate-200 has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50/40">
+                            <input type="radio" name="tipe_bayar" value="personal" checked
+                                onchange="toggleTipeBayar(this.value)" class="text-blue-600 focus:ring-blue-500">
+                            <span class="text-xs font-semibold text-slate-800">Personal</span>
+                        </label>
+                        <label
+                            class="flex items-center gap-2 p-2.5 border rounded-xl cursor-pointer hover:bg-blue-50/50 transition border-slate-200 has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50/40">
+                            <input type="radio" name="tipe_bayar" value="lembaga" onchange="toggleTipeBayar(this.value)"
+                                class="text-blue-600 focus:ring-blue-500">
+                            <span class="text-xs font-semibold text-slate-800">Lembaga (MoU)</span>
+                        </label>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Pembayar / Penginput *</label>
+                    <input type="text" id="pay_nama" required
+                        class="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
+                        placeholder="Masukkan nama lengkap">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1">Email *</label>
-                        <input type="email" id="pay_email" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none transition" placeholder="email@contoh.com">
+                        <input type="email" id="pay_email" required
+                            class="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
+                            placeholder="email@contoh.com">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1">No WhatsApp *</label>
-                        <input type="tel" id="pay_phone" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none transition" placeholder="08xxxxxxxxxx">
+                        <input type="tel" id="pay_phone" required
+                            class="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
+                            placeholder="08xxxxxxxxxx">
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1">Cabang *</label>
-                        <select id="pay_cabang" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none transition bg-white">
+                        <select id="pay_cabang" required
+                            class="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition bg-white">
                             <option value="">-- Pilih Cabang --</option>
                             <option value="Kab. Tasikmalaya">Kab. Tasikmalaya</option>
                             <option value="Kota Depok">Kota Depok</option>
                             <option value="Pusat">Pusat</option>
                         </select>
                     </div>
-                    <div>
+
+                    <!-- OPSIONAL PAKET PERSONAL -->
+                    <div id="section-paket-personal">
                         <label class="block text-xs font-semibold text-slate-600 mb-1">Paket Tes *</label>
-                        <select id="pay_paket" required class="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none transition bg-white">
-                            <option value="">-- Pilih Paket --</option>
+                        <select id="pay_paket" onchange="updateTotalDisplay()"
+                            class="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition bg-white">
                             <option value="BASIC" data-harga="350000">Paket 01 - BASIC (Rp 350.000)</option>
                             <option value="PARENT" data-harga="350000">Paket 02 - PARENT (Rp 350.000)</option>
                             <option value="TALENT" data-harga="600000">Paket 03 - TALENT (Rp 600.000)</option>
-                            <option value="BRAINWAVE" data-harga="14000000">Paket 04 - BRAINWAVE (Rp 14.000.000)</option>
+                            <option value="BRAINWAVE" data-harga="14000000">Paket 04 - BRAINWAVE (Rp 14.000.000)
+                            </option>
                         </select>
                     </div>
                 </div>
 
-                <button type="submit" id="btnPay" class="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-semibold py-3 rounded-xl transition shadow-md text-sm mt-2">
+                <!-- OPSIONAL FORM LEMBAGA / MOU (DIBUKA JIKA PILIH LEMBAGA) -->
+                <div id="section-lembaga"
+                    class="hidden space-y-3 bg-blue-50/50 p-3.5 rounded-xl border border-blue-100">
+                    <div>
+                        <label class="block text-xs font-bold text-blue-900 uppercase mb-1">Nama Lembaga / Sekolah
+                            *</label>
+                        <input type="text" id="pay_lembaga" placeholder="Contoh: SDIT Idrisiyyah Purbaratu"
+                            class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <div>
+                            <label class="block text-xs font-bold text-blue-900 uppercase mb-1">Jumlah Murid *</label>
+                            <input type="number" id="pay_qty" value="10" min="1" oninput="updateTotalDisplay()"
+                                class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-blue-900 uppercase mb-1">Harga Deal / Murid
+                                *</label>
+                            <input type="number" id="pay_harga_mou" value="150000" min="0"
+                                oninput="updateTotalDisplay()"
+                                class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RINGKASAN TOTAL PENAGIHAN -->
+                <div class="p-3.5 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-between">
+                    <div>
+                        <span class="block text-[10px] font-bold text-blue-800 uppercase tracking-wider">Total
+                            Pembayaran</span>
+                        <span id="text_detail_kolektif" class="text-[11px] text-blue-600 font-medium hidden">(10 Murid x
+                            Rp 150.000)</span>
+                    </div>
+                    <span id="display_total" class="text-base sm:text-lg font-black text-blue-700">Rp 350.000</span>
+                </div>
+
+                <button type="submit" id="btnPay"
+                    class="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-semibold py-3 rounded-xl transition shadow-md text-sm mt-2">
                     Lanjut ke Pembayaran Online (Midtrans)
                 </button>
             </form>
@@ -93,39 +163,93 @@
     </main>
 
     <script>
-        // Fungsi Navigasi Pintar
+        // Switcher Tipe Pembayaran (Personal vs Lembaga)
+        function toggleTipeBayar(tipe) {
+            const secPersonal = document.getElementById('section-paket-personal');
+            const secLembaga = document.getElementById('section-lembaga');
+            const reqLembaga = document.getElementById('pay_lembaga');
+
+            if (tipe === 'personal') {
+                secPersonal.classList.remove('hidden');
+                secLembaga.classList.add('hidden');
+                reqLembaga.removeAttribute('required');
+            } else {
+                secPersonal.classList.add('hidden');
+                secLembaga.classList.remove('hidden');
+                reqLembaga.setAttribute('required', 'true');
+            }
+            updateTotalDisplay();
+        }
+
+        // Kalkulator Hitung Total Otomatis
+        function updateTotalDisplay() {
+            const tipe = document.querySelector('input[name="tipe_bayar"]:checked').value;
+            const display = document.getElementById('display_total');
+            const detailKolektif = document.getElementById('text_detail_kolektif');
+            let total = 0;
+
+            if (tipe === 'personal') {
+                const selectPaket = document.getElementById('pay_paket');
+                total = parseInt(selectPaket.options[selectPaket.selectedIndex].getAttribute('data-harga')) || 0;
+                detailKolektif.classList.add('hidden');
+            } else {
+                const qty = parseInt(document.getElementById('pay_qty').value) || 0;
+                const harga = parseInt(document.getElementById('pay_harga_mou').value) || 0;
+                total = qty * harga;
+
+                detailKolektif.innerText = `(${qty} Murid x Rp ${harga.toLocaleString('id-ID')})`;
+                detailKolektif.classList.remove('hidden');
+            }
+
+            display.innerText = 'Rp ' + total.toLocaleString('id-ID');
+            return total;
+        }
+
+        // Navigasi Pintar Kembali
         function goBackOrDashboard() {
             const userSession = sessionStorage.getItem('user_session') || localStorage.getItem('userBranchCode');
-            
+
             if (userSession) {
-                // Jika user dalam keadaan terautentikasi (Cabang/Admin)
                 window.location.href = 'admin_cabang.html';
             } else if (document.referrer && !document.referrer.includes(window.location.pathname)) {
-                // Jika datang dari halaman sebelumnya
                 window.history.back();
             } else {
-                // Default lempar ke landing page
                 window.location.href = 'index.html';
             }
         }
 
-        // Event Listener Payment Form
-        document.getElementById('paymentForm').addEventListener('submit', async function(e) {
+        // Submit Form ke Backend / Midtrans
+        document.getElementById('paymentForm').addEventListener('submit', async function (e) {
             e.preventDefault();
             const btn = document.getElementById('btnPay');
             btn.disabled = true;
             btn.textContent = 'Memproses Transaksi...';
 
+            const tipeBayar = document.querySelector('input[name="tipe_bayar"]:checked').value;
             const selectPaket = document.getElementById('pay_paket');
-            const nominal = selectPaket.options[selectPaket.selectedIndex].getAttribute('data-harga');
+
+            let nominalFinal = 0;
+            let paketFinal = "";
+
+            if (tipeBayar === 'personal') {
+                paketFinal = selectPaket.value;
+                nominalFinal = parseInt(selectPaket.options[selectPaket.selectedIndex].getAttribute('data-harga')) || 0;
+            } else {
+                const namaLembaga = document.getElementById('pay_lembaga').value;
+                const qty = parseInt(document.getElementById('pay_qty').value) || 0;
+                const harga = parseInt(document.getElementById('pay_harga_mou').value) || 0;
+
+                paketFinal = `LEMBAGA MoU - ${namaLembaga} (${qty} Murid)`;
+                nominalFinal = qty * harga;
+            }
 
             const payload = {
                 nama: document.getElementById('pay_nama').value,
                 email: document.getElementById('pay_email').value,
                 phone: document.getElementById('pay_phone').value,
                 cabang: document.getElementById('pay_cabang').value,
-                paket: selectPaket.value,
-                nominal: nominal
+                paket: paketFinal,
+                nominal: nominalFinal
             };
 
             try {
@@ -139,19 +263,19 @@
 
                 if (data.token) {
                     window.snap.pay(data.token, {
-                        onSuccess: function(result) {
+                        onSuccess: function (result) {
                             alert('Alhamdulillah! Pembayaran Berhasil.');
                             sessionStorage.setItem('isPaidTERABACA', 'true');
                             sessionStorage.setItem('orderIdTERABACA', data.orderId);
                             window.location.href = '/pendaftaran.html';
                         },
-                        onPending: function(result) {
+                        onPending: function (result) {
                             alert('Menunggu pembayaran diselesaikan.');
                         },
-                        onError: function(result) {
+                        onError: function (result) {
                             alert('Pembayaran gagal, silakan coba lagi.');
                         },
-                        onClose: function() {
+                        onClose: function () {
                             btn.disabled = false;
                             btn.textContent = 'Lanjut ke Pembayaran Online (Midtrans)';
                         }
@@ -167,4 +291,5 @@
         });
     </script>
 </body>
+
 </html>
