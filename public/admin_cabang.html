@@ -633,6 +633,31 @@
                     return;
                 }
 
+                // ==========================================
+                // STEP 1: UNGGAH FILE ASLI KE SUPABASE STORAGE
+                // ==========================================
+                const timeStamp = Date.now();
+                const cleanCabang = cabangForm.replace(/[^a-zA-Z0-9]/g, '_');
+                const filePathInStorage = `${cleanCabang}/${timeStamp}_${file.name}`;
+
+                const { data: storageData, error: storageErr } = await _supabase
+                    .storage
+                    .from('berkas-excel')
+                    .upload(filePathInStorage, file, { cacheControl: '3600', upsert: false });
+
+                if (storageErr) throw new Error("Gagal menyimpan file ke Storage: " + storageErr.message);
+
+                // Dapatkan URL Download File
+                const { data: publicUrlData } = _supabase
+                    .storage
+                    .from('berkas-excel')
+                    .getPublicUrl(filePathInStorage);
+
+                const fileUrl = publicUrlData.publicUrl;
+
+                // ==========================================
+                // STEP 2: PARSE ISI EXCEL KE DATASET (Kode Lama Kamu)
+                // ==========================================
                 const dataBuffer = await file.arrayBuffer();
                 const workbook = XLSX.read(dataBuffer, { type: 'array' });
                 const firstSheetName = workbook.SheetNames[0];
@@ -645,8 +670,13 @@
                 }
 
                 let successCount = 0;
+                let namaPenginputPertama = '';
 
                 for (let row of rows) {
+                    if (!namaPenginputPertama) {
+                        namaPenginputPertama = row['Nama Penginput'] || row.nama_penginput || 'Admin Cabang';
+                    }
+
                     const { error: insertErr } = await _supabase.from('data_peserta').insert([{
                         cabang: cabangForm,
                         email_cabang: row['Email Penginput'] || row.email_cabang || '',
@@ -681,7 +711,20 @@
                     if (!insertErr) successCount++;
                 }
 
-                alert(`Alhamdulillah! Berhasil memproses dan mengirim ${successCount} dari ${rows.length} data peserta via Excel ke pusat.`);
+                // ==========================================
+                // STEP 3: CATAT RIWAYAT FILE MENTAH KE `batch_upload`
+                // ==========================================
+                const { error: batchErr } = await _supabase.from('batch_upload').insert([{
+                    nama_file_asli: file.name,
+                    file_url: fileUrl,
+                    kode_cabang: cabangForm, // Pastikan kolom di DB bernama kode_cabang
+                    nama_penginput: namaPenginputPertama,
+                    jumlah_data: successCount
+                }]);
+
+                if (batchErr) console.error("Gagal mencatat riwayat batch upload:", batchErr);
+
+                alert(`Alhamdulillah! Berhasil memproses ${successCount} dari ${rows.length} data peserta via Excel, serta file mentah tersimpan di server Pusat.`);
                 document.getElementById('excelUploadForm').reset();
                 loadPesertaCabang();
                 switchMainTab('monitoring');
@@ -690,6 +733,7 @@
                 console.error(err);
                 alert("Gagal proses Excel: " + err.message);
             } finally {
+                // Tombol PASTI kembali aktif dalam kondisi/error apapun
                 submitBtn.textContent = "Proses & Kirim Semua Data Excel ke Pusat";
                 submitBtn.disabled = false;
             }
@@ -697,37 +741,39 @@
 
         // Logout Session (Sesuaikan nama fungsi menjadi logoutAdmin)
         async function logoutAdmin() {
+            if (!confirm("Apakah Anda yakin ingin keluar dari Dashboard Cabang?")) return;
+            
             try {
-            // 1. Logout dari Supabase jika menggunakan Auth
-            if (typeof supabaseClient !== 'undefined') {
-              await supabaseClient.auth.signOut();
-            } else if (typeof supabase !== 'undefined') {
-              await supabase.auth.signOut();
+            // 1. Logout dari Supabase jika session auth aktif
+            if (typeof _supabase !== 'undefined' && _supabase.auth) {
+                await _supabase.auth.signOut();
+            } else if (typeof supabaseClient !== 'undefined' && supabaseClient.auth) {
+                await supabaseClient.auth.signOut();
+            } else if (typeof supabase !== 'undefined' && supabase.auth) {
+                await supabase.auth.signOut();
             }
-          } catch (err) {
+        } catch (err) {
             console.log('Error signOut:', err);
-          }
+        } finally {
+            // 2. Hapus session browser
+            sessionStorage.clear();
+            localStorage.clear();
 
-          // 2. Hapus session browser
-          sessionStorage.removeItem('user_session');
-          localStorage.clear();
-
-          // 3. Pindah ke Landing Page
-          window.location.href = 'index.html';
+            // 3. Pindah ke Landing Page
+            window.location.href = 'index.html';
         }
+    }
 
-        // Fungsi Buka-Tutup Sidebar khusus di HP
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const backdrop = document.getElementById('sidebarBackdrop');
-    
-            if (sidebar && backdrop) {
-                // Toggle class translate untuk geser sidebar masuk/keluar
-                sidebar.classList.toggle('-translate-x-full');
-                // Toggle backdrop gelap di belakangnya
-                backdrop.classList.toggle('hidden');
-            }
+    // Fungsi Buka-Tutup Sidebar khusus di HP
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const backdrop = document.getElementById('sidebarBackdrop');
+
+        if (sidebar && backdrop) {
+            sidebar.classList.toggle('-translate-x-full');
+            backdrop.classList.toggle('hidden');
         }
+    }
     </script>
 </body>
 </html>
