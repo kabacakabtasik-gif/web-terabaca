@@ -831,22 +831,23 @@
 
                     if (daftarCabang && daftarCabang.length > 0) {
                         // 3. Isi Dropdown Form Satuan (Jika Ada)
+                        // Ambil data user yang sedang login dari session
+                        const currentSession = JSON.parse(localStorage.getItem('user_terabaca') || localStorage.getItem('user_session') || '{}');
+                        const userKode = currentSession.kode_cabang || 'TSK-01';
+                        const userNama = currentSession.cabang || 'Kab. Tasikmalaya';
+
+                        // 3. Isi Dropdown Form Satuan (Kunci Otomatis)
                         const selectSatuan = document.getElementById('cabangWilayah') || document.getElementById('cabang');
                         if (selectSatuan) {
-                            selectSatuan.innerHTML = '<option value="">-- Pilih Cabang / Wilayah --</option>';
-                            daftarCabang.forEach(c => {
-                                selectSatuan.innerHTML += `<option value="${c.nama_cabang}">${c.nama_cabang}</option>`;
-                            });
+                            selectSatuan.innerHTML = `<option value="${userNama}" selected>${userNama}</option>`;
+                            selectSatuan.disabled = true; // Kunci agar tidak bisa diganti
                         }
 
-                        // 4. Isi Dropdown Upload Excel
-                        const selectExcel = document.getElementById('kodeCabangExcel');
+                        // 4. Isi Dropdown Upload Excel (Perbaikan ID & Kunci Otomatis)
+                        const selectExcel = document.getElementById('kodeCabangExcel') || document.getElementById('kodeCabang');
                         if (selectExcel) {
-                            selectExcel.innerHTML = '<option value="">-- Pilih Kode Cabang --</option>';
-                            daftarCabang.forEach(c => {
-                                const kode = c.kode_cabang || c.nama_cabang;
-                                selectExcel.innerHTML += `<option value="${kode}">${c.nama_cabang} (${kode})</option>`;
-                            });
+                            selectExcel.innerHTML = `<option value="${userKode}" selected>${userNama} (${userKode})</option>`;
+                            selectExcel.disabled = true; // Kunci agar tidak bisa diganti
                         }
                     }
                 }
