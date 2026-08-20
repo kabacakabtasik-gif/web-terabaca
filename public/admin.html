@@ -136,14 +136,34 @@
                     <div class="w-full overflow-x-auto">
                         <table class="w-full text-left border-collapse min-w-[600px]">
                             <thead>
-                                <tr
-                                    class="bg-slate-50 text-slate-600 text-xs uppercase tracking-wider border-b border-slate-200">
-                                    <th class="py-3 px-4">Penginput & Cabang</th>
-                                    <th class="py-3 px-4">NO TESTEE</th>
-                                    <th class="py-3 px-4">Identitas Testee</th>
-                                    <th class="py-3 px-4">Paket & Status Bayar</th>
-                                    <th class="py-3 px-4">Coretan & Verifikasi Transfer</th>
-                                    <th class="py-3 px-4">Hasil Analisa (Upload)</th>
+                                <tr <th class="p-3 text-center">#</th>
+                                    <th class="p-3">Bukti Transfer</th>
+                                    <th class="p-3">Upload Gambar</th>
+                                    <th class="p-3">Jenis Paket</th>
+                                    <th class="p-3">Nama Lengkap Testee</th>
+                                    <th class="p-3">No Testee</th>
+                                    <th class="p-3">Lembaga / Institusi</th>
+                                    <th class="p-3">Tempat Lahir</th>
+                                    <th class="p-3">Tanggal Lahir</th>
+                                    <th class="p-3">Usia</th>
+                                    <th class="p-3">Tanggal Tes</th>
+                                    <th class="p-3">Jenis Kelamin</th>
+                                    <th class="p-3">Level Pendidikan</th>
+                                    <th class="p-3">Jurusan SMA/SMK</th>
+                                    <th class="p-3">Bantuan Menggambar</th>
+                                    <th class="p-3">Kondisi Kertas</th>
+                                    <th class="p-3">Posisi Kertas</th>
+                                    <th class="p-3">Alat Gambar</th>
+                                    <th class="p-3">Dominasi Warna</th>
+                                    <th class="p-3">Catatan Gambar</th>
+                                    <th class="p-3">Email Penginput</th>
+                                    <th class="p-3">Paket Berbayar/Bonus</th>
+                                    <th class="p-3">Bentuk Kerja Sama</th>
+                                    <th class="p-3">Nama Penginput</th>
+                                    <th class="p-3">No WhatsApp</th>
+                                    <th class="p-3">Cabang</th>
+                                    <th class="p-3">Catatan Khusus</th>
+                                    <th class="p-3">Jurusan Terlintas</th>
                                 </tr>
                             </thead>
                             <tbody id="tabelDataApproval" class="divide-y divide-slate-100 text-sm text-slate-700">
@@ -612,54 +632,58 @@
             document.getElementById('countTable').textContent = data.length;
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="30" class="p-6 text-center text-slate-400 italic">Belum ada data pendaftar.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="28" class="p-6 text-center text-slate-400 italic">Belum ada data pendaftar.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = data.map((item, idx) => {
-                const fileGambar = item.file_coretan_url || item.link_foto;
+                // Logika Usia Otomatis
+                let usiaText = item.usia || item.usia_testee || "-";
+                const tglLahir = item.tgl_lahir || item.tanggal_lahir;
+                if (tglLahir) {
+                    const birthDate = new Date(tglLahir);
+                    const today = new Date();
+                    let age = today.getFullYear() - birthDate.getFullYear();
+                    const m = today.getMonth() - birthDate.getMonth();
+                    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                        age--;
+                    }
+                    if (age > 0) usiaText = `${age} Tahun`;
+                }
+
+                const linkBukti = item.bukti_transfer_url;
+                const linkGambar = item.file_coretan_url || item.link_foto;
 
                 return `
-                <tr class="hover:bg-slate-50 transition-colors text-xs whitespace-nowrap">
-                    <td class="p-3 text-center font-medium text-slate-400">${idx + 1}</td>
-                    <td class="p-3 font-semibold text-slate-700">${item.cabang || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.email_cabang || '-'}</td>
-                    <td class="p-3 font-medium text-slate-700">${item.nama_penginput || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.whatsapp_penginput || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.jenis_paket_bayar || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.jenis_layanan || '-'}</td>
-                    <td class="p-3 font-bold text-slate-800">${item.nama_testee || item.nama || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.no_testee || '-'}</td>
+                <tr class="hover:bg-slate-50 transition-colors text-xs whitespace-nowrap border-b border-slate-100">
+                    <td class="p-3 text-center font-bold text-slate-400">${idx + 1}</td>
+                    <td class="p-3">${linkBukti ? `<a href="${linkBukti}" target="_blank" class="text-emerald-600 font-semibold underline"><i class="fas fa-receipt mr-1"></i>Lihat</a>` : '-'}</td>
+                    <td class="p-3">${linkGambar ? `<a href="${linkGambar.trim()}" target="_blank" class="text-indigo-600 font-semibold underline"><i class="fas fa-image mr-1"></i>Lihat</a>` : '-'}</td>
                     <td class="p-3 font-semibold text-indigo-600">${item.paket_tes || item.paket || '-'}</td>
-                    <td class="p-3 text-slate-700">${item.lembaga_institusi || item.nama_lembaga || '-'}</td>
+                    <td class="p-3 font-bold text-slate-800">${item.nama_testee || item.nama || '-'}</td>
+                    <td class="p-3 text-slate-400 font-mono">-</td>
+                    <td class="p-3 text-slate-700">${item.lembaga || item.lembaga_institusi || item.nama_lembaga || '-'}</td>
                     <td class="p-3 text-slate-600">${item.tempat_lahir || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.tanggal_lahir || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.usia_testee || item.usia ? (item.usia_testee || item.usia) + ' thn' : '-'}</td>
-                    <td class="p-3 text-slate-600">${item.tanggal_tes || '-'}</td>
+                    <td class="p-3 text-slate-600">${tglLahir || '-'}</td>
+                    <td class="p-3 text-slate-600">${usiaText}</td>
+                    <td class="p-3 text-slate-600">${item.tgl_tes || item.tanggal_tes || '-'}</td>
                     <td class="p-3 text-slate-600">${item.jenis_kelamin || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.level_pendidikan || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.pendidikan || item.level_pendidikan || '-'}</td>
                     <td class="p-3 text-slate-600">${item.jurusan_sma || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.jurusan_terlintas || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.anak_ke || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.dari_bersaudara || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.bantuan_menggambar || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.bantuan_gambar || item.bantuan_menggambar || '-'}</td>
                     <td class="p-3 text-slate-600">${item.kondisi_kertas || item.kertas_sobek || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.ganti_kertas || '-'}</td>
                     <td class="p-3 text-slate-600">${item.posisi_kertas || '-'}</td>
                     <td class="p-3 text-slate-600">${item.alat_gambar || '-'}</td>
                     <td class="p-3 text-slate-600">${item.dominasi_warna || '-'}</td>
                     <td class="p-3 text-slate-600">${item.catatan_gambar || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.email_penginput || item.email_cabang || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.status_paket || item.jenis_paket_bayar || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.jenis_layanan || '-'}</td>
+                    <td class="p-3 font-medium text-slate-700">${item.nama_penginput || '-'}</td>
+                    <td class="p-3 text-slate-600">${item.wa_penginput || item.whatsapp_penginput || '-'}</td>
+                    <td class="p-3 font-semibold text-emerald-700">${item.cabang || 'Pusat'}</td>
                     <td class="p-3 text-slate-600">${item.catatan_khusus || '-'}</td>
-                    <td class="p-3 text-center">
-                        ${fileGambar ? `
-                            <a href="${fileGambar.trim()}" target="_blank" class="inline-flex items-center gap-1.5 bg-indigo-900 hover:bg-indigo-800 text-white font-medium px-3 py-1.5 rounded-lg text-xs transition-all shadow-sm">
-                                <i class="fas fa-image"></i>
-                                <span>Lihat Berkas</span>
-                            </a>
-                        ` : `
-                            <span class="text-slate-400 italic text-[11px]">Tanpa Berkas</span>
-                        `}
-                    </td>
+                    <td class="p-3 text-slate-600">${item.jurusan_terlintas || '-'}</td>
                 </tr>
                 `;
             }).join('');
@@ -906,12 +930,62 @@
         }
 
         function downloadRekapExcel() {
-            if (rawData.length === 0) return alert("Belum ada data untuk diunduh.");
+            if (!rawData || rawData.length === 0) {
+                alert("Tidak ada data untuk diunduh!");
+                return;
+            }
 
-            const worksheet = XLSX.utils.json_to_sheet(rawData);
+            const excelData = rawData.map(row => {
+                // Hitung Usia Otomatis jika tgl_lahir ada
+                let usiaText = row.usia || "-";
+                if (row.tgl_lahir) {
+                    const birthDate = new Date(row.tgl_lahir);
+                    const today = new Date();
+                    let age = today.getFullYear() - birthDate.getFullYear();
+                    const m = today.getMonth() - birthDate.getMonth();
+                    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                        age--;
+                    }
+                    usiaText = age > 0 ? `${age} Tahun` : "-";
+                }
+
+                return {
+                    "Upload Bukti Transfer": row.bukti_transfer_url || "-",
+                    "Upload gambar": row.file_coretan_url || "-",
+                    "Jenis Paket": row.paket_tes || "-",
+                    "Nama Lengkap Testee": row.nama_testee || row.nama || "-",
+                    "No Testee": "", // Dikosongkan sesuai permintaan
+                    "Nama Lembaga/Institusi/Komunitas/umum": row.lembaga || "-",
+                    "Tempat Lahir Testee": row.tempat_lahir || "-",
+                    "Tanggal lahir Testee": row.tgl_lahir || "-",
+                    "Usia Testee": usiaText,
+                    "Tanggal Tes": row.tgl_tes || "-",
+                    "Jenis Kelamin": row.jenis_kelamin || "-",
+                    "Level Pendidikan": row.pendidikan || "-",
+                    "Jurusan yang di jalani ketika di SMA/SMK": row.jurusan_sma || "-",
+                    "Proses menggambar dibantu oleh": row.bantuan_gambar || "-",
+                    "Kondisi kertas": row.kondisi_kertas || "-",
+                    "Posisi kertas": row.posisi_kertas || "-",
+                    "Alat gambar": row.alat_gambar || "-",
+                    "Dominasi Warna (*Merah = Hitam, cokelat, abu, dan gelap / *Biru = Semua warna terang)": row.dominasi_warna || "-",
+                    "Catatan terkait gambar (Temuan2 lainnya saat Testee menggambar)": row.catatan_gambar || "-",
+                    "Alamat e-mail.": row.email_penginput || "-",
+                    "Paket Berbayar/Bonus": row.status_paket || "-",
+                    "Bentuk kerja sama": row.jenis_layanan || "-",
+                    "Nama Penginput": row.nama_penginput || "-",
+                    "No Whatsapp yang bisa dihubungi": row.wa_penginput || "-",
+                    "Cabang": row.cabang || "Pusat",
+                    "Catatan khusus :": row.catatan_khusus || "-",
+                    "Sebutkan maksimal 3 Jurusan apa saja yang ingin dipilih/terlintas dalam fikiran": row.jurusan_terlintas || "-"
+                };
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(excelData);
             const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Master TERABACA");
-            XLSX.writeFile(workbook, `Rekap_Pusat_TERABACA_${new Date().toISOString().slice(0, 10)}.xlsx`);
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Testee");
+
+            // Simpan File
+            XLSX.writeFile(workbook, `Rekap_Data_Testee_TERABACA_${new Date().toISOString().slice(0, 10)}.xlsx`);
         }
 
         window.addEventListener('DOMContentLoaded', () => {
