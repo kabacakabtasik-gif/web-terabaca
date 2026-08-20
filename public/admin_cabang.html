@@ -118,7 +118,7 @@
                     </thead>
                     <tbody id="tableBodyPeserta" class="divide-y divide-slate-100">
                         <tr>
-                            <td colspan="6" class="p-4 text-center text-slate-400">Memuat data...</td>
+                            <td colspan="7" class="p-4 text-center text-slate-400">Memuat data...</td>
                         </tr> <!-- 👈 Ubah colspan dari 5 ke 6 -->
                     </tbody>
                 </table>
@@ -549,24 +549,32 @@
                 tbody.innerHTML = data.map(item => {
                     const hasilUrl = item.hasil_analisa_url || item.file_hasil_url || item.hasil_tes_url || item.file_hasil || '';
 
+                    // Penanganan aman untuk file_coretan_url (String, Array, atau Null)
+                    let coretanUrl = '';
+                    if (Array.isArray(item.file_coretan_url)) {
+                        coretanUrl = item.file_coretan_url[0] || '';
+                    } else if (typeof item.file_coretan_url === 'string') {
+                        coretanUrl = item.file_coretan_url.split(',')[0].trim();
+                    }
+
                     return `
-    <tr class="hover:bg-slate-50 transition border-b">
+      <tr class="hover:bg-slate-50 transition border-b">
         <td class="p-3 font-semibold text-slate-800">${item.nama_testee || '-'}</td>
         <td class="p-3 font-mono text-xs font-bold text-indigo-600">${item.no_testee || '-'}</td>
         <td class="p-3">${item.paket_tes || '-'}</td>
         <td class="p-3">${item.tanggal_tes || '-'}</td>
         <td class="p-3">${item.nama_penginput || '-'}</td>
         <td class="p-3 text-center">
-            ${item.file_coretan_url ? `<a href="${item.file_coretan_url.split(',')[0]}" target="_blank" class="text-emerald-600 font-medium hover:underline">Lihat File</a>` : '<span class="text-slate-400">-</span>'}
+          ${coretanUrl ? `<a href="${coretanUrl}" target="_blank" class="text-emerald-600 font-medium hover:underline">Lihat File</a>` : '<span class="text-slate-400">-</span>'}
         </td>
         <td class="p-3 text-center">
-            ${hasilUrl ? `
-                <a href="${hasilUrl}" target="_blank" class="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 font-semibold text-xs px-2.5 py-1 rounded-md border border-emerald-300 transition">
-                    📥 Download Hasil
-                </a>
-            ` : `<span class="text-slate-400 text-xs italic">Belum Diunggah</span>`}
+          ${hasilUrl ? `
+            <a href="${hasilUrl}" target="_blank" class="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 font-semibold text-xs px-2.5 py-1 rounded-md border border-emerald-300 transition">
+              📥 Download Hasil
+            </a>
+          ` : `<span class="text-slate-400 text-xs italic">Belum Diunggah</span>`}
         </td>
-    </tr>
+      </tr>
     `;
                 }).join('');
             }
@@ -810,45 +818,49 @@
                 }
 
                 async function loadDaftarCabang() {
-                    // 1. Deteksi Client Supabase yang Aktif
-                    const client = window.supabaseClient || (typeof supabase !== 'undefined' && typeof supabase.from === 'function' ? supabase : null);
+                    // 1. Gunakan _supabase yang sudah didefinisikan di script utama
+                    const client = typeof _supabase !== 'undefined' ? _supabase : null;
 
                     if (!client) {
-                        console.error("Supabase Client belum siap/ditemukan.");
+                        console.error("Supabase Client (_supabase) belum siap.");
                         return;
                     }
 
-                    // 2. Tarik Data dari Database
-                    const { data: daftarCabang, error } = await client
-                        .from('data_cabang')
-                        .select('nama_cabang, kode_cabang')
-                        .eq('status', 'Aktif');
+                    try {
+                        // 2. Tarik Data dari Database
+                        const { data: daftarCabang, error } = await client
+                            .from('data_cabang')
+                            .select('nama_cabang, kode_cabang')
+                            .eq('status', 'Aktif');
 
-                    if (error) {
-                        console.error("Gagal ambil data cabang:", error.message);
-                        return;
-                    }
+                        if (error) {
+                            console.warn("Gagal ambil data cabang dari DB:", error.message);
+                        }
 
-                    if (daftarCabang && daftarCabang.length > 0) {
-                        // 3. Isi Dropdown Form Satuan (Jika Ada)
-                        // Ambil data user yang sedang login dari session
-                        const currentSession = JSON.parse(localStorage.getItem('user_terabaca') || localStorage.getItem('user_session') || '{}');
+                        // 3. Ambil data user yang sedang login dari session
+                        const currentSession = JSON.parse(
+                            localStorage.getItem('user_terabaca') ||
+                            localStorage.getItem('user_session') ||
+                            sessionStorage.getItem('user_session') || '{}'
+                        );
                         const userKode = currentSession.kode_cabang || 'TSK-01';
-                        const userNama = currentSession.cabang || 'Kab. Tasikmalaya';
+                        const userNama = currentSession.cabang || currentCabang || 'Kab. Tasikmalaya';
 
-                        // 3. Isi Dropdown Form Satuan (Kunci Otomatis)
+                        // 4. Isi & Kunci Dropdown Form Satuan
                         const selectSatuan = document.getElementById('cabangWilayah') || document.getElementById('cabang');
                         if (selectSatuan) {
                             selectSatuan.innerHTML = `<option value="${userNama}" selected>${userNama}</option>`;
                             selectSatuan.disabled = true; // Kunci agar tidak bisa diganti
                         }
 
-                        // 4. Isi Dropdown Upload Excel (Perbaikan ID & Kunci Otomatis)
+                        // 5. Isi & Kunci Dropdown Upload Excel
                         const selectExcel = document.getElementById('kodeCabangExcel') || document.getElementById('kodeCabang');
                         if (selectExcel) {
                             selectExcel.innerHTML = `<option value="${userKode}" selected>${userNama} (${userKode})</option>`;
                             selectExcel.disabled = true; // Kunci agar tidak bisa diganti
                         }
+                    } catch (err) {
+                        console.error("Error pada loadDaftarCabang:", err);
                     }
                 }
             });
@@ -883,15 +895,20 @@
             function toggleSidebar() {
                 const sidebar = document.getElementById('sidebar');
                 const backdrop = document.getElementById('sidebarBackdrop');
-
                 if (sidebar && backdrop) {
-                    // Toggle class translate untuk geser sidebar masuk/keluar
                     sidebar.classList.toggle('-translate-x-full');
-                    // Toggle backdrop gelap di belakangnya
                     backdrop.classList.toggle('hidden');
                 }
             }
-        </script>
+
+            function logoutAdmin() {
+                if (confirm("Apakah Anda yakin ingin keluar dari Portal Cabang?")) {
+                    sessionStorage.clear();
+                    localStorage.removeItem('user_session');
+                    localStorage.removeItem('user_terabaca');
+                    window.location.href = 'index.html';
+                }
+            }        </script>
 
         <!-- Modal Profil & Ubah Password (Admin Cabang) -->
         <div id="profileModal"
@@ -1116,6 +1133,90 @@
                     btn.disabled = false;
                     btn.textContent = "Update Password";
                 }
+            }
+
+            // 1. Handling Pengiriman Form Satuan
+            const uploadForm = document.getElementById('uploadForm');
+            if (uploadForm) {
+                uploadForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const btnSubmit = uploadForm.querySelector('button[type="submit"]');
+                    btnSubmit.disabled = true;
+                    btnSubmit.textContent = 'Mengirim Data...';
+
+                    try {
+                        // Ambil file dari input
+                        const buktiFile = document.getElementById('buktiTransferInput').files[0];
+                        const coretanFiles = Array.from(document.getElementById('fileCoretanInput').files);
+
+                        // Upload Bukti Transfer ke Supabase Storage
+                        let buktiUrl = '';
+                        if (buktiFile) {
+                            const pathBukti = `bukti/${Date.now()}_${buktiFile.name}`;
+                            const { error: errBukti } = await _supabase.storage.from('berkas').upload(pathBukti, buktiFile);
+                            if (errBukti) throw errBukti;
+                            const { data: publicUrlData } = _supabase.storage.from('berkas').getPublicUrl(pathBukti);
+                            buktiUrl = publicUrlData.publicUrl;
+                        }
+
+                        // Upload File Coretan ke Supabase Storage
+                        const coretanUrls = [];
+                        for (const file of coretanFiles) {
+                            const pathCoretan = `coretan/${Date.now()}_${file.name}`;
+                            const { error: errCoretan } = await _supabase.storage.from('berkas').upload(pathCoretan, file);
+                            if (errCoretan) throw errCoretan;
+                            const { data: publicUrlData } = _supabase.storage.from('berkas').getPublicUrl(pathCoretan);
+                            coretanUrls.push(publicUrlData.publicUrl);
+                        }
+
+                        // Payload Data Peserta
+                        const payload = {
+                            bukti_transfer_url: buktiUrl,
+                            file_coretan_url: coretanUrls.join(','),
+                            paket_tes: document.getElementById('paket_tes').value,
+                            nama_testee: document.getElementById('nama_testee').value,
+                            no_testee: document.getElementById('no_testee').value || null,
+                            lembaga_institusi: document.getElementById('lembaga_institusi').value,
+                            tempat_lahir: document.getElementById('tempat_lahir').value,
+                            tanggal_lahir: document.getElementById('tanggal_lahir').value,
+                            usia: document.getElementById('usia').value,
+                            tanggal_tes: document.getElementById('tanggal_tes').value,
+                            jenis_kelamin: document.getElementById('jenis_kelamin').value,
+                            level_pendidikan: document.getElementById('level_pendidikan').value,
+                            jurusan_sma: document.getElementById('jurusan_sma').value || '-',
+                            jurusan_terlintas: document.getElementById('jurusan_terlintas').value || '-',
+                            bantuan_menggambar: document.getElementById('bantuan_menggambar').value,
+                            kondisi_kertas: document.getElementById('kondisi_kertas').value,
+                            posisi_kertas: document.getElementById('posisi_kertas').value,
+                            alat_gambar: document.getElementById('alat_gambar').value,
+                            dominasi_warna: document.getElementById('dominasi_warna').value,
+                            catatan_gambar: document.getElementById('catatan_gambar').value || '-',
+                            email_cabang: document.getElementById('email_cabang').value,
+                            jenis_paket_bayar: document.getElementById('jenis_paket_bayar').value,
+                            jenis_layanan: document.getElementById('jenis_layanan').value,
+                            nama_penginput: document.getElementById('nama_penginput').value,
+                            whatsapp_penginput: document.getElementById('whatsapp_penginput').value,
+                            cabang: currentCabang,
+                            catatan_khusus: document.getElementById('catatan_khusus').value || '-'
+                        };
+
+                        // Insert ke tabel Supabase
+                        const { error: errInsert } = await _supabase.from('data_peserta').insert([payload]);
+                        if (errInsert) throw errInsert;
+
+                        alert('Berhasil! Data dan berkas peserta telah terkirim.');
+                        uploadForm.reset();
+                        switchMainTab('monitoring');
+                        loadPesertaCabang();
+
+                    } catch (err) {
+                        console.error(err);
+                        alert('Gagal mengirim data: ' + err.message);
+                    } finally {
+                        btnSubmit.disabled = false;
+                        btnSubmit.textContent = 'Kirim Seluruh Data & Berkas ke Pusat';
+                    }
+                });
             }
         </script>
 </body>
