@@ -420,17 +420,12 @@
         </script>
 
         <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                // 1. Ambil data admin/cabang dari session storage/local storage login kamu
-                const userLogat = JSON.parse(localStorage.getItem('user_terabaca') || '{}');
-                const kodeCabangUser = userLogat.kode_cabang || userLogat.cabang || 'PUSAT';
-
-                // 2. Kunci nilainya di input form Excel
-                const inputKodeExcel = document.getElementById('kodeCabangExcel');
-                if (inputKodeExcel) {
-                    inputKodeExcel.value = kodeCabangUser;
-                }
-            });
+        document.addEventListener('DOMContentLoaded', () => {
+            const displayExcel = document.getElementById('displayCabangExcel');
+            if (displayExcel) {
+              displayExcel.textContent = currentCabang || 'PUSAT';
+            }
+        });
         </script>
 
         <!-- SCRIPT UTAMA INTEGRASI -->
