@@ -330,7 +330,7 @@
                         </div>
                         <div>
                             <label class="block font-medium mb-1">Bentuk Kerja Sama *</label>
-                            <select id="jenis_layanan" required
+                            <select id="bentuk_kerjasama" required
                                 class="w-full border rounded p-2.5 bg-white focus:ring-1 focus:ring-emerald-500 outline-none">
                                 <option value="Personal">Personal</option>
                                 <option value="Kerjasama Lembaga">Kerjasama Lembaga</option>
@@ -459,7 +459,6 @@
                     userBranchElem.title = "Klik untuk Edit Profil & Password Cabang";
                 }
 
-                // Set otomatis nilai input hidden/dropdown cabang
                 // Set otomatis nilai input hidden & display cabang
                 if (document.getElementById('cabang')) document.getElementById('cabang').value = currentCabang;
                 if (document.getElementById('displayCabangExcel')) document.getElementById('displayCabangExcel').textContent = currentCabang;
@@ -664,7 +663,7 @@
                         catatan_gambar: document.getElementById('catatan_gambar').value,            // Kolom 19
                         email_cabang: document.getElementById('email_cabang').value,                // Kolom 20
                         jenis_paket_bayar: document.getElementById('jenis_paket_bayar').value,      // Kolom 21
-                        jenis_layanan: document.getElementById('jenis_layanan').value,              // Kolom 22
+                        bentuk_kerjasama: document.getElementById('bentuk_kerjasama').value,              // Kolom 22
                         nama_penginput: document.getElementById('nama_penginput').value,            // Kolom 23
                         whatsapp_penginput: document.getElementById('whatsapp_penginput').value,    // Kolom 24
                         cabang: cabang,                                                             // Kolom 25
@@ -689,165 +688,125 @@
                 }
             });
 
-            // Submit Form Excel Massal (Diperbarui untuk Parsing 27 Kolom)
-            document.getElementById('excelUploadForm').addEventListener('submit', async function (e) {
-                e.preventDefault();
-                const submitBtn = e.target.querySelector('button[type="submit"]');
-                submitBtn.disabled = true;
-                submitBtn.textContent = "Sedang Memproses File Excel...";
+            // Submit Form Excel Massal (Diperbarui & Kebal Error Null)
+// Handler Upload Massal Excel (Mapping 27 Kolom Presisi Pusat)
+document.getElementById('excelUploadForm')?.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Sedang Memproses File Excel...";
 
-                try {
-                    const cabangForm = document.getElementById('excel_cabang').value;
-                    const fileInput = document.getElementById('excelFileInput');
-                    const file = fileInput.files[0];
+    try {
+        const session = JSON.parse(localStorage.getItem('user_terabaca') || localStorage.getItem('user_session') || '{}');
+        const cabangForm = session.kode_cabang || session.cabang || currentCabang || 'PUSAT';
 
-                    if (!file) {
-                        alert("Silakan pilih file Excel terlebih dahulu.");
-                        return;
-                    }
+        const fileInput = document.getElementById('excelFileInput');
+        const file = fileInput?.files?.[0];
 
-                    // STEP 1: UNGGAH FILE EXCEL ASLI KE SUPABASE STORAGE
-                    const timeStamp = Date.now();
-                    const cleanCabang = cabangForm.replace(/[^a-zA-Z0-9]/g, '_');
-                    const filePathInStorage = `${cleanCabang}/${timeStamp}_${file.name}`;
+        if (!file) {
+            alert("Silakan pilih file Excel terlebih dahulu.");
+            return;
+        }
 
-                    const { error: storageErr } = await _supabase
-                        .storage
-                        .from('berkas-excel')
-                        .upload(filePathInStorage, file, { cacheControl: '3600', upsert: false });
+        // 1. Unggah Berkas Mentah ke Supabase Storage (Bucket: berkas-excel)
+        const timeStamp = Date.now();
+        const cleanCabang = String(cabangForm).replace(/[^a-zA-Z0-9]/g, '_');
+        const filePathInStorage = `${cleanCabang}/${timeStamp}_${file.name}`;
 
-                    if (storageErr) throw new Error("Gagal menyimpan file ke Storage: " + storageErr.message);
+        const { error: storageErr } = await _supabase
+            .storage
+            .from('berkas-excel')
+            .upload(filePathInStorage, file, { cacheControl: '3600', upsert: false });
 
-                    const { data: publicUrlData } = _supabase
-                        .storage
-                        .from('berkas-excel')
-                        .getPublicUrl(filePathInStorage);
+        if (storageErr) console.warn("Peringatan Storage:", storageErr.message);
 
-                    const fileUrl = publicUrlData.publicUrl;
+        const { data: publicUrlData } = _supabase
+            .storage
+            .from('berkas-excel')
+            .getPublicUrl(filePathInStorage);
 
-                    // STEP 2: PARSE ISI EXCEL 27 KOLOM KE DATABASE
-                    const dataBuffer = await file.arrayBuffer();
-                    const workbook = XLSX.read(dataBuffer, { type: 'array' });
-                    const firstSheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[firstSheetName];
-                    const rows = XLSX.utils.sheet_to_json(worksheet);
+        const fileUrl = publicUrlData?.publicUrl || '';
 
-                    if (rows.length === 0) {
-                        alert("File Excel kosong atau format tidak sesuai.");
-                        return;
-                    }
+        // 2. Baca & Petakan Isi Excel ke Format Supabase
+        const dataBuffer = await file.arrayBuffer();
+        const workbook = XLSX.read(dataBuffer, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        
+        // Membaca baris secara matriks array (header: 1)
+        const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-                    let successCount = 0;
-                    let namaPenginputPertama = '';
+        // Buang baris pertama (Header Judul Kolom)
+        if (rawRows.length > 0) rawRows.shift();
 
-                    for (let row of rows) {
-                        if (!namaPenginputPertama) {
-                            namaPenginputPertama = row['Nama Penginput'] || row.nama_penginput || 'Admin Cabang';
-                        }
+        if (rawRows.length === 0) {
+            alert("File Excel kosong atau format tidak sesuai.");
+            return;
+        }
 
-                        const { error: insertErr } = await _supabase.from('data_peserta').insert([{
-                            bukti_transfer_url: row['Bukti Transfer'] || row.bukti_transfer_url || '',
-                            file_coretan_url: row['Upload Gambar / Coretan'] || row.file_coretan_url || '',
-                            paket_tes: row['Jenis Paket'] || row.paket_tes || 'Basic',
-                            nama_testee: row['Nama Lengkap Testee'] || row.nama_testee || 'Tanpa_Nama',
-                            no_testee: row['No Testee'] || row.no_testee || '',
-                            lembaga_institusi: row['Nama Lembaga / Institusi'] || row.lembaga_institusi || '-',
-                            tempat_lahir: row['Tempat Lahir'] || row.tempat_lahir || '-',
-                            tanggal_lahir: row['Tanggal Lahir'] || row.tanggal_lahir || '',
-                            usia: row['Usia'] ? row['Usia'].toString() : '',
-                            tanggal_tes: row['Tanggal Tes'] || row.tanggal_tes || '',
-                            jenis_kelamin: row['Jenis Kelamin'] || row.jenis_kelamin || '',
-                            level_pendidikan: row['Level Pendidikan'] || row.level_pendidikan || '',
-                            jurusan_sma: row['Jurusan SMA/SMK'] || row.jurusan_sma || '',
-                            bantuan_menggambar: row['Proses menggambar dibantu oleh'] || row.bantuan_menggambar || 'Mandiri',
-                            kondisi_kertas: row['Kondisi kertas'] || row.kondisi_kertas || 'Biasa',
-                            posisi_kertas: row['Posisi kertas'] || row.posisi_kertas || 'Vertikal',
-                            alat_gambar: row['Alat gambar'] || row.alat_gambar || 'Pensil Warna',
-                            dominasi_warna: row['Dominasi Warna'] || row.dominasi_warna || '',
-                            catatan_gambar: row['Catatan terkait gambar'] || row.catatan_gambar || '',
-                            email_cabang: row['Alamat E-mail'] || row.email_cabang || '',
-                            jenis_paket_bayar: row['Paket Berbayar / Bonus'] || row.jenis_paket_bayar || 'Berbayar',
-                            jenis_layanan: row['Bentuk Kerja Sama'] || row.jenis_layanan || 'Personal',
-                            nama_penginput: row['Nama Penginput'] || row.nama_penginput || '',
-                            whatsapp_penginput: row['No Whatsapp Penginput'] || row.whatsapp_penginput || '',
-                            cabang: cabangForm,
-                            catatan_khusus: row['Catatan Khusus'] || row.catatan_khusus || '',
-                            jurusan_terlintas: row['Pilihan Jurusan (Terlintas)'] || row.jurusan_terlintas || '-'
-                        }]);
+        let namaPenginputPertama = rawRows[0]?.[22] || session.nama || 'Admin Cabang';
 
-                        if (!insertErr) successCount++;
-                    }
+        // PEMETAAN PRESISI 27 KOLOM PUSAT KE NAMA KOLOM TABEL SUPABASE
+        const dataToInsert = rawRows.filter(r => r.length > 0).map(row => ({
+            bukti_transfer_url: String(row[0] || '-'),                 // 1. Upload Bukti Transfer
+            file_coretan_url:   String(row[1] || '-'),                 // 2. Upload gambar
+            paket_tes:          String(row[2] || 'Basic'),             // 3. Jenis Paket
+            nama_testee:        String(row[3] || 'Tanpa_Nama'),        // 4. Nama Lengkap Testee
+            no_testee:          row[4] ? String(row[4]) : null,        // 5. No Testee (Kosong/Dilewati)
+            lembaga_institusi:  String(row[5] || '-'),                 // 6. Nama Lembaga/Institusi
+            tempat_lahir:       String(row[6] || '-'),                 // 7. Tempat Lahir Testee
+            tanggal_lahir:      String(row[7] || ''),                  // 8. Tanggal lahir Testee
+            usia:               String(row[8] || '-'),                 // 9. Usia Testee
+            tanggal_tes:        String(row[9] || ''),                  // 10. Tanggal Tes
+            jenis_kelamin:      String(row[10] || '-'),                // 11. Jenis Kelamin
+            level_pendidikan:   String(row[11] || '-'),                // 12. Level Pendidikan
+            jurusan_sma:        String(row[12] || '-'),                // 13. Jurusan SMA/SMK
+            bantuan_menggambar: String(row[13] || 'Mandiri'),          // 14. Proses menggambar dibantu oleh
+            kondisi_kertas:     String(row[14] || 'Biasa'),            // 15. Kondisi kertas
+            posisi_kertas:      String(row[15] || 'Vertikal'),         // 16. Posisi kertas
+            alat_gambar:        String(row[16] || 'Pensil Warna'),     // 17. Alat gambar
+            dominasi_warna:     String(row[17] || '-'),                // 18. Dominasi Warna
+            catatan_gambar:     String(row[18] || '-'),                // 19. Catatan terkait gambar
+            email_cabang:       session.email || String(row[19] || '-'),// 20. Alamat e-mail
+            jenis_paket_bayar:  String(row[20] || 'Berbayar'),         // 21. Paket Berbayar/Bonus
+            bentuk_kerjasama:   String(row[21] || 'Personal'),         // 22. Bentuk kerja sama
+            nama_penginput:     String(row[22] || namaPenginputPertama),// 23. Nama Penginput
+            whatsapp_penginput: String(row[23] || '-'),                // 24. No Whatsapp
+            cabang:             cabangForm,                            // 25. Cabang (Otomatis dari Sistem)
+            catatan_khusus:     String(row[25] || '-'),                // 26. Catatan khusus
+            jurusan_terlintas:  String(row[26] || '-')                 // 27. Jurusan Terlintas
+        }));
 
-                    // STEP 3: CATAT RIWAYAT FILE MENTAH KE `batch_upload`
-                    const { error: batchErr } = await _supabase.from('batch_upload').insert([{
-                        nama_file_asli: file.name,
-                        file_url: fileUrl,
-                        kode_cabang: cabangForm,
-                        nama_penginput: namaPenginputPertama,
-                        jumlah_data: successCount
-                    }]);
+        // 3. Simpan sekaligus ke Supabase Database
+        const { error: insertErr } = await _supabase.from('data_peserta').insert(dataToInsert);
+        if (insertErr) throw new Error("Gagal menyimpan data peserta: " + insertErr.message);
 
-                    if (batchErr) console.error("Gagal mencatat riwayat batch upload:", batchErr);
+        // 4. Catat Riwayat File Upload ke tabel batch_upload
+        try {
+            await _supabase.from('batch_upload').insert([{
+                nama_file_asli: file.name,
+                file_url: fileUrl,
+                kode_cabang: cabangForm,
+                nama_penginput: namaPenginputPertama,
+                jumlah_data: dataToInsert.length
+            }]);
+        } catch (bErr) {
+            console.warn("Log batch_upload dilewati:", bErr);
+        }
 
-                    alert(`Alhamdulillah! Berhasil memproses ${successCount} dari ${rows.length} data peserta via Excel 27 Kolom.`);
-                    document.getElementById('excelUploadForm').reset();
-                    loadPesertaCabang();
-                    switchMainTab('monitoring');
+        alert(`Alhamdulillah! Berhasil memproses ${dataToInsert.length} data peserta via Excel.`);
+        document.getElementById('excelUploadForm').reset();
+        if (typeof loadPesertaCabang === 'function') loadPesertaCabang();
+        if (typeof switchMainTab === 'function') switchMainTab('monitoring');
 
-                } catch (err) {
-                    console.error(err);
-                    alert("Gagal proses Excel: " + err.message);
-                } finally {
-                    submitBtn.textContent = "Proses & Kirim Semua Data Excel ke Pusat";
-                    submitBtn.disabled = false;
-                }
-
-                async function loadDaftarCabang() {
-                    // 1. Gunakan _supabase yang sudah didefinisikan di script utama
-                    const client = typeof _supabase !== 'undefined' ? _supabase : null;
-
-                    if (!client) {
-                        console.error("Supabase Client (_supabase) belum siap.");
-                        return;
-                    }
-
-                    try {
-                        // 2. Tarik Data dari Database
-                        const { data: daftarCabang, error } = await client
-                            .from('data_cabang')
-                            .select('nama_cabang, kode_cabang')
-                            .eq('status', 'Aktif');
-
-                        if (error) {
-                            console.warn("Gagal ambil data cabang dari DB:", error.message);
-                        }
-
-                        // 3. Ambil data user yang sedang login dari session
-                        const currentSession = JSON.parse(
-                            localStorage.getItem('user_terabaca') ||
-                            localStorage.getItem('user_session') ||
-                            sessionStorage.getItem('user_session') || '{}'
-                        );
-                        const userKode = currentSession.kode_cabang || 'TSK-01';
-                        const userNama = currentSession.cabang || currentCabang || 'Kab. Tasikmalaya';
-
-                        // 4. Isi & Kunci Dropdown Form Satuan
-                        const selectSatuan = document.getElementById('cabangWilayah') || document.getElementById('cabang');
-                        if (selectSatuan) {
-                            selectSatuan.innerHTML = `<option value="${userNama}" selected>${userNama}</option>`;
-                            selectSatuan.disabled = true; // Kunci agar tidak bisa diganti
-                        }
-
-                        // Ganti blok lama tadi dengan 3 baris aman ini:
-                        const displayExcel = document.getElementById('displayCabangExcel');
-                        if (displayExcel) {
-                            displayExcel.textContent = currentCabang || userNama || 'PUSAT';
-                        }
-                    } catch (err) {
-                        console.error("Error pada loadDaftarCabang:", err);
-                    }
-                }
-            });
+    } catch (err) {
+        console.error(err);
+        alert("Gagal proses Excel: " + err.message);
+    } finally {
+        submitBtn.textContent = "Proses & Kirim Semua Data Excel ke Pusat";
+        submitBtn.disabled = false;
+    }
+});
 
             // Logout Session
             async function logoutAdmin() {
@@ -1175,7 +1134,7 @@
                             catatan_gambar: document.getElementById('catatan_gambar').value || '-',
                             email_cabang: document.getElementById('email_cabang').value,
                             jenis_paket_bayar: document.getElementById('jenis_paket_bayar').value,
-                            jenis_layanan: document.getElementById('jenis_layanan').value,
+                            bentuk_kerjasama: document.getElementById('bentuk_kerjasama').value,
                             nama_penginput: document.getElementById('nama_penginput').value,
                             whatsapp_penginput: document.getElementById('whatsapp_penginput').value,
                             cabang: currentCabang,
@@ -1245,7 +1204,7 @@
                                         catatan_gambar: document.getElementById('catatan_gambar').value || '-',
                                         email_cabang: document.getElementById('email_cabang').value,
                                         jenis_paket_bayar: document.getElementById('jenis_paket_bayar').value,
-                                        jenis_layanan: document.getElementById('jenis_layanan').value,
+                                        bentuk_kerjasama: document.getElementById('bentuk_kerjasama').value,
                                         nama_penginput: document.getElementById('nama_penginput').value,
                                         whatsapp_penginput: document.getElementById('whatsapp_penginput').value,
                                         cabang: currentCabang,
@@ -1282,7 +1241,7 @@
                                                     catatanGambar: payloadSupabase.catatan_gambar,
                                                     email: payloadSupabase.email_cabang,
                                                     paketBerbayarBonus: payloadSupabase.jenis_paket_bayar,
-                                                    bentukKerjasama: payloadSupabase.jenis_layanan,
+                                                    bentuk_kerjasama: payloadSupabase.bentuk_kerjasama,
                                                     namaPenginput: payloadSupabase.nama_penginput,
                                                     noWhatsapp: payloadSupabase.whatsapp_penginput,
                                                     cabang: payloadSupabase.cabang,
