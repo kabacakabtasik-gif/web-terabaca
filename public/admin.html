@@ -629,26 +629,30 @@
 
         function renderMasterTable(data) {
             const tbody = document.getElementById('tableBodyMaster');
-            document.getElementById('countTable').textContent = data.length;
+            const countElem = document.getElementById('countTable');
+            if (countElem) countElem.textContent = data.length;
 
-            if (data.length === 0) {
+            if (!data || data.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="28" class="p-6 text-center text-slate-400 italic">Belum ada data pendaftar.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = data.map((item, idx) => {
-                // Logika Usia Otomatis
+                // Validasi dan Perhitungan Usia Aman
                 let usiaText = item.usia || item.usia_testee || "-";
                 const tglLahir = item.tgl_lahir || item.tanggal_lahir;
-                if (tglLahir) {
+
+                if (tglLahir && tglLahir !== "-") {
                     const birthDate = new Date(tglLahir);
-                    const today = new Date();
-                    let age = today.getFullYear() - birthDate.getFullYear();
-                    const m = today.getMonth() - birthDate.getMonth();
-                    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-                        age--;
+                    if (!isNaN(birthDate.getTime())) {
+                        const today = new Date();
+                        let age = today.getFullYear() - birthDate.getFullYear();
+                        const m = today.getMonth() - birthDate.getMonth();
+                        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                            age--;
+                        }
+                        if (age >= 0) usiaText = `${age} Tahun`;
                     }
-                    if (age > 0) usiaText = `${age} Tahun`;
                 }
 
                 const linkBukti = item.bukti_transfer_url;
