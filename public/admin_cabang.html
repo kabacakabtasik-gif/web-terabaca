@@ -1142,14 +1142,13 @@
                     e.preventDefault();
                     const btnSubmit = uploadForm.querySelector('button[type="submit"]');
                     btnSubmit.disabled = true;
-                    btnSubmit.textContent = 'Mengirim Data...';
+                    btnSubmit.textContent = 'Mengirim Data & Mengunggah ke Drive...';
 
                     try {
-                        // Ambil file dari input
+                        // 1. Upload Bukti & File Coretan ke Supabase Storage (seperti kode yang sudah ada)
                         const buktiFile = document.getElementById('buktiTransferInput').files[0];
                         const coretanFiles = Array.from(document.getElementById('fileCoretanInput').files);
 
-                        // Upload Bukti Transfer ke Supabase Storage
                         let buktiUrl = '';
                         if (buktiFile) {
                             const pathBukti = `bukti/${Date.now()}_${buktiFile.name}`;
@@ -1159,7 +1158,6 @@
                             buktiUrl = publicUrlData.publicUrl;
                         }
 
-                        // Upload File Coretan ke Supabase Storage
                         const coretanUrls = [];
                         for (const file of coretanFiles) {
                             const pathCoretan = `coretan/${Date.now()}_${file.name}`;
@@ -1169,8 +1167,8 @@
                             coretanUrls.push(publicUrlData.publicUrl);
                         }
 
-                        // Payload Data Peserta
-                        const payload = {
+                        // 2. Payload Database Supabase
+                        const payloadSupabase = {
                             bukti_transfer_url: buktiUrl,
                             file_coretan_url: coretanUrls.join(','),
                             paket_tes: document.getElementById('paket_tes').value,
@@ -1200,11 +1198,152 @@
                             catatan_khusus: document.getElementById('catatan_khusus').value || '-'
                         };
 
-                        // Insert ke tabel Supabase
-                        const { error: errInsert } = await _supabase.from('data_peserta').insert([payload]);
+                        // Simpan ke Supabase DB
+                        const { error: errInsert } = await _supabase.from('data_peserta').insert([payloadSupabase]);
                         if (errInsert) throw errInsert;
 
-                        alert('Berhasil! Data dan berkas peserta telah terkirim.');
+                        // 3. Kirim Data ke API Vercel /api/generate-report untuk Otomatisasi Google Drive
+                        // Handling Pengiriman Form Satuan & Otomatisasi Google Drive
+                        const uploadForm = document.getElementById('uploadForm');
+                        if (uploadForm) {
+                            uploadForm.addEventListener('submit', async (e) => {
+                                e.preventDefault();
+                                const btnSubmit = uploadForm.querySelector('button[type="submit"]');
+                                btnSubmit.disabled = true;
+                                btnSubmit.textContent = 'Mengirim Data & Mengunggah ke Drive...';
+
+                                try {
+                                    // 1. Ambil file dari input
+                                    const buktiFile = document.getElementById('buktiTransferInput').files[0];
+                                    const coretanFiles = Array.from(document.getElementById('fileCoretanInput').files);
+
+                                    // 2. Upload Bukti Transfer ke Supabase Storage
+                                    let buktiUrl = '';
+                                    if (buktiFile) {
+                                        const pathBukti = `bukti/${Date.now()}_${buktiFile.name}`;
+                                        const { error: errBukti } = await _supabase.storage.from('berkas').upload(pathBukti, buktiFile);
+                                        if (errBukti) throw errBukti;
+                                        const { data: publicUrlData } = _supabase.storage.from('berkas').getPublicUrl(pathBukti);
+                                        buktiUrl = publicUrlData.publicUrl;
+                                    }
+
+                                    // 3. Upload File Coretan ke Supabase Storage
+                                    const coretanUrls = [];
+                                    for (const file of coretanFiles) {
+                                        const pathCoretan = `coretan/${Date.now()}_${file.name}`;
+                                        const { error: errCoretan } = await _supabase.storage.from('berkas').upload(pathCoretan, file);
+                                        if (errCoretan) throw errCoretan;
+                                        const { data: publicUrlData } = _supabase.storage.from('berkas').getPublicUrl(pathCoretan);
+                                        coretanUrls.push(publicUrlData.publicUrl);
+                                    }
+
+                                    // 4. Payload Data untuk Database Supabase
+                                    const payloadSupabase = {
+                                        bukti_transfer_url: buktiUrl,
+                                        file_coretan_url: coretanUrls.join(','),
+                                        paket_tes: document.getElementById('paket_tes').value,
+                                        nama_testee: document.getElementById('nama_testee').value,
+                                        no_testee: document.getElementById('no_testee').value || null,
+                                        lembaga_institusi: document.getElementById('lembaga_institusi').value,
+                                        tempat_lahir: document.getElementById('tempat_lahir').value,
+                                        tanggal_lahir: document.getElementById('tanggal_lahir').value,
+                                        usia: document.getElementById('usia').value,
+                                        tanggal_tes: document.getElementById('tanggal_tes').value,
+                                        jenis_kelamin: document.getElementById('jenis_kelamin').value,
+                                        level_pendidikan: document.getElementById('level_pendidikan').value,
+                                        jurusan_sma: document.getElementById('jurusan_sma').value || '-',
+                                        jurusan_terlintas: document.getElementById('jurusan_terlintas').value || '-',
+                                        bantuan_menggambar: document.getElementById('bantuan_menggambar').value,
+                                        kondisi_kertas: document.getElementById('kondisi_kertas').value,
+                                        posisi_kertas: document.getElementById('posisi_kertas').value,
+                                        alat_gambar: document.getElementById('alat_gambar').value,
+                                        dominasi_warna: document.getElementById('dominasi_warna').value,
+                                        catatan_gambar: document.getElementById('catatan_gambar').value || '-',
+                                        email_cabang: document.getElementById('email_cabang').value,
+                                        jenis_paket_bayar: document.getElementById('jenis_paket_bayar').value,
+                                        jenis_layanan: document.getElementById('jenis_layanan').value,
+                                        nama_penginput: document.getElementById('nama_penginput').value,
+                                        whatsapp_penginput: document.getElementById('whatsapp_penginput').value,
+                                        cabang: currentCabang,
+                                        catatan_khusus: document.getElementById('catatan_khusus').value || '-'
+                                    };
+
+                                    // 5. Insert ke Tabel Supabase
+                                    const { error: errInsert } = await _supabase.from('data_peserta').insert([payloadSupabase]);
+                                    if (errInsert) throw errInsert;
+
+                                    // 6. Kirim ke API Generate Report (Membuat Excel 27 Kolom & Unggah ke Google Drive)
+                                    try {
+                                        const payloadDrive = {
+                                            transactions: [
+                                                {
+                                                    buktiTransfer: payloadSupabase.bukti_transfer_url,
+                                                    gambar: payloadSupabase.file_coretan_url,
+                                                    jenisPaket: payloadSupabase.paket_tes,
+                                                    namaLengkap: payloadSupabase.nama_testee,
+                                                    noTestee: '',
+                                                    namaLembaga: payloadSupabase.lembaga_institusi,
+                                                    tempatLahir: payloadSupabase.tempat_lahir,
+                                                    tanggalLahir: payloadSupabase.tanggal_lahir,
+                                                    usia: payloadSupabase.usia,
+                                                    tanggalTes: payloadSupabase.tanggal_tes,
+                                                    jenisKelamin: payloadSupabase.jenis_kelamin,
+                                                    levelPendidikan: payloadSupabase.level_pendidikan,
+                                                    jurusanSma: payloadSupabase.jurusan_sma,
+                                                    prosesMenggambar: payloadSupabase.bantuan_menggambar,
+                                                    kondisiKertas: payloadSupabase.kondisi_kertas,
+                                                    posisiKertas: payloadSupabase.posisi_kertas,
+                                                    alatGambar: payloadSupabase.alat_gambar,
+                                                    dominasiWarna: payloadSupabase.dominasi_warna,
+                                                    catatanGambar: payloadSupabase.catatan_gambar,
+                                                    email: payloadSupabase.email_cabang,
+                                                    paketBerbayarBonus: payloadSupabase.jenis_paket_bayar,
+                                                    bentukKerjasama: payloadSupabase.jenis_layanan,
+                                                    namaPenginput: payloadSupabase.nama_penginput,
+                                                    noWhatsapp: payloadSupabase.whatsapp_penginput,
+                                                    cabang: payloadSupabase.cabang,
+                                                    catatanKhusus: payloadSupabase.catatan_khusus,
+                                                    pilihanJurusan: payloadSupabase.jurusan_terlintas
+                                                }
+                                            ]
+                                        };
+
+                                        await fetch('/api/generate-report', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify(payloadDrive)
+                                        });
+                                    } catch (driveErr) {
+                                        console.warn("Kirim ke Supabase sukses, tetapi gagal upload ke Google Drive:", driveErr);
+                                    }
+
+                                    alert('Berhasil! Data dan berkas peserta telah terkirim ke Pusat & Google Drive.');
+                                    uploadForm.reset();
+                                    switchMainTab('monitoring');
+                                    loadPesertaCabang();
+
+                                } catch (err) {
+                                    console.error(err);
+                                    alert('Gagal mengirim data: ' + err.message);
+                                } finally {
+                                    btnSubmit.disabled = false;
+                                    btnSubmit.textContent = 'Kirim Seluruh Data & Berkas ke Pusat';
+                                }
+                            });
+                        }
+
+                        const resDrive = await fetch('/api/generate-report', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payloadDrive)
+                        });
+
+                        const resDriveData = await resDrive.json();
+                        if (!resDrive.ok || !resDriveData.success) {
+                            console.warn("Gagal unggah laporan ke Drive:", resDriveData.message);
+                        }
+
+                        alert('Berhasil! Data dan berkas peserta telah terkirim ke Pusat & Google Drive.');
                         uploadForm.reset();
                         switchMainTab('monitoring');
                         loadPesertaCabang();
