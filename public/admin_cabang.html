@@ -621,7 +621,7 @@
                 submitBtn.textContent = "Sedang Mengunggah Berkas ke Pusat...";
 
                 try {
-                    const cabang = document.getElementById('cabang').value;
+                    const cabang = currentCabang || 'PUSAT';
                     const namaTestee = document.getElementById('nama_testee').value;
                     const cleanName = namaTestee.replace(/[^a-zA-Z0-9]/g, '_');
 
