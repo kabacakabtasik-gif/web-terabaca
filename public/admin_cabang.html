@@ -125,32 +125,195 @@
             </div>
         </div>
 
-        <!-- TAB 2: FORM INPUT & UPLOAD EXCEL (TERINTEGRASI) -->
+        <!-- TAB 2: FORM INPUT & UPLOAD EXCEL (STANDAR 27 KOLOM PUSAT) -->
         <div id="tabUpload" class="hidden space-y-6">
 
             <!-- Sub-Header Mode Switcher -->
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
                 <div>
                     <h2 class="font-bold text-slate-800 text-lg">Form Pengiriman Berkas & Data Tes</h2>
-                    <p class="text-xs text-slate-500">Pilih metode pengiriman: Input Satuan atau Upload Massal via
-                        Excel.</p>
+                    <p class="text-xs text-slate-500">Pilih metode pengiriman: Input Satuan atau Upload Massal via Excel
+                        27 Kolom.</p>
                 </div>
                 <div class="bg-slate-100 p-1 rounded-lg flex gap-1">
                     <button id="btnModeSatuan" onclick="switchMode('satuan')"
-                        class="px-4 py-2 rounded-lg bg-white text-emerald-700 shadow-sm transition font-medium text-xs">Input
-                        Satuan</button>
+                        class="px-4 py-2 rounded-lg bg-white text-emerald-700 shadow-sm transition font-medium text-xs">
+                        Input Satuan
+                    </button>
                     <button id="btnModeExcel" onclick="switchMode('excel')"
-                        class="px-4 py-2 rounded-lg text-slate-600 transition font-medium text-xs">Upload Excel
-                        (Massal)</button>
+                        class="px-4 py-2 rounded-lg text-slate-600 transition font-medium text-xs">
+                        Upload Excel (Massal)
+                    </button>
                 </div>
             </div>
 
-            <!-- FORM INPUT SATUAN -->
+            <!-- FORM INPUT SATUAN (27 KOLOM) -->
             <form id="uploadForm" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
-                <!-- Section 1: Validasi Cabang -->
+
+                <!-- Section 1: Berkas Pendukung (Kolom 1 - 3) -->
+                <div class="p-4 bg-emerald-50/60 rounded-xl border border-emerald-200 space-y-4">
+                    <h3 class="font-semibold text-sm text-emerald-900 border-b border-emerald-200 pb-2">
+                        1. UNGGAH BERKAS & PAKET TES (KOLOM 1 - 3)
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Upload Bukti Transfer *</label>
+                            <input type="file" id="buktiTransferInput" accept="image/*,.pdf" required
+                                class="w-full text-slate-600 border bg-white rounded p-1.5 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Upload Gambar / Coretan (Bisa Banyak)
+                                *</label>
+                            <input type="file" id="fileCoretanInput" multiple accept="image/*,.pdf" required
+                                class="w-full text-slate-600 border bg-white rounded p-1.5 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Jenis Paket Tes *</label>
+                            <select id="paket_tes" required
+                                class="w-full border rounded p-2 bg-white focus:ring-1 focus:ring-emerald-500 outline-none">
+                                <option value="">-- Pilih Paket Tes --</option>
+                                <option value="Basic">Basic</option>
+                                <option value="Parent">Parent</option>
+                                <option value="Talent">Talent</option>
+                                <option value="BrainWave">BrainWave</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Data Identitas Testee (Kolom 4 - 13 & 27) -->
                 <div class="space-y-4">
-                    <h3 class="font-semibold text-sm text-slate-700 border-b pb-2">1. DATA VALIDASI CABANG</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                    <h3 class="font-semibold text-sm text-slate-700 border-b pb-2">2. DATA IDENTITAS TESTEE</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                        <div>
+                            <label class="block font-medium mb-1">Nama Lengkap Testee *</label>
+                            <input type="text" id="nama_testee" required
+                                class="w-full border rounded p-2.5 focus:ring-1 focus:ring-emerald-500 outline-none"
+                                placeholder="Nama lengkap peserta">
+                        </div>
+                        <div>
+                            <label class="block font-medium mb-1">No Testee (Opsional)</label>
+                            <input type="text" id="no_testee"
+                                class="w-full border rounded p-2.5 bg-slate-50 outline-none"
+                                placeholder="Otomatis/Kosongkan">
+                        </div>
+                        <div>
+                            <label class="block font-medium mb-1">Nama Lembaga / Institusi *</label>
+                            <input type="text" id="lembaga_institusi" required
+                                class="w-full border rounded p-2.5 focus:ring-1 focus:ring-emerald-500 outline-none"
+                                placeholder="Contoh: SD Negeri 1 / Umum">
+                        </div>
+                        <div>
+                            <label class="block font-medium mb-1">Tempat Lahir *</label>
+                            <input type="text" id="tempat_lahir" required
+                                class="w-full border rounded p-2.5 focus:ring-1 focus:ring-emerald-500 outline-none"
+                                placeholder="Kota lahir">
+                        </div>
+                        <div>
+                            <label class="block font-medium mb-1">Tanggal Lahir *</label>
+                            <input type="date" id="tanggal_lahir" required
+                                class="w-full border rounded p-2.5 focus:ring-1 focus:ring-emerald-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block font-medium mb-1">Usia *</label>
+                            <input type="text" id="usia" required
+                                class="w-full border rounded p-2.5 focus:ring-1 focus:ring-emerald-500 outline-none"
+                                placeholder="Contoh: 11 Tahun">
+                        </div>
+                        <div>
+                            <label class="block font-medium mb-1">Tanggal Tes *</label>
+                            <input type="date" id="tanggal_tes" required
+                                class="w-full border rounded p-2.5 focus:ring-1 focus:ring-emerald-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block font-medium mb-1">Jenis Kelamin *</label>
+                            <select id="jenis_kelamin" required
+                                class="w-full border rounded p-2.5 bg-white focus:ring-1 focus:ring-emerald-500 outline-none">
+                                <option value="">-- Pilih --</option>
+                                <option value="Laki-laki">Laki-laki</option>
+                                <option value="Perempuan">Perempuan</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-medium mb-1">Level Pendidikan *</label>
+                            <select id="level_pendidikan" required
+                                class="w-full border rounded p-2.5 bg-white focus:ring-1 focus:ring-emerald-500 outline-none">
+                                <option value="">-- Pilih Level --</option>
+                                <option value="TK/PAUD">TK/PAUD</option>
+                                <option value="SD">SD</option>
+                                <option value="SMP">SMP</option>
+                                <option value="SMA/SMK">SMA/SMK</option>
+                                <option value="Mahasiswa/Umum">Mahasiswa/Umum</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-medium mb-1">Jurusan (Khusus SMA/SMK)</label>
+                            <input type="text" id="jurusan_sma"
+                                class="w-full border rounded p-2.5 focus:ring-1 focus:ring-emerald-500 outline-none"
+                                placeholder="IPA / IPS / Teknik">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block font-medium mb-1">Pilihan Jurusan (Terlintas)</label>
+                            <input type="text" id="jurusan_terlintas"
+                                class="w-full border rounded p-2.5 focus:ring-1 focus:ring-emerald-500 outline-none"
+                                placeholder="Kedokteran, Teknik Informatika, dll.">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Observasi Gambar (Kolom 14 - 19) -->
+                <div class="space-y-4">
+                    <h3 class="font-semibold text-sm text-slate-700 border-b pb-2">3. OBSERVASI PROSES GAMBAR</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                        <div>
+                            <label class="block font-medium mb-1">Proses Menggambar Dibantu Oleh *</label>
+                            <select id="bantuan_menggambar" required
+                                class="w-full border rounded p-2.5 bg-white focus:ring-1 focus:ring-emerald-500 outline-none">
+                                <option value="Mandiri">Mandiri (Tanpa Bantuan)</option>
+                                <option value="Orangtua">Orangtua</option>
+                                <option value="Orang lain">Orang lain / Guru</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-medium mb-1">Kondisi Kertas *</label>
+                            <input type="text" id="kondisi_kertas" required
+                                class="w-full border rounded p-2.5 focus:ring-1 focus:ring-emerald-500 outline-none"
+                                placeholder="Tidak Terlipat / Sobek / Rapi">
+                        </div>
+                        <div>
+                            <label class="block font-medium mb-1">Posisi Kertas *</label>
+                            <select id="posisi_kertas" required
+                                class="w-full border rounded p-2.5 bg-white focus:ring-1 focus:ring-emerald-500 outline-none">
+                                <option value="Vertikal">Vertikal</option>
+                                <option value="Horizontal">Horizontal</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-medium mb-1">Alat Gambar yang Digunakan *</label>
+                            <input type="text" id="alat_gambar" required
+                                class="w-full border rounded p-2.5 focus:ring-1 focus:ring-emerald-500 outline-none"
+                                placeholder="Pensil Warna / Crayon / Spidol">
+                        </div>
+                        <div>
+                            <label class="block font-medium mb-1">Dominasi Warna *</label>
+                            <input type="text" id="dominasi_warna" required
+                                class="w-full border rounded p-2.5 focus:ring-1 focus:ring-emerald-500 outline-none"
+                                placeholder="Contoh: Biru / Hijau / Merah">
+                        </div>
+                        <div>
+                            <label class="block font-medium mb-1">Catatan terkait Gambar</label>
+                            <input type="text" id="catatan_gambar"
+                                class="w-full border rounded p-2.5 focus:ring-1 focus:ring-emerald-500 outline-none"
+                                placeholder="Anak antusias, fokius, dll.">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 4: Validasi & Administrasi Cabang (Kolom 20 - 26) -->
+                <div class="space-y-4 border-t pt-4">
+                    <h3 class="font-semibold text-sm text-slate-700 border-b pb-2">4. DATA ADMINISTRASI CABANG &
+                        PENGINPUT</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
                         <div>
                             <label class="block font-medium mb-1">Email Cabang / Penginput *</label>
                             <input type="email" id="email_cabang" required
@@ -158,10 +321,26 @@
                                 placeholder="contoh@gmail.com">
                         </div>
                         <div>
+                            <label class="block font-medium mb-1">Paket Berbayar / Bonus *</label>
+                            <select id="jenis_paket_bayar" required
+                                class="w-full border rounded p-2.5 bg-white focus:ring-1 focus:ring-emerald-500 outline-none">
+                                <option value="Berbayar">Berbayar</option>
+                                <option value="Bonus">Bonus</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-medium mb-1">Bentuk Kerja Sama *</label>
+                            <select id="jenis_layanan" required
+                                class="w-full border rounded p-2.5 bg-white focus:ring-1 focus:ring-emerald-500 outline-none">
+                                <option value="Personal">Personal</option>
+                                <option value="Kerjasama Lembaga">Kerjasama Lembaga</option>
+                            </select>
+                        </div>
+                        <div>
                             <label class="block font-medium mb-1">Nama Penginput *</label>
                             <input type="text" id="nama_penginput" required
                                 class="w-full border rounded p-2.5 focus:ring-1 focus:ring-emerald-500 outline-none"
-                                placeholder="Nama Anda">
+                                placeholder="Nama Petugas">
                         </div>
                         <div>
                             <label class="block font-medium mb-1">No WhatsApp Penginput *</label>
@@ -171,225 +350,42 @@
                         </div>
                         <div>
                             <label class="block font-medium mb-1">Cabang / Wilayah *</label>
-                            <input type="text" id="cabang" readonly
-                                class="w-full border rounded p-2.5 bg-slate-100 text-slate-500 font-semibold"
-                                placeholder="Otomatis terisi">
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-1">Paket Berbayar / Bonus *</label>
-                            <select id="jenis_paket_bayar" required class="w-full border rounded p-2.5 bg-white">
-                                <option value="">-- Pilih Status Paket --</option>
-                                <option value="Berbayar">Berbayar</option>
-                                <option value="Bonus">Bonus</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-1">Jenis Layanan *</label>
-                            <select id="jenis_layanan" required class="w-full border rounded p-2.5 bg-white">
-                                <option value="">-- Pilih Jenis --</option>
-                                <option value="Personal">Personal</option>
-                                <option value="Kerjasama Lembaga">Kerjasama Lembaga</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Section 2: Data Testee -->
-                <div class="space-y-4">
-                    <h3 class="font-semibold text-sm text-slate-700 border-b pb-2">2. DATA TESTEE</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-                        <div>
-                            <label class="block font-medium mb-1">Nama Lengkap Testee *</label>
-                            <input type="text" id="nama_testee" required class="w-full border rounded p-2.5">
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-1">No Testee (Opsional)</label>
-                            <input type="text" id="no_testee" class="w-full border rounded p-2.5">
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-1">Paket Tes *</label>
-                            <select id="paket_tes" required class="w-full border rounded p-2.5 bg-white">
-                                <option value="">-- Pilih Paket Tes --</option>
-                                <option value="Talent">Talent</option>
-                                <option value="Basic">Basic</option>
-                                <option value="Parent">Parent</option>
-                                <option value="BrainWave">BrainWave</option>
-                            </select>
-                        </div>
-                        <div class="sm:col-span-2">
-                            <label class="block font-medium mb-1">Nama Lembaga / Institusi / Komunitas *</label>
-                            <input type="text" id="lembaga_institusi" required class="w-full border rounded p-2.5"
-                                placeholder="Contoh: SD Negeri 1 / Umum">
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-1">Tempat Lahir *</label>
-                            <input type="text" id="tempat_lahir" required class="w-full border rounded p-2.5">
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-1">Tanggal Lahir *</label>
-                            <input type="date" id="tanggal_lahir" required class="w-full border rounded p-2.5">
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-1">Usia *</label>
-                            <input type="text" id="usia" required class="w-full border rounded p-2.5"
-                                placeholder="Contoh: 11 Tahun">
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-1">Tanggal Tes *</label>
-                            <input type="date" id="tanggal_tes" required class="w-full border rounded p-2.5">
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-1">Jenis Kelamin *</label>
-                            <select id="jenis_kelamin" required class="w-full border rounded p-2.5 bg-white">
-                                <option value="">-- Pilih --</option>
-                                <option value="Laki-laki">Laki-laki</option>
-                                <option value="Perempuan">Perempuan</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-1">Level Pendidikan *</label>
-                            <select id="level_pendidikan" required class="w-full border rounded p-2.5 bg-white">
-                                <option value="">-- Pilih Level --</option>
-                                <option value="TK A">TK A</option>
-                                <option value="TK B">TK B</option>
-                                <option value="PlayGroup">PlayGroup</option>
-                                <option value="SD Kelas 1-4">SD Kelas 1-4</option>
-                                <option value="SD Kelas 5-6 dan SMP">SD Kelas 5-6 dan SMP</option>
-                                <option value="SMA">SMA</option>
-                                <option value="Umum (Dewasa Belum Menikah)">Umum (Dewasa Belum Menikah)</option>
-                                <option value="Umum (Dewasa Sudah Menikah)">Umum (Dewasa Sudah Menikah)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-1">Jurusan (Khusus SMA/SLTA)</label>
-                            <input type="text" id="jurusan_sma" class="w-full border rounded p-2.5"
-                                placeholder="IPA/IPS/Bahasa">
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-1">Jurusan Pilihan / Terlintas</label>
-                            <input type="text" id="jurusan_terlintas" class="w-full border rounded p-2.5"
-                                placeholder="Kedokteran, Psikologi, dll">
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-1">Anak Ke- *</label>
-                            <input type="number" id="anak_ke" required class="w-full border rounded p-2.5">
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-1">Dari ... Bersaudara *</label>
-                            <input type="number" id="dari_bersaudara" required class="w-full border rounded p-2.5">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Section 3: Catatan & Proses Gambar -->
-                <div class="space-y-4">
-                    <h3 class="font-semibold text-sm text-slate-700 border-b pb-2">3. CATATAN & PROSES GAMBAR</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-                        <div>
-                            <label class="block font-medium mb-1">Dibantu Orang Tua *</label>
-                            <select id="dibantu_ortu" required class="w-full border rounded p-2.5 bg-white">
-                                <option value="tidak">Tidak</option>
-                                <option value="ya">Ya</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-1">Dibantu Orang Lain *</label>
-                            <select id="dibantu_orang_lain" required class="w-full border rounded p-2.5 bg-white">
-                                <option value="tidak">Tidak</option>
-                                <option value="ya">Ya</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-1">Kondisi Kertas Sobek *</label>
-                            <select id="kondisi_kertas" required class="w-full border rounded p-2.5 bg-white">
-                                <option value="tidak">Tidak</option>
-                                <option value="ya">Ya</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-1">Mengganti Kertas *</label>
-                            <select id="ganti_kertas" required class="w-full border rounded p-2.5 bg-white">
-                                <option value="tidak">Tidak</option>
-                                <option value="ya">Ya</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-1">Posisi Kertas *</label>
-                            <select id="posisi_kertas" required class="w-full border rounded p-2.5 bg-white">
-                                <option value="Vertikal">Vertikal</option>
-                                <option value="Horizontal">Horizontal</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-1">Alat Gambar yang Digunakan *</label>
-                            <select id="alat_gambar" required class="w-full border rounded p-2.5 bg-white">
-                                <option value="">-- Pilih Alat Gambar --</option>
-                                <option value="Pensil Warna">Pensil Warna</option>
-                                <option value="Cat Air">Cat Air</option>
-                                <option value="Spidol">Spidol</option>
-                                <option value="Crayon">Crayon</option>
-                                <option value="Cat Minyak">Cat Minyak</option>
+                            <select id="cabang"
+                                class="w-full border rounded p-2.5 bg-white text-slate-800 font-semibold">
+                                <option value="PUSAT">PUSAT</option>
+                                <option value="Kab. Tasikmalaya">Kab. Tasikmalaya</option>
+                                <option value="Kota Depok">Kota Depok</option>
                             </select>
                         </div>
                         <div class="sm:col-span-3">
-                            <label class="block font-medium mb-1">Dominasi Warna *</label>
-                            <input type="text" id="dominasi_warna" required class="w-full border rounded p-2.5"
-                                placeholder="Contoh: Merah / Biru / Terang">
-                        </div>
-                        <div class="sm:col-span-3">
-                            <label class="block font-medium mb-1">Catatan Temuan Khusus</label>
-                            <textarea id="catatan_gambar" rows="2" class="w-full border rounded p-2.5"
-                                placeholder="Tuliskan temuan khusus saat testee menggambar..."></textarea>
+                            <label class="block font-medium mb-1">Catatan Khusus untuk Pusat</label>
+                            <input type="text" id="catatan_khusus"
+                                class="w-full border rounded p-2.5 focus:ring-1 focus:ring-emerald-500 outline-none"
+                                placeholder="Catatan tambahan untuk tim analitis pusat...">
                         </div>
                     </div>
-                </div>
-
-                <!-- Section 4: Unggah Berkas -->
-                <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-200 space-y-4">
-                    <h3 class="font-semibold text-sm text-emerald-800">4. UNGGAH BERKAS (BUKTI TRANSFER & LEMBAR
-                        CORETAN)</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                        <div>
-                            <label class="block font-medium text-emerald-900 mb-1">Upload Bukti Transfer
-                                (Opsional)</label>
-                            <input type="file" id="buktiTransferInput" accept="image/*,.pdf"
-                                class="w-full text-slate-600 border bg-white rounded p-1.5">
-                        </div>
-                        <div>
-                            <label class="block font-medium text-emerald-900 mb-1">Upload Lembar Coretan (Bisa Banyak
-                                File) *</label>
-                            <input type="file" id="fileCoretanInput" multiple accept="image/*,.pdf" required
-                                class="w-full text-slate-600 border bg-white rounded p-1.5">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="text-xs">
-                    <label class="block font-medium mb-1">Catatan Khusus untuk Pusat</label>
-                    <input type="text" id="catatan_khusus" class="w-full border rounded p-2.5"
-                        placeholder="Opsional...">
                 </div>
 
                 <button type="submit"
-                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-lg shadow-sm transition">
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl shadow-sm transition">
                     Kirim Seluruh Data & Berkas ke Pusat
                 </button>
             </form>
 
-            <!-- FORM EXCEL MASSAL -->
+            <!-- FORM EXCEL MASSAL (27 KOLOM) -->
             <div id="sectionExcel" class="hidden bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
                 <div class="border-b pb-4">
-                    <h3 class="font-bold text-slate-800 text-base">Upload Excel Massal (23 Kolom)</h3>
+                    <h3 class="font-bold text-slate-800 text-base">Upload Excel Massal (27 Kolom)</h3>
                     <p class="text-xs text-slate-500 mt-1">Gunakan fitur ini untuk mengirimkan banyak data testee
-                        sekaligus menggunakan template standar.</p>
+                        sekaligus menggunakan template standar 27 kolom.</p>
                 </div>
 
                 <div
                     class="flex items-center justify-between bg-indigo-50 border border-indigo-200 p-4 rounded-xl text-xs">
                     <div>
-                        <p class="font-semibold text-indigo-900">Belum punya template format Excel terbaru?</p>
-                        <p class="text-indigo-700">Unduh template presisi 23 kolom untuk menghindari kesalahan upload.
-                        </p>
+                        <p class="font-semibold text-indigo-900">Belum punya template format Excel 27 Kolom?</p>
+                        <p class="text-indigo-700">Unduh template presisi 27 kolom untuk menghindari kesalahan parsing
+                            data.</p>
                     </div>
                     <button onclick="downloadTemplateExcel()"
                         class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg transition">
@@ -398,22 +394,53 @@
                 </div>
 
                 <form id="excelUploadForm" class="space-y-4 text-xs">
-                    <input type="hidden" id="excel_cabang">
+                    <div>
+                        <label class="block font-medium mb-1">Kode Cabang</label>
+                        <select id="kodeCabangExcel"
+                            class="w-full border rounded p-2.5 bg-slate-100 text-slate-700 font-semibold cursor-not-allowed"
+                            placeholder="Memuat kode cabang...">
+                        </select>
+                    </div>
                     <div>
                         <label class="block font-medium mb-1 text-slate-700">Pilih File Excel (.xlsx / .xls)</label>
                         <input type="file" id="excelFileInput" accept=".xlsx, .xls" required
-                            class="w-full border p-2 rounded bg-slate-50">
+                            class="w-full border p-2 rounded bg-slate-50 cursor-pointer">
                     </div>
                     <button type="submit"
-                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow-sm transition">
+                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl shadow-sm transition">
                         Proses & Kirim Semua Data Excel ke Pusat
                     </button>
                 </form>
             </div>
 
         </div>
+        <script>
+            const observerExcel = new MutationObserver(() => {
+                const section = document.getElementById('sectionExcel');
+                if (section && !section.classList.contains('hidden')) {
+                    if (typeof loadDaftarCabang === 'function') loadDaftarCabang();
+                }
+            });
 
-        </div>
+            const targetSectionExcel = document.getElementById('sectionExcel');
+            if (targetSectionExcel) {
+                observerExcel.observe(targetSectionExcel, { attributes: true, attributeFilter: ['class'] });
+            }
+        </script>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                // 1. Ambil data admin/cabang dari session storage/local storage login kamu
+                const userLogat = JSON.parse(localStorage.getItem('user_terabaca') || '{}');
+                const kodeCabangUser = userLogat.kode_cabang || userLogat.cabang || 'PUSAT';
+
+                // 2. Kunci nilainya di input form Excel
+                const inputKodeExcel = document.getElementById('kodeCabangExcel');
+                if (inputKodeExcel) {
+                    inputKodeExcel.value = kodeCabangUser;
+                }
+            });
+        </script>
 
         <!-- SCRIPT UTAMA INTEGRASI -->
         <script>
@@ -506,7 +533,7 @@
             // Fetch Data Peserta Spesifik Cabang
             async function loadPesertaCabang() {
                 const tbody = document.getElementById('tableBodyPeserta');
-                tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Memuat data...</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400">Memuat data...</td></tr>';
 
                 const { data, error } = await _supabase
                     .from('data_peserta')
@@ -515,83 +542,74 @@
                     .order('created_at', { ascending: false });
 
                 if (error || !data || data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Belum ada data peserta yang dikirim.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400">Belum ada data peserta yang dikirim.</td></tr>';
                     return;
                 }
 
                 tbody.innerHTML = data.map(item => {
-                    // 1. Ambil URL file hasil tes (LOGIKA DI SINI, DI LUAR STRING HTML)
                     const hasilUrl = item.hasil_analisa_url || item.file_hasil_url || item.hasil_tes_url || item.file_hasil || '';
 
-                    // 2. Kembalikan struktur HTML baris tabel
                     return `
-                <tr class="hover:bg-slate-50 transition border-b">
-                    <td class="p-3 font-semibold text-slate-800">${item.nama_testee || '-'}</td>
-                    
-                    <!-- KOLOM BARU: NO TESTEE -->
-                    <td class="p-3 font-mono text-xs font-bold text-indigo-600">${item.no_testee || '-'}</td>
-                    
-                    <td class="p-3">${item.paket_tes || '-'}</td>
-                    <td class="p-3">${item.tanggal_tes || '-'}</td>
-                    <td class="p-3">${item.nama_penginput || '-'}</td>
-                    <td class="p-3 text-center">
-                        ${item.file_coretan_url ? `<a href="${item.file_coretan_url.split(',')[0]}" target="_blank" class="text-emerald-600 font-medium hover:underline">Lihat File</a>` : '<span class="text-slate-400">-</span>'}
-                    </td>
-                    <!-- KOLOM HASIL TES DARI PUSAT -->
-                    <td class="p-3 text-center">
-                        ${hasilUrl ? `
-                            <a href="${hasilUrl}" target="_blank" class="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 font-semibold text-xs px-2.5 py-1 rounded-md border border-emerald-300 transition">
-                                📥 Download Hasil
-                            </a>
-                        ` : `<span class="text-slate-400 text-xs italic">Belum Diunggah</span>`}
-                    </td>
-                </tr>
-                `;
+    <tr class="hover:bg-slate-50 transition border-b">
+        <td class="p-3 font-semibold text-slate-800">${item.nama_testee || '-'}</td>
+        <td class="p-3 font-mono text-xs font-bold text-indigo-600">${item.no_testee || '-'}</td>
+        <td class="p-3">${item.paket_tes || '-'}</td>
+        <td class="p-3">${item.tanggal_tes || '-'}</td>
+        <td class="p-3">${item.nama_penginput || '-'}</td>
+        <td class="p-3 text-center">
+            ${item.file_coretan_url ? `<a href="${item.file_coretan_url.split(',')[0]}" target="_blank" class="text-emerald-600 font-medium hover:underline">Lihat File</a>` : '<span class="text-slate-400">-</span>'}
+        </td>
+        <td class="p-3 text-center">
+            ${hasilUrl ? `
+                <a href="${hasilUrl}" target="_blank" class="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 font-semibold text-xs px-2.5 py-1 rounded-md border border-emerald-300 transition">
+                    📥 Download Hasil
+                </a>
+            ` : `<span class="text-slate-400 text-xs italic">Belum Diunggah</span>`}
+        </td>
+    </tr>
+    `;
                 }).join('');
             }
 
-            // Download Template Excel Presisi 24 Kolom
+            // Download Template Excel Standar Presisi 27 Kolom
             function downloadTemplateExcel() {
                 const templateData = [{
-                    "Cabang": currentCabang,
-                    "Email Penginput": "penginput@gmail.com",
-                    "Nama Penginput": "Nama Penginput",
-                    "No WhatsApp Penginput": "08123456789",
-                    "Status Paket": "Berbayar/Bonus",
-                    "Jenis Layanan": "Personal/Kerjasama Lembaga",
-                    "Nama Testee": "Contoh Nama Peserta",
-                    "No Testee": "001",
-                    "Paket Tes": "Basic/Parent/Talent/BrainWave",
-                    "Lembaga / Institusi": "SD Negeri 1 Contoh",
+                    "Bukti Transfer": "https://drive.google.com/file/d/contoh_link_bukti",
+                    "Upload Gambar / Coretan": "https://drive.google.com/file/d/contoh_link_coretan",
+                    "Jenis Paket": "Basic",
+                    "Nama Lengkap Testee": "Contoh Nama Peserta",
+                    "No Testee": "",
+                    "Nama Lembaga / Institusi": "SD Negeri 1 Contoh",
                     "Tempat Lahir": "Tasikmalaya",
                     "Tanggal Lahir": "2015-05-12",
                     "Usia": "11 Tahun",
-                    "Tanggal Tes": "2026-08-11",
+                    "Tanggal Tes": "2026-08-20",
                     "Jenis Kelamin": "Laki-laki",
                     "Level Pendidikan": "SD",
-                    "Jurusan SMA": "-",
-                    "Jurusan Terlintas": "Kedokteran, Psikologi",
-                    "Anak Ke": "1",
-                    "Dari Bersaudara": "3",
-                    "Bantuan Menggambar": "Mandiri",
-                    "Kondisi Kertas": "Ya/tidak",
-                    "Ganti Kertas": "Ya/tidak",
-                    "Posisi Kertas": "Vertikal/Horizontal",
-                    "Alat Gambar": "Pensil Warna/Crayon/Spidol/Cat Air/Cat Minyak",
+                    "Jurusan SMA/SMK": "-",
+                    "Proses menggambar dibantu oleh": "Mandiri",
+                    "Kondisi kertas": "Tidak Terlipat/Tidak Sobek",
+                    "Posisi kertas": "Vertikal",
+                    "Alat gambar": "Pensil Warna",
                     "Dominasi Warna": "Biru / Hijau",
-                    "Catatan Gambar": "Anak tampak antusias.",
+                    "Catatan terkait gambar": "Anak tampak antusias dan fokus.",
+                    "Alamat E-mail": "penginput@gmail.com",
+                    "Paket Berbayar / Bonus": "Berbayar",
+                    "Bentuk Kerja Sama": "Personal",
+                    "Nama Penginput": "Nama Penginput",
+                    "No Whatsapp Penginput": "08123456789",
+                    "Cabang": currentCabang,
                     "Catatan Khusus": "Mohon segera diproses",
-                    "Link Bukti Transfer": "https://drive.google.com/file/d/contoh_link",
-                    "Link Coretan Drive": "https://drive.google.com/file/d/contoh_link"
+                    "Pilihan Jurusan (Terlintas)": "Kedokteran, Teknik Informatika"
                 }];
 
                 const worksheet = XLSX.utils.json_to_sheet(templateData);
                 const workbook = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(workbook, worksheet, "Template TERABACA");
-                XLSX.writeFile(workbook, `template_upload_${currentCabang.replace(/[^a-zA-Z0-9]/g, '_')}.xlsx`);
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Standard_27_Kolom");
+                XLSX.writeFile(workbook, `Template_27Kolom_Upload_${currentCabang.replace(/[^a-zA-Z0-9]/g, '_')}.xlsx`);
             }
 
-            // Submit Form Satuan
+            // Submit Form Satuan (Diperbarui untuk 27 Kolom)
             document.getElementById('uploadForm').addEventListener('submit', async function (e) {
                 e.preventDefault();
                 const submitBtn = e.target.querySelector('button[type="submit"]');
@@ -603,6 +621,7 @@
                     const namaTestee = document.getElementById('nama_testee').value;
                     const cleanName = namaTestee.replace(/[^a-zA-Z0-9]/g, '_');
 
+                    // 1. Upload Bukti Transfer (Kolom 1)
                     let buktiTransferUrl = '';
                     const transferFile = document.getElementById('buktiTransferInput').files[0];
                     if (transferFile) {
@@ -615,6 +634,7 @@
                         }
                     }
 
+                    // 2. Upload Lembar Coretan/Gambar (Kolom 2)
                     let listFileUrls = [];
                     const coretanFiles = document.getElementById('fileCoretanInput').files;
                     for (let i = 0; i < coretanFiles.length; i++) {
@@ -628,39 +648,35 @@
                         }
                     }
 
+                    // 3. Simpan Seluruh 27 Field ke Supabase Database
                     const { error: dbError } = await _supabase.from('data_peserta').insert([{
-                        email_cabang: document.getElementById('email_cabang').value,
-                        nama_penginput: document.getElementById('nama_penginput').value,
-                        whatsapp_penginput: document.getElementById('whatsapp_penginput').value,
-                        cabang: cabang,
-                        jenis_paket_bayar: document.getElementById('jenis_paket_bayar').value,
-                        jenis_layanan: document.getElementById('jenis_layanan').value,
-                        catatan_khusus: document.getElementById('catatan_khusus').value,
-                        nama_testee: namaTestee,
-                        no_testee: document.getElementById('no_testee').value,
-                        paket_tes: document.getElementById('paket_tes').value,
-                        lembaga_institusi: document.getElementById('lembaga_institusi').value,
-                        tempat_lahir: document.getElementById('tempat_lahir').value,
-                        tanggal_lahir: document.getElementById('tanggal_lahir').value,
-                        usia: document.getElementById('usia').value,
-                        tanggal_tes: document.getElementById('tanggal_tes').value,
-                        jenis_kelamin: document.getElementById('jenis_kelamin').value,
-                        level_pendidikan: document.getElementById('level_pendidikan').value,
-                        jurusan_sma: document.getElementById('jurusan_sma').value,
-                        jurusan_terlintas: document.getElementById('jurusan_terlintas').value,
-                        anak_ke: document.getElementById('anak_ke').value,
-                        dari_bersaudara: document.getElementById('dari_bersaudara').value,
-                        bantuan_menggambar: document.getElementById('dibantu_ortu').value === 'ya' ? 'Orangtua' : (document.getElementById('dibantu_orang_lain').value === 'ya' ? 'Orang lain' : 'Mandiri'),
-                        dibantu_ortu: document.getElementById('dibantu_ortu').value,
-                        dibantu_orang_lain: document.getElementById('dibantu_orang_lain').value,
-                        kondisi_kertas: document.getElementById('kondisi_kertas').value,
-                        ganti_kertas: document.getElementById('ganti_kertas').value,
-                        posisi_kertas: document.getElementById('posisi_kertas').value,
-                        alat_gambar: document.getElementById('alat_gambar').value,
-                        dominasi_warna: document.getElementById('dominasi_warna').value,
-                        catatan_gambar: document.getElementById('catatan_gambar').value,
-                        bukti_transfer_url: buktiTransferUrl,
-                        file_coretan_url: listFileUrls.join(', ')
+                        bukti_transfer_url: buktiTransferUrl,                                       // Kolom 1
+                        file_coretan_url: listFileUrls.join(', '),                                  // Kolom 2
+                        paket_tes: document.getElementById('paket_tes').value,                      // Kolom 3
+                        nama_testee: namaTestee,                                                    // Kolom 4
+                        no_testee: document.getElementById('no_testee').value,                      // Kolom 5
+                        lembaga_institusi: document.getElementById('lembaga_institusi').value,      // Kolom 6
+                        tempat_lahir: document.getElementById('tempat_lahir').value,                // Kolom 7
+                        tanggal_lahir: document.getElementById('tanggal_lahir').value,              // Kolom 8
+                        usia: document.getElementById('usia').value,                                // Kolom 9
+                        tanggal_tes: document.getElementById('tanggal_tes').value,                  // Kolom 10
+                        jenis_kelamin: document.getElementById('jenis_kelamin').value,              // Kolom 11
+                        level_pendidikan: document.getElementById('level_pendidikan').value,        // Kolom 12
+                        jurusan_sma: document.getElementById('jurusan_sma').value,                  // Kolom 13
+                        bantuan_menggambar: document.getElementById('bantuan_menggambar').value,    // Kolom 14
+                        kondisi_kertas: document.getElementById('kondisi_kertas').value,            // Kolom 15
+                        posisi_kertas: document.getElementById('posisi_kertas').value,              // Kolom 16
+                        alat_gambar: document.getElementById('alat_gambar').value,                  // Kolom 17
+                        dominasi_warna: document.getElementById('dominasi_warna').value,            // Kolom 18
+                        catatan_gambar: document.getElementById('catatan_gambar').value,            // Kolom 19
+                        email_cabang: document.getElementById('email_cabang').value,                // Kolom 20
+                        jenis_paket_bayar: document.getElementById('jenis_paket_bayar').value,      // Kolom 21
+                        jenis_layanan: document.getElementById('jenis_layanan').value,              // Kolom 22
+                        nama_penginput: document.getElementById('nama_penginput').value,            // Kolom 23
+                        whatsapp_penginput: document.getElementById('whatsapp_penginput').value,    // Kolom 24
+                        cabang: cabang,                                                             // Kolom 25
+                        catatan_khusus: document.getElementById('catatan_khusus').value,            // Kolom 26
+                        jurusan_terlintas: document.getElementById('jurusan_terlintas').value       // Kolom 27
                     }]);
 
                     if (dbError) throw dbError;
@@ -680,7 +696,7 @@
                 }
             });
 
-            // Submit Form Excel Massal
+            // Submit Form Excel Massal (Diperbarui untuk Parsing 27 Kolom)
             document.getElementById('excelUploadForm').addEventListener('submit', async function (e) {
                 e.preventDefault();
                 const submitBtn = e.target.querySelector('button[type="submit"]');
@@ -697,21 +713,18 @@
                         return;
                     }
 
-                    // ==========================================
-                    // STEP 1: UNGGAH FILE ASLI KE SUPABASE STORAGE
-                    // ==========================================
+                    // STEP 1: UNGGAH FILE EXCEL ASLI KE SUPABASE STORAGE
                     const timeStamp = Date.now();
                     const cleanCabang = cabangForm.replace(/[^a-zA-Z0-9]/g, '_');
                     const filePathInStorage = `${cleanCabang}/${timeStamp}_${file.name}`;
 
-                    const { data: storageData, error: storageErr } = await _supabase
+                    const { error: storageErr } = await _supabase
                         .storage
                         .from('berkas-excel')
                         .upload(filePathInStorage, file, { cacheControl: '3600', upsert: false });
 
                     if (storageErr) throw new Error("Gagal menyimpan file ke Storage: " + storageErr.message);
 
-                    // Dapatkan URL Download File
                     const { data: publicUrlData } = _supabase
                         .storage
                         .from('berkas-excel')
@@ -719,9 +732,7 @@
 
                     const fileUrl = publicUrlData.publicUrl;
 
-                    // ==========================================
-                    // STEP 2: PARSE ISI EXCEL KE DATASET (Kode Lama Kamu)
-                    // ==========================================
+                    // STEP 2: PARSE ISI EXCEL 27 KOLOM KE DATABASE
                     const dataBuffer = await file.arrayBuffer();
                     const workbook = XLSX.read(dataBuffer, { type: 'array' });
                     const firstSheetName = workbook.SheetNames[0];
@@ -742,53 +753,50 @@
                         }
 
                         const { error: insertErr } = await _supabase.from('data_peserta').insert([{
-                            cabang: cabangForm,
-                            email_cabang: row['Email Penginput'] || row.email_cabang || '',
-                            nama_penginput: row['Nama Penginput'] || row.nama_penginput || '',
-                            whatsapp_penginput: row['No WhatsApp Penginput'] || row.whatsapp_penginput || '',
-                            jenis_paket_bayar: row['Status Paket'] || row.jenis_paket_bayar || 'Berbayar',
-                            jenis_layanan: row['Jenis Layanan'] || row.jenis_layanan || 'Personal',
-                            nama_testee: row['Nama Testee'] || row.nama_testee || 'Tanpa_Nama',
+                            bukti_transfer_url: row['Bukti Transfer'] || row.bukti_transfer_url || '',
+                            file_coretan_url: row['Upload Gambar / Coretan'] || row.file_coretan_url || '',
+                            paket_tes: row['Jenis Paket'] || row.paket_tes || 'Basic',
+                            nama_testee: row['Nama Lengkap Testee'] || row.nama_testee || 'Tanpa_Nama',
                             no_testee: row['No Testee'] || row.no_testee || '',
-                            paket_tes: row['Paket Tes'] || row.paket_tes || 'Basic',
-                            lembaga_institusi: row['Lembaga / Institusi'] || row.lembaga_institusi || '-',
+                            lembaga_institusi: row['Nama Lembaga / Institusi'] || row.lembaga_institusi || '-',
                             tempat_lahir: row['Tempat Lahir'] || row.tempat_lahir || '-',
                             tanggal_lahir: row['Tanggal Lahir'] || row.tanggal_lahir || '',
-                            usia: row['Usia'] ? row['Usia'].toString() : (row.usia ? row.usia.toString() : ''),
+                            usia: row['Usia'] ? row['Usia'].toString() : '',
                             tanggal_tes: row['Tanggal Tes'] || row.tanggal_tes || '',
                             jenis_kelamin: row['Jenis Kelamin'] || row.jenis_kelamin || '',
                             level_pendidikan: row['Level Pendidikan'] || row.level_pendidikan || '',
-                            jurusan_sma: row['Jurusan SMA'] || row.jurusan_sma || '',
-                            jurusan_terlintas: row['Jurusan Terlintas'] || row.jurusan_terlintas || '-',
-                            anak_ke: row['Anak Ke'] || row.anak_ke || '',
-                            dari_bersaudara: row['Dari Bersaudara'] || row.dari_bersaudara || '',
-                            bantuan_menggambar: row['Bantuan Menggambar'] || row.bantuan_menggambar || 'Mandiri',
-                            kondisi_kertas: row['Kondisi Kertas'] || row.kondisi_kertas || 'tidak',
-                            ganti_kertas: row['Ganti Kertas'] || row.ganti_kertas || 'tidak',
-                            posisi_kertas: row['Posisi Kertas'] || row.posisi_kertas || 'Vertikal',
-                            alat_gambar: row['Alat Gambar'] || row.alat_gambar || 'Pensil Warna',
+                            jurusan_sma: row['Jurusan SMA/SMK'] || row.jurusan_sma || '',
+                            bantuan_menggambar: row['Proses menggambar dibantu oleh'] || row.bantuan_menggambar || 'Mandiri',
+                            kondisi_kertas: row['Kondisi kertas'] || row.kondisi_kertas || 'Biasa',
+                            posisi_kertas: row['Posisi kertas'] || row.posisi_kertas || 'Vertikal',
+                            alat_gambar: row['Alat gambar'] || row.alat_gambar || 'Pensil Warna',
                             dominasi_warna: row['Dominasi Warna'] || row.dominasi_warna || '',
-                            catatan_gambar: row['Catatan Gambar'] || row.catatan_gambar || '',
+                            catatan_gambar: row['Catatan terkait gambar'] || row.catatan_gambar || '',
+                            email_cabang: row['Alamat E-mail'] || row.email_cabang || '',
+                            jenis_paket_bayar: row['Paket Berbayar / Bonus'] || row.jenis_paket_bayar || 'Berbayar',
+                            jenis_layanan: row['Bentuk Kerja Sama'] || row.jenis_layanan || 'Personal',
+                            nama_penginput: row['Nama Penginput'] || row.nama_penginput || '',
+                            whatsapp_penginput: row['No Whatsapp Penginput'] || row.whatsapp_penginput || '',
+                            cabang: cabangForm,
                             catatan_khusus: row['Catatan Khusus'] || row.catatan_khusus || '',
-                            file_coretan_url: row['Link Coretan Drive'] || row.link_coretan_drive || row.file_coretan_url || ''
+                            jurusan_terlintas: row['Pilihan Jurusan (Terlintas)'] || row.jurusan_terlintas || '-'
                         }]);
+
                         if (!insertErr) successCount++;
                     }
 
-                    // ==========================================
                     // STEP 3: CATAT RIWAYAT FILE MENTAH KE `batch_upload`
-                    // ==========================================
                     const { error: batchErr } = await _supabase.from('batch_upload').insert([{
                         nama_file_asli: file.name,
                         file_url: fileUrl,
-                        kode_cabang: cabangForm, // Pastikan kolom di DB bernama kode_cabang
+                        kode_cabang: cabangForm,
                         nama_penginput: namaPenginputPertama,
                         jumlah_data: successCount
                     }]);
 
                     if (batchErr) console.error("Gagal mencatat riwayat batch upload:", batchErr);
 
-                    alert(`Alhamdulillah! Berhasil memproses ${successCount} dari ${rows.length} data peserta via Excel, serta file mentah tersimpan di server Pusat.`);
+                    alert(`Alhamdulillah! Berhasil memproses ${successCount} dari ${rows.length} data peserta via Excel 27 Kolom.`);
                     document.getElementById('excelUploadForm').reset();
                     loadPesertaCabang();
                     switchMainTab('monitoring');
@@ -797,9 +805,50 @@
                     console.error(err);
                     alert("Gagal proses Excel: " + err.message);
                 } finally {
-                    // Tombol PASTI kembali aktif dalam kondisi/error apapun
                     submitBtn.textContent = "Proses & Kirim Semua Data Excel ke Pusat";
                     submitBtn.disabled = false;
+                }
+
+                async function loadDaftarCabang() {
+                    // 1. Deteksi Client Supabase yang Aktif
+                    const client = window.supabaseClient || (typeof supabase !== 'undefined' && typeof supabase.from === 'function' ? supabase : null);
+
+                    if (!client) {
+                        console.error("Supabase Client belum siap/ditemukan.");
+                        return;
+                    }
+
+                    // 2. Tarik Data dari Database
+                    const { data: daftarCabang, error } = await client
+                        .from('data_cabang')
+                        .select('nama_cabang, kode_cabang')
+                        .eq('status', 'Aktif');
+
+                    if (error) {
+                        console.error("Gagal ambil data cabang:", error.message);
+                        return;
+                    }
+
+                    if (daftarCabang && daftarCabang.length > 0) {
+                        // 3. Isi Dropdown Form Satuan (Jika Ada)
+                        const selectSatuan = document.getElementById('cabangWilayah') || document.getElementById('cabang');
+                        if (selectSatuan) {
+                            selectSatuan.innerHTML = '<option value="">-- Pilih Cabang / Wilayah --</option>';
+                            daftarCabang.forEach(c => {
+                                selectSatuan.innerHTML += `<option value="${c.nama_cabang}">${c.nama_cabang}</option>`;
+                            });
+                        }
+
+                        // 4. Isi Dropdown Upload Excel
+                        const selectExcel = document.getElementById('kodeCabangExcel');
+                        if (selectExcel) {
+                            selectExcel.innerHTML = '<option value="">-- Pilih Kode Cabang --</option>';
+                            daftarCabang.forEach(c => {
+                                const kode = c.kode_cabang || c.nama_cabang;
+                                selectExcel.innerHTML += `<option value="${kode}">${c.nama_cabang} (${kode})</option>`;
+                            });
+                        }
+                    }
                 }
             });
 
