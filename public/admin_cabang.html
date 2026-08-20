@@ -373,59 +373,52 @@
             </form>
 
             <!-- FORM EXCEL MASSAL (27 KOLOM) -->
-<div id="sectionExcel" class="hidden bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
-  <div class="border-b pb-4">
-    <h3 class="font-bold text-slate-800 text-base">Upload Excel Massal (27 Kolom)</h3>
-    <p class="text-xs text-slate-500 mt-1">Gunakan fitur ini untuk mengirimkan banyak data testee sekaligus menggunakan template standar 27 kolom.</p>
-  </div>
+            <div id="sectionExcel" class="hidden bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
+                <div class="border-b pb-4">
+                    <h3 class="font-bold text-slate-800 text-base">Upload Excel Massal (27 Kolom)</h3>
+                    <p class="text-xs text-slate-500 mt-1">Gunakan fitur ini untuk mengirimkan banyak data testee
+                        sekaligus menggunakan template standar 27 kolom.</p>
+                </div>
 
-  <div class="flex items-center justify-between bg-indigo-50 border border-indigo-200 p-4 rounded-xl text-xs">
-    <div>
-      <p class="font-semibold text-indigo-900">Belum punya template format Excel 27 Kolom?</p>
-      <p class="text-indigo-700">Unduh template presisi 27 kolom untuk menghindari kesalahan parsing data.</p>
-    </div>
-    <button type="button" onclick="downloadTemplateExcel()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg transition">
-      📥 Download Template Excel
-    </button>
-  </div>
+                <div
+                    class="flex items-center justify-between bg-indigo-50 border border-indigo-200 p-4 rounded-xl text-xs">
+                    <div>
+                        <p class="font-semibold text-indigo-900">Belum punya template format Excel 27 Kolom?</p>
+                        <p class="text-indigo-700">Unduh template presisi 27 kolom untuk menghindari kesalahan parsing
+                            data.</p>
+                    </div>
+                    <button type="button" onclick="downloadTemplateExcel()"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg transition">
+                        📥 Download Template Excel
+                    </button>
+                </div>
 
-  <form id="excelUploadForm" class="space-y-4 text-xs">
-    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
-      <label class="block font-medium text-slate-500 mb-0.5">Cabang Pengirim:</label>
-      <div id="displayCabangExcel" class="font-bold text-slate-800 text-sm">Memuat cabang...</div>
-    </div>
-    <div>
-      <label class="block font-medium mb-1 text-slate-700">Pilih File Excel (.xlsx / .xls)</label>
-      <input type="file" id="excelFileInput" accept=".xlsx, .xls" required class="w-full border p-2 rounded bg-white cursor-pointer">
-    </div>
-    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl shadow-sm transition">
-      Proses & Kirim Semua Data Excel ke Pusat
-    </button>
-  </form>
-</div>
+                <form id="excelUploadForm" class="space-y-4 text-xs">
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <label class="block font-medium text-slate-500 mb-0.5">Cabang Pengirim:</label>
+                        <div id="displayCabangExcel" class="font-bold text-slate-800 text-sm">Memuat cabang...</div>
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1 text-slate-700">Pilih File Excel (.xlsx / .xls)</label>
+                        <input type="file" id="excelFileInput" accept=".xlsx, .xls" required
+                            class="w-full border p-2 rounded bg-white cursor-pointer">
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl shadow-sm transition">
+                        Proses & Kirim Semua Data Excel ke Pusat
+                    </button>
+                </form>
+            </div>
 
         </div>
+
         <script>
-            const observerExcel = new MutationObserver(() => {
-                const section = document.getElementById('sectionExcel');
-                if (section && !section.classList.contains('hidden')) {
-                    if (typeof loadDaftarCabang === 'function') loadDaftarCabang();
+            document.addEventListener('DOMContentLoaded', () => {
+                const displayExcel = document.getElementById('displayCabangExcel');
+                if (displayExcel) {
+                    displayExcel.textContent = currentCabang || 'PUSAT';
                 }
             });
-
-            const targetSectionExcel = document.getElementById('sectionExcel');
-            if (targetSectionExcel) {
-                observerExcel.observe(targetSectionExcel, { attributes: true, attributeFilter: ['class'] });
-            }
-        </script>
-
-        <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const displayExcel = document.getElementById('displayCabangExcel');
-            if (displayExcel) {
-              displayExcel.textContent = currentCabang || 'PUSAT';
-            }
-        });
         </script>
 
         <!-- SCRIPT UTAMA INTEGRASI -->
@@ -467,8 +460,9 @@
                 }
 
                 // Set otomatis nilai input hidden/dropdown cabang
+                // Set otomatis nilai input hidden & display cabang
                 if (document.getElementById('cabang')) document.getElementById('cabang').value = currentCabang;
-                if (document.getElementById('excel_cabang')) document.getElementById('excel_cabang').value = currentCabang;
+                if (document.getElementById('displayCabangExcel')) document.getElementById('displayCabangExcel').textContent = currentCabang;
 
                 // Panggil ulang muat data peserta dengan cabang yang sudah benar
                 if (typeof loadPesertaCabang === 'function') {
@@ -478,28 +472,28 @@
 
             // Tab Navigation
             function switchMainTab(tab) {
-    const tabMon = document.getElementById('tabMonitoring');
-    const tabUp = document.getElementById('tabUpload');
-    const btnMon = document.getElementById('btnTabMonitoring');
-    const btnUp = document.getElementById('btnTabUpload');
+                const tabMon = document.getElementById('tabMonitoring');
+                const tabUp = document.getElementById('tabUpload');
+                const btnMon = document.getElementById('btnTabMonitoring');
+                const btnUp = document.getElementById('btnTabUpload');
 
-    if (tab === 'monitoring') {
-        tabMon.classList.remove('hidden');
-        tabUp.classList.add('hidden');
-        btnMon.className = "flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-emerald-800 shadow transition";
-        btnUp.className = "flex-1 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition";
-    } else {
-        tabMon.classList.add('hidden');
-        tabUp.classList.remove('hidden');
-        btnUp.className = "flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-emerald-800 shadow transition";
-        btnMon.className = "flex-1 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition";
+                if (tab === 'monitoring') {
+                    tabMon.classList.remove('hidden');
+                    tabUp.classList.add('hidden');
+                    btnMon.className = "flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-emerald-800 shadow transition";
+                    btnUp.className = "flex-1 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition";
+                } else {
+                    tabMon.classList.add('hidden');
+                    tabUp.classList.remove('hidden');
+                    btnUp.className = "flex-1 py-2 text-sm font-semibold rounded-lg bg-white text-emerald-800 shadow transition";
+                    btnMon.className = "flex-1 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition";
 
-        // SISIPKAN 3 BARIS INI:
-        if (document.getElementById('displayCabangExcel')) {
-            document.getElementById('displayCabangExcel').textContent = currentCabang || 'PUSAT';
-        }
-    }
-}
+                    // SISIPKAN 3 BARIS INI:
+                    if (document.getElementById('displayCabangExcel')) {
+                        document.getElementById('displayCabangExcel').textContent = currentCabang || 'PUSAT';
+                    }
+                }
+            }
 
             // Sub-Tab Mode Switcher (Satuan vs Excel)
             function switchMode(mode) {
