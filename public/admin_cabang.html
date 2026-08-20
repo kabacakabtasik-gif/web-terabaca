@@ -849,11 +849,10 @@
                             selectSatuan.disabled = true; // Kunci agar tidak bisa diganti
                         }
 
-                        // 5. Isi & Kunci Dropdown Upload Excel
-                        const selectExcel = document.getElementById('kodeCabangExcel') || document.getElementById('kodeCabang');
-                        if (selectExcel) {
-                            selectExcel.innerHTML = `<option value="${userKode}" selected>${userNama} (${userKode})</option>`;
-                            selectExcel.disabled = true; // Kunci agar tidak bisa diganti
+                        // Ganti blok lama tadi dengan 3 baris aman ini:
+                        const displayExcel = document.getElementById('displayCabangExcel');
+                        if (displayExcel) {
+                            displayExcel.textContent = currentCabang || userNama || 'PUSAT';
                         }
                     } catch (err) {
                         console.error("Error pada loadDaftarCabang:", err);
