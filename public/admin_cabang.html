@@ -350,11 +350,8 @@
                         </div>
                         <div>
                             <label class="block font-medium mb-1">Cabang / Wilayah *</label>
-                            <select id="cabang"
-                                class="w-full border rounded p-2.5 bg-white text-slate-800 font-semibold">
-                                <option value="PUSAT">PUSAT</option>
-                                <option value="Kab. Tasikmalaya">Kab. Tasikmalaya</option>
-                                <option value="Kota Depok">Kota Depok</option>
+                            <select id="cabang" class="w-full border rounded p-2.5 bg-white text-slate-800 font-semibold">
+                                <option value="">Memuat data cabang...</option>
                             </select>
                         </div>
                         <div class="sm:col-span-3">
@@ -459,9 +456,16 @@
                     userBranchElem.title = "Klik untuk Edit Profil & Password Cabang";
                 }
 
-                // Set otomatis nilai input hidden & display cabang
-                if (document.getElementById('cabang')) document.getElementById('cabang').value = currentCabang;
-                if (document.getElementById('displayCabangExcel')) document.getElementById('displayCabangExcel').textContent = currentCabang;
+                // Set otomatis nilai input hidden, display form input, & display excel
+                if (document.getElementById('cabang')) {
+                    document.getElementById('cabang').value = currentCabang;
+                }
+                if (document.getElementById('displayCabangInput')) {
+                    document.getElementById('displayCabangInput').textContent = currentCabang;
+                }
+                if (document.getElementById('displayCabangExcel')) {
+                    document.getElementById('displayCabangExcel').textContent = currentCabang;
+                }
 
                 // Panggil ulang muat data peserta dengan cabang yang sudah benar
                 if (typeof loadPesertaCabang === 'function') {
