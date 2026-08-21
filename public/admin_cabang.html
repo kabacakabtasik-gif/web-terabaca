@@ -349,10 +349,13 @@
                                 placeholder="08xxxxxxxxxx">
                         </div>
                         <div>
-                            <label class="block font-medium mb-1">Cabang / Wilayah *</label>
-                            <select id="cabang" class="w-full border rounded p-2.5 bg-white text-slate-800 font-semibold">
-                                <option value="">Memuat data cabang...</option>
-                            </select>
+                            <label class="block font-medium mb-1 text-slate-700">Cabang / Wilayah *</label>
+                            <!-- Tempat nama cabang ditampilkan secara otomatis -->
+                            <div id="displayCabangInput" class="w-full border rounded p-2.5 bg-slate-100 text-slate-800 font-bold">
+                                Memuat data cabang...
+                            </div>
+                            <!-- Field hidden agar nilai tetap terisi saat dikirim ke Supabase -->
+                            <input type="hidden" id="cabang" name="cabang">
                         </div>
                         <div class="sm:col-span-3">
                             <label class="block font-medium mb-1">Catatan Khusus untuk Pusat</label>
@@ -461,10 +464,10 @@
                     document.getElementById('cabang').value = currentCabang;
                 }
                 if (document.getElementById('displayCabangInput')) {
-                    document.getElementById('displayCabangInput').textContent = currentCabang;
+                    document.getElementById('displayCabangInput').textContent = currentCabang || 'PUSAT';
                 }
                 if (document.getElementById('displayCabangExcel')) {
-                    document.getElementById('displayCabangExcel').textContent = currentCabang;
+                    document.getElementById('displayCabangExcel').textContent = currentCabang || 'PUSAT';
                 }
 
                 // Panggil ulang muat data peserta dengan cabang yang sudah benar
