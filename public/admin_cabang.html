@@ -781,6 +781,60 @@ document.getElementById('excelUploadForm')?.addEventListener('submit', async fun
         const { error: insertErr } = await _supabase.from('data_peserta').insert(dataToInsert);
         if (insertErr) throw new Error("Gagal menyimpan data peserta: " + insertErr.message);
 
+        // =========================================================================
+        // PANGGIL BACKEND VERCEL UNTUK MEMBUAT EXCEL & UPLOAD KE GOOGLE DRIVE
+        // =========================================================================
+        try {
+            const apiPayload = {
+                transactions: rawRows.filter(r => r.length > 0).map(row => ({
+                    buktiTransfer:       String(row[0] || ''),
+                    gambar:              String(row[1] || ''),
+                    jenisPaket:          String(row[2] || 'Basic'),
+                    namaLengkap:         String(row[3] || 'Tanpa_Nama'),
+                    noTestee:            String(row[4] || ''),
+                    namaLembaga:         String(row[5] || '-'),
+                    tempatLahir:         String(row[6] || '-'),
+                    tanggalLahir:        String(row[7] || ''),
+                    usia:                String(row[8] || ''),
+                    tanggalTes:          String(row[9] || ''),
+                    jenisKelamin:        String(row[10] || ''),
+                    levelPendidikan:     String(row[11] || ''),
+                    jurusanSma:          String(row[12] || '-'),
+                    prosesMenggambar:    String(row[13] || 'Mandiri'),
+                    kondisiKertas:       String(row[14] || 'Biasa'),
+                    posisiKertas:        String(row[15] || 'Vertikal'),
+                    alatGambar:          String(row[16] || 'Pensil Warna'),
+                    dominasiWarna:       String(row[17] || ''),
+                    catatanGambar:       String(row[18] || ''),
+                    email:               session.email || String(row[19] || ''),
+                    paketBerbayarBonus:  String(row[20] || 'Berbayar'),
+                    bentukKerjasama:     String(row[21] || 'Personal'),
+                    namaPenginput:       String(row[22] || ''),
+                    noWhatsapp:          String(row[23] || ''),
+                    cabang:              cabangForm,
+                    catatanKhusus:       String(row[25] || '-'),
+                    pilihanJurusan:      String(row[26] || '-')
+                }))
+            };
+
+            const driveResponse = await fetch('/api/upload-to-drive', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(apiPayload)
+            });
+
+            const driveResult = await driveResponse.json();
+
+            if (!driveResult.success) {
+                console.error("Gagal Upload ke Drive:", driveResult.message);
+            } else {
+                console.log("Berhasil Upload ke Drive! Link File:", driveResult.file.link);
+            }
+        } catch (driveErr) {
+            console.error("Error memanggil API Google Drive:", driveErr);
+        }
+        // =========================================================================
+
         // 4. Catat Riwayat File Upload ke tabel batch_upload
         try {
             await _supabase.from('batch_upload').insert([{
@@ -794,7 +848,7 @@ document.getElementById('excelUploadForm')?.addEventListener('submit', async fun
             console.warn("Log batch_upload dilewati:", bErr);
         }
 
-        alert(`Alhamdulillah! Berhasil memproses ${dataToInsert.length} data peserta via Excel.`);
+        alert(`Alhamdulillah! Berhasil memproses ${dataToInsert.length} data peserta ke Database & Google Drive.`);
         document.getElementById('excelUploadForm').reset();
         if (typeof loadPesertaCabang === 'function') loadPesertaCabang();
         if (typeof switchMainTab === 'function') switchMainTab('monitoring');
