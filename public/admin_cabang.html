@@ -714,38 +714,44 @@ document.getElementById('excelUploadForm')?.addEventListener('submit', async fun
             return;
         }
 
-        // 1. Unggah Berkas Mentah ke Supabase Storage (Bucket: BERKAS-EXCEL)
-        const timeStamp = Date.now();
-        const cleanCabang = String(cabangForm).replace(/[^a-zA-Z0-9]/g, '_');
-        const filePathInStorage = `${cleanCabang}/${timeStamp}_${file.name}`;
+        // --- STEP 1: UNGGAH KE SUPABASE STORAGE (BUCKET: BERKAS-EXCEL) ---
+        let fileUrl = '';
+        try {
+            const timeStamp = Date.now();
+            const cleanCabang = String(cabangForm).replace(/[^a-zA-Z0-9]/g, '_');
+            const filePathInStorage = `${cleanCabang}/${timeStamp}_${file.name}`;
 
-        const { error: storageErr } = await _supabase
-            .storage
-            .from('BERKAS-EXCEL')
-            .upload(filePathInStorage, file, { cacheControl: '3600', upsert: false });
+            const { data: uploadResult, error: storageErr } = await _supabase
+                .storage
+                .from('BERKAS-EXCEL')
+                .upload(filePathInStorage, file, { cacheControl: '3600', upsert: true });
 
-        if (storageErr) console.warn("Peringatan Storage:", storageErr.message);
+            if (storageErr) {
+                console.warn("Peringatan Storage (Gagal simpan file di storage, lanjut ke DB):", storageErr.message);
+            } else {
+                const { data: publicUrlData } = _supabase
+                    .storage
+                    .from('BERKAS-EXCEL')
+                    .getPublicUrl(filePathInStorage);
+                fileUrl = publicUrlData?.publicUrl || '';
+            }
+        } catch (sErr) {
+            console.warn("Storage exception dilewati:", sErr);
+        }
 
-        const { data: publicUrlData } = _supabase
-            .storage
-            .from('BERKAS-EXCEL')
-            .getPublicUrl(filePathInStorage);
-
-        const fileUrl = publicUrlData?.publicUrl || '';
-
-        // 2. Baca & Petakan Isi Excel ke Format Supabase
+        // --- STEP 2: BACA & PARSE FILE EXCEL ---
         const dataBuffer = await file.arrayBuffer();
         const workbook = XLSX.read(dataBuffer, { type: 'array' });
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
         
-        // Membaca baris secara matriks array (header: 1)
+        // Membaca baris secara matriks array dengan defval '' agar sel kosong tidak menggeser urutan kolom
         const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
 
         // Buang baris pertama (Header Judul Kolom)
         if (rawRows.length > 0) rawRows.shift();
 
-        // Filter baris yang benar-benar punya isi saja
+        // Filter baris yang benar-benar berisi data
         const validRows = rawRows.filter(r => Array.isArray(r) && r.some(val => String(val).trim() !== ''));
 
         if (validRows.length === 0) {
@@ -755,7 +761,7 @@ document.getElementById('excelUploadForm')?.addEventListener('submit', async fun
 
         let namaPenginputPertama = String(validRows[0]?.[22] || session.nama || 'Admin Cabang');
 
-        // PEMETAAN PRESISI 27 KOLOM PUSAT KE NAMA KOLOM TABEL SUPABASE
+        // --- STEP 3: MAPPING KE NAMA KOLOM SUPABASE DATABASE ---
         const dataToInsert = validRows.map(row => ({
             bukti_transfer_url: String(row[0] || '-'),                 // 1. Upload Bukti Transfer
             file_coretan_url:   String(row[1] || '-'),                 // 2. Upload gambar
@@ -782,17 +788,15 @@ document.getElementById('excelUploadForm')?.addEventListener('submit', async fun
             nama_penginput:     String(row[22] || namaPenginputPertama),// 23. Nama Penginput
             whatsapp_penginput: String(row[23] || '-'),                // 24. No Whatsapp
             cabang:             cabangForm,                            // 25. Cabang (Sistem)
-            catatan_khusus:     String(row[24] || '-'),                // 26. Catatan khusus (Indeks 24)
-            jurusan_terlintas:  String(row[25] || '-')                 // 27. Jurusan Terlintas (Indeks 25)
+            catatan_khusus:     String(row[24] || '-'),                // 26. Catatan khusus
+            jurusan_terlintas:  String(row[25] || '-')                 // 27. Jurusan Terlintas
         }));
 
-        // 3. Simpan sekaligus ke Supabase Database
+        // --- STEP 4: SIMPAN KE SUPABASE DATABASE ---
         const { error: insertErr } = await _supabase.from('data_peserta').insert(dataToInsert);
         if (insertErr) throw new Error("Gagal menyimpan data peserta: " + insertErr.message);
 
-        // =========================================================================
-        // PANGGIL BACKEND VERCEL UNTUK MEMBUAT EXCEL & UPLOAD KE GOOGLE DRIVE
-        // =========================================================================
+        // --- STEP 5: PANGGIL BACKEND VERCEL UNTUK UPLOAD KE GOOGLE DRIVE ---
         try {
             const apiPayload = {
                 transactions: validRows.map(row => ({
@@ -843,11 +847,11 @@ document.getElementById('excelUploadForm')?.addEventListener('submit', async fun
             console.error("Error memanggil API Google Drive:", driveErr);
         }
 
-        // 4. Catat Riwayat File Upload ke tabel batch_upload
+        // --- STEP 6: RIWAYAT BATCH UPLOAD ---
         try {
             await _supabase.from('batch_upload').insert([{
                 nama_file_asli: file.name,
-                file_url: fileUrl,
+                file_url: fileUrl || '-',
                 kode_cabang: cabangForm,
                 nama_penginput: namaPenginputPertama,
                 jumlah_data: dataToInsert.length
