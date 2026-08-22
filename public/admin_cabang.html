@@ -695,7 +695,6 @@
                 }
             });
 
-            // Submit Form Excel Massal (Diperbarui & Kebal Error Null)
 // Handler Upload Massal Excel (Mapping 27 Kolom Presisi Pusat)
 document.getElementById('excelUploadForm')?.addEventListener('submit', async function (e) {
     e.preventDefault();
@@ -741,25 +740,28 @@ document.getElementById('excelUploadForm')?.addEventListener('submit', async fun
         const worksheet = workbook.Sheets[firstSheetName];
         
         // Membaca baris secara matriks array (header: 1)
-        const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
 
         // Buang baris pertama (Header Judul Kolom)
         if (rawRows.length > 0) rawRows.shift();
 
-        if (rawRows.length === 0) {
+        // Filter baris yang benar-benar punya isi saja
+        const validRows = rawRows.filter(r => Array.isArray(r) && r.some(val => String(val).trim() !== ''));
+
+        if (validRows.length === 0) {
             alert("File Excel kosong atau format tidak sesuai.");
             return;
         }
 
-        let namaPenginputPertama = rawRows[0]?.[22] || session.nama || 'Admin Cabang';
+        let namaPenginputPertama = String(validRows[0]?.[22] || session.nama || 'Admin Cabang');
 
         // PEMETAAN PRESISI 27 KOLOM PUSAT KE NAMA KOLOM TABEL SUPABASE
-        const dataToInsert = rawRows.filter(r => r.length > 0).map(row => ({
+        const dataToInsert = validRows.map(row => ({
             bukti_transfer_url: String(row[0] || '-'),                 // 1. Upload Bukti Transfer
             file_coretan_url:   String(row[1] || '-'),                 // 2. Upload gambar
             paket_tes:          String(row[2] || 'Basic'),             // 3. Jenis Paket
             nama_testee:        String(row[3] || 'Tanpa_Nama'),        // 4. Nama Lengkap Testee
-            no_testee:          row[4] ? String(row[4]) : null,        // 5. No Testee (Kosong/Dilewati)
+            no_testee:          row[4] ? String(row[4]) : null,        // 5. No Testee
             lembaga_institusi:  String(row[5] || '-'),                 // 6. Nama Lembaga/Institusi
             tempat_lahir:       String(row[6] || '-'),                 // 7. Tempat Lahir Testee
             tanggal_lahir:      String(row[7] || ''),                  // 8. Tanggal lahir Testee
@@ -779,9 +781,9 @@ document.getElementById('excelUploadForm')?.addEventListener('submit', async fun
             bentuk_kerjasama:   String(row[21] || 'Personal'),         // 22. Bentuk kerja sama
             nama_penginput:     String(row[22] || namaPenginputPertama),// 23. Nama Penginput
             whatsapp_penginput: String(row[23] || '-'),                // 24. No Whatsapp
-            cabang:             cabangForm,                            // 25. Cabang (Otomatis dari Sistem)
-            catatan_khusus:     String(row[25] || '-'),                // 26. Catatan khusus
-            jurusan_terlintas:  String(row[26] || '-')                 // 27. Jurusan Terlintas
+            cabang:             cabangForm,                            // 25. Cabang (Sistem)
+            catatan_khusus:     String(row[24] || '-'),                // 26. Catatan khusus (Indeks 24)
+            jurusan_terlintas:  String(row[25] || '-')                 // 27. Jurusan Terlintas (Indeks 25)
         }));
 
         // 3. Simpan sekaligus ke Supabase Database
@@ -793,7 +795,7 @@ document.getElementById('excelUploadForm')?.addEventListener('submit', async fun
         // =========================================================================
         try {
             const apiPayload = {
-                transactions: rawRows.filter(r => r.length > 0).map(row => ({
+                transactions: validRows.map(row => ({
                     buktiTransfer:       String(row[0] || ''),
                     gambar:              String(row[1] || ''),
                     jenisPaket:          String(row[2] || 'Basic'),
@@ -819,8 +821,8 @@ document.getElementById('excelUploadForm')?.addEventListener('submit', async fun
                     namaPenginput:       String(row[22] || ''),
                     noWhatsapp:          String(row[23] || ''),
                     cabang:              cabangForm,
-                    catatanKhusus:       String(row[25] || '-'),
-                    pilihanJurusan:      String(row[26] || '-')
+                    catatanKhusus:       String(row[24] || '-'),
+                    pilihanJurusan:      String(row[25] || '-')
                 }))
             };
 
@@ -835,12 +837,11 @@ document.getElementById('excelUploadForm')?.addEventListener('submit', async fun
             if (!driveResult.success) {
                 console.error("Gagal Upload ke Drive:", driveResult.message);
             } else {
-                console.log("Berhasil Upload ke Drive! Link File:", driveResult.file.link);
+                console.log("Berhasil Upload ke Drive! Link File:", driveResult.file?.link);
             }
         } catch (driveErr) {
             console.error("Error memanggil API Google Drive:", driveErr);
         }
-        // =========================================================================
 
         // 4. Catat Riwayat File Upload ke tabel batch_upload
         try {
