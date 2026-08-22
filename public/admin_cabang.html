@@ -715,21 +715,21 @@ document.getElementById('excelUploadForm')?.addEventListener('submit', async fun
             return;
         }
 
-        // 1. Unggah Berkas Mentah ke Supabase Storage (Bucket: berkas-excel)
+        // 1. Unggah Berkas Mentah ke Supabase Storage (Bucket: BERKAS-EXCEL)
         const timeStamp = Date.now();
         const cleanCabang = String(cabangForm).replace(/[^a-zA-Z0-9]/g, '_');
         const filePathInStorage = `${cleanCabang}/${timeStamp}_${file.name}`;
 
         const { error: storageErr } = await _supabase
             .storage
-            .from('berkas-excel')
+            .from('BERKAS-EXCEL')
             .upload(filePathInStorage, file, { cacheControl: '3600', upsert: false });
 
         if (storageErr) console.warn("Peringatan Storage:", storageErr.message);
 
         const { data: publicUrlData } = _supabase
             .storage
-            .from('berkas-excel')
+            .from('BERKAS-EXCEL')
             .getPublicUrl(filePathInStorage);
 
         const fileUrl = publicUrlData?.publicUrl || '';
