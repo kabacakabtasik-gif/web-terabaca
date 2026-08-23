@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Cabang - TeraBaca</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-800 min-h-screen flex items-center justify-center p-4">
+
+  <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md p-8">
+    <div class="text-center mb-6">
+      <img src="logo-terabaca.png" alt="TeraBaca Logo" class="h-12 mx-auto mb-3 error-fallback">
+      <h1 class="text-2xl font-bold text-slate-900">Login Cabang</h1>
+      <p class="text-xs text-slate-500 mt-1">Masukkan akun cabang Anda untuk melanjutkan</p>
+    </div>
+
+    <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 mb-1">Username / ID Cabang</label>
+        <input type="text" id="username" required class="w-full text-sm border rounded-lg p-3 outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 mb-1">Password</label>
+        <input type="password" id="password" required class="w-full text-sm border rounded-lg p-3 outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <button type="submit" id="btn-submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg text-sm transition">
+        Masuk
+      </button>
+    </form>
+  </div>
+
+  <script>
+    async function handleLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-submit');
+      btn.disabled = true;
+      btn.innerText = "Memeriksa...";
+
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        // Memanggil Serverless API api/login.js
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          throw new Error(data.message || 'Username atau password salah!');
+        }
+
+        // Simpan sesi login
+        sessionStorage.setItem('user_cabang', JSON.stringify(data.user));
+
+        // Pindah ke dashboard admin cabang
+        window.location.href = 'admin_cabang.html';
+
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Masuk";
+      }
+    }
+  </script>
+</body>
+</html>
