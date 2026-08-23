@@ -34,13 +34,14 @@ export default async function handler(req, res) {
     mediaStream.push(buffer);
     mediaStream.push(null);
 
-    const targetFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID || '1EjBesYcFuDLH2qWYycC2kJItpbJiywU_';
+    // Menentukan Folder ID yang dituju (menggunakan string dengan tanda petik)
+    const DRIVE_FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID || "1200n_Fra-ci1bPIFE1bTp9fEfCoDq096";
 
-    // 1. Upload file ke folder target
+    // Upload file ke folder target Google Drive
     const response = await drive.files.create({
       requestBody: {
         name: fileName,
-        parents: [targetFolderId],
+        parents: [DRIVE_FOLDER_ID], // Sudah diperbaiki menggunakan variabel bertanda petik
       },
       media: {
         mimeType: mimeType || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
