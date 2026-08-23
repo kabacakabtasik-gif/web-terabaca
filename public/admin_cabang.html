@@ -404,8 +404,8 @@
     <!-- Application Script Logic -->
     <script>
         // Inisialisasi Supabase Client
-        const SUPABASE_URL = 'https://your-supabase-url.supabase.co';
-        const SUPABASE_ANON_KEY = 'your-anon-key';
+        const SUPABASE_URL = 'https://zdealocdcweemecirdap.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkZWFsb2NkY3dlZW1lY2lyZGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5ODEyNTgsImV4cCI6MjA5NDU1NzI1OH0._fgstIY2k0s0zv-7_EnupEmFlExFsXRLZP7BAYHd_-c';
         const _supabase = typeof supabase !== 'undefined' ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
         let currentCabang = '';
@@ -576,10 +576,10 @@
                         await fetch('/api/generate-report', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ transactions: [rowPeserta] })
+                            body: JSON.stringify({ transactions: rowsToInsert})
                         });
                     } catch (driveErr) {
-                        console.warn("Gagal koneksi ke Google Drive:", driveErr);
+                        console.warn("API Google Drive tidak terjangkau (diabaikan):", driveErr);
                     }
 
                     alert('Alhamdulillah! Data peserta berhasil disimpan.');
@@ -703,7 +703,7 @@
                             body: JSON.stringify({ transactions: rowsToInsert })
                         });
                     } catch (gErr) {
-                        console.warn("Gagal unggah massal ke Drive:", gErr);
+                        console.warn("API Google Drive tidak terjangkau (diabaikan):", driveErr);
                     }
 
                     alert(`Alhamdulillah! Berhasil memproses ${rowsToInsert.length} data peserta dari Excel.`);
