@@ -41,7 +41,7 @@ export default async function handler(req, res) {
     const response = await drive.files.create({
       requestBody: {
         name: fileName,
-        parents: [DRIVE_FOLDER_ID], // Sudah diperbaiki menggunakan variabel bertanda petik
+        parents: [DRIVE_FOLDER_ID], 
       },
       media: {
         mimeType: mimeType || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
