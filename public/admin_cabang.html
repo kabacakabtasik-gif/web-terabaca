@@ -704,8 +704,9 @@ document.getElementById('excelUploadForm')?.addEventListener('submit', async fun
 
     try {
         const session = JSON.parse(localStorage.getItem('user_terabaca') || localStorage.getItem('user_session') || '{}');
+        
         const namaCabangFix = session.nama_cabang || session.cabang || 'Kab. Tasikmalaya';
-        const kodeCabangFix = session.kode_cabang || (namaCabangFix === 'Kab. Tasikmalaya' ? 'TSK-01' : 'PST-01');
+        const kodeCabangFix = session.kode_cabang || (namaCabangFix.includes('Tasik') ? 'TSK-01' : 'PST-01');
 
         const fileInput = document.getElementById('excelFileInput');
         const file = fileInput?.files?.[0];
@@ -715,44 +716,45 @@ document.getElementById('excelUploadForm')?.addEventListener('submit', async fun
             return;
         }
 
-        // --- STEP 1: UNGGAH KE SUPABASE STORAGE (BUCKET: BERKAS-EXCEL) ---
-        let fileUrl = '';
-        try {
-            const timeStamp = Date.now();
-            const cleanCabang = String(cabangForm).replace(/[^a-zA-Z0-9]/g, '_');
-            const filePathInStorage = `${kodeCabangFix}/${timeStamp}_${file.name}`;
+        // ==========================================
+        // 1. UPLOAD FILE KE SUPABASE STORAGE
+        // ==========================================
+        let fileUrl = '-';
+        const cleanFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const filePathInStorage = `${kodeCabangFix}/${Date.now()}_${cleanFileName}`;
 
-            const { data: uploadResult, error: storageErr } = await _supabase
+        // Menggunakan huruf kecil 'berkas-excel' agar sesuai dengan Supabase
+        const { data: uploadData, error: storageErr } = await _supabase
+            .storage
+            .from('berkas-excel')
+            .upload(filePathInStorage, file, {
+                cacheControl: '3600',
+                upsert: true
+            });
+
+        if (storageErr) {
+            console.error(" Error Upload Supabase Storage:", storageErr.message);
+        } else {
+            const { data: publicUrlData } = _supabase
                 .storage
-                .from('BERKAS-EXCEL')
-                .upload(filePathInStorage, file, { cacheControl: '3600', upsert: true });
-
-            if (storageErr) {
-                console.warn("Peringatan Storage (Gagal simpan file di storage, lanjut ke DB):", storageErr.message);
-            } else {
-                const { data: publicUrlData } = _supabase
-                    .storage
-                    .from('BERKAS-EXCEL')
-                    .getPublicUrl(filePathInStorage);
-                fileUrl = publicUrlData?.publicUrl || '';
-            }
-        } catch (sErr) {
-            console.warn("Storage exception dilewati:", sErr);
+                .from('berkas-excel')
+                .getPublicUrl(filePathInStorage);
+            
+            fileUrl = publicUrlData?.publicUrl || '-';
+            console.log(" File berhasil masuk Storage Supabase:", fileUrl);
         }
 
-        // --- STEP 2: BACA & PARSE FILE EXCEL ---
+        // ==========================================
+        // 2. BACA FILE EXCEL & INSERT DATA PESERTA
+        // ==========================================
         const dataBuffer = await file.arrayBuffer();
         const workbook = XLSX.read(dataBuffer, { type: 'array' });
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
         
-        // Membaca baris secara matriks array dengan defval '' agar sel kosong tidak menggeser urutan kolom
         const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+        if (rawRows.length > 0) rawRows.shift(); // Hapus Header
 
-        // Buang baris pertama (Header Judul Kolom)
-        if (rawRows.length > 0) rawRows.shift();
-
-        // Filter baris yang benar-benar berisi data
         const validRows = rawRows.filter(r => Array.isArray(r) && r.some(val => String(val).trim() !== ''));
 
         if (validRows.length === 0) {
@@ -762,103 +764,46 @@ document.getElementById('excelUploadForm')?.addEventListener('submit', async fun
 
         let namaPenginputPertama = String(validRows[0]?.[22] || session.nama || 'Admin Cabang');
 
-        // --- STEP 3: MAPPING KE NAMA KOLOM SUPABASE DATABASE ---
         const dataToInsert = validRows.map(row => ({
-            bukti_transfer_url: String(row[0] || '-'),                 // 1. Upload Bukti Transfer
-            file_coretan_url:   String(row[1] || '-'),                 // 2. Upload gambar
-            paket_tes:          String(row[2] || 'Basic'),             // 3. Jenis Paket
-            nama_testee:        String(row[3] || 'Tanpa_Nama'),        // 4. Nama Lengkap Testee
-            no_testee:          row[4] ? String(row[4]) : null,        // 5. No Testee
-            lembaga_institusi:  String(row[5] || '-'),                 // 6. Nama Lembaga/Institusi
-            tempat_lahir:       String(row[6] || '-'),                 // 7. Tempat Lahir Testee
-            tanggal_lahir:      String(row[7] || ''),                  // 8. Tanggal lahir Testee
-            usia:               String(row[8] || '-'),                 // 9. Usia Testee
-            tanggal_tes:        String(row[9] || ''),                  // 10. Tanggal Tes
-            jenis_kelamin:      String(row[10] || '-'),                // 11. Jenis Kelamin
-            level_pendidikan:   String(row[11] || '-'),                // 12. Level Pendidikan
-            jurusan_sma:        String(row[12] || '-'),                // 13. Jurusan SMA/SMK
-            bantuan_menggambar: String(row[13] || 'Mandiri'),          // 14. Proses menggambar dibantu oleh
-            kondisi_kertas:     String(row[14] || 'Biasa'),            // 15. Kondisi kertas
-            posisi_kertas:      String(row[15] || 'Vertikal'),         // 16. Posisi kertas
-            alat_gambar:        String(row[16] || 'Pensil Warna'),     // 17. Alat gambar
-            dominasi_warna:     String(row[17] || '-'),                // 18. Dominasi Warna
-            catatan_gambar:     String(row[18] || '-'),                // 19. Catatan terkait gambar
-            email_cabang:       session.email || String(row[19] || '-'),// 20. Alamat e-mail
-            jenis_paket_bayar:  String(row[20] || 'Berbayar'),         // 21. Paket Berbayar/Bonus
-            bentuk_kerjasama:   String(row[21] || 'Personal'),         // 22. Bentuk kerja sama
-            nama_penginput:     String(row[22] || namaPenginputPertama),// 23. Nama Penginput
-            whatsapp_penginput: String(row[23] || '-'),                // 24. No Whatsapp
-            cabang:             namaCabangFix,                            // 25. Cabang (Sistem)
-            catatan_khusus:     String(row[24] || '-'),                // 26. Catatan khusus
-            jurusan_terlintas:  String(row[25] || '-')                 // 27. Jurusan Terlintas
+            bukti_transfer_url: String(row[0] || '-'),
+            file_coretan_url:   String(row[1] || '-'),
+            paket_tes:          String(row[2] || 'Basic'),
+            nama_testee:        String(row[3] || 'Tanpa_Nama'),
+            no_testee:          row[4] ? String(row[4]) : null,
+            lembaga_institusi:  String(row[5] || '-'),
+            tempat_lahir:       String(row[6] || '-'),
+            tanggal_lahir:      String(row[7] || ''),
+            usia:               String(row[8] || '-'),
+            tanggal_tes:        String(row[9] || ''),
+            jenis_kelamin:      String(row[10] || '-'),
+            level_pendidikan:   String(row[11] || '-'),
+            jurusan_sma:        String(row[12] || '-'),
+            bantuan_menggambar: String(row[13] || 'Mandiri'),
+            kondisi_kertas:     String(row[14] || 'Biasa'),
+            posisi_kertas:      String(row[15] || 'Vertikal'),
+            alat_gambar:        String(row[16] || 'Pensil Warna'),
+            dominasi_warna:     String(row[17] || '-'),
+            catatan_gambar:     String(row[18] || '-'),
+            email_cabang:       session.email || String(row[19] || '-'),
+            jenis_paket_bayar:  String(row[20] || 'Berbayar'),
+            bentuk_kerjasama:   String(row[21] || 'Personal'),
+            nama_penginput:     String(row[22] || namaPenginputPertama),
+            whatsapp_penginput: String(row[23] || '-'),
+            cabang:             namaCabangFix,
+            catatan_khusus:     String(row[24] || '-'),
+            jurusan_terlintas:  String(row[25] || '-')
         }));
 
-        // --- STEP 4: SIMPAN KE SUPABASE DATABASE ---
         const { error: insertErr } = await _supabase.from('data_peserta').insert(dataToInsert);
-        if (insertErr) throw new Error("Gagal menyimpan data peserta: " + insertErr.message);
+        if (insertErr) throw new Error("Gagal simpan data peserta: " + insertErr.message);
 
-        // --- STEP 5: PANGGIL BACKEND VERCEL UNTUK UPLOAD KE GOOGLE DRIVE ---
-        try {
-            const apiPayload = {
-                // 3 FIELD PENTING INI WAJIB ADA DI ROOT OBJECT:
-                fileNama: file.name,
-                cabang: namaCabangFix,
-                kodeCabang: kodeCabangFix,
-
-                // DATA TRANSAKSI EXCEL:
-                transactions: validRows.map(row => ({
-                    buktiTransfer:       String(row[0] || ''),
-                    gambar:              String(row[1] || ''),
-                    jenisPaket:          String(row[2] || 'Basic'),
-                    namaLengkap:         String(row[3] || 'Tanpa_Nama'),
-                    noTestee:            String(row[4] || ''),
-                    namaLembaga:         String(row[5] || '-'),
-                    tempatLahir:         String(row[6] || '-'),
-                    tanggalLahir:        String(row[7] || ''),
-                    usia:                String(row[8] || ''),
-                    tanggalTes:          String(row[9] || ''),
-                    jenisKelamin:        String(row[10] || ''),
-                    levelPendidikan:     String(row[11] || ''),
-                    jurusanSma:          String(row[12] || '-'),
-                    prosesMenggambar:    String(row[13] || 'Mandiri'),
-                    kondisiKertas:       String(row[14] || 'Biasa'),
-                    posisiKertas:        String(row[15] || 'Vertikal'),
-                    alatGambar:          String(row[16] || 'Pensil Warna'),
-                    dominasiWarna:       String(row[17] || ''),
-                    catatanGambar:       String(row[18] || ''),
-                    email:               session.email || String(row[19] || ''),
-                    paketBerbayarBonus:  String(row[20] || 'Berbayar'),
-                    bentukKerjasama:     String(row[21] || 'Personal'),
-                    namaPenginput:       String(row[22] || ''),
-                    noWhatsapp:          String(row[23] || ''),
-                    cabang:              namaCabangFix,
-                    catatanKhusus:       String(row[24] || '-'),
-                    pilihanJurusan:      String(row[25] || '-')
-                }))
-            };
-
-            const driveResponse = await fetch('/api/upload-to-drive', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(apiPayload)
-            });
-
-            const driveResult = await driveResponse.json();
-
-            if (!driveResult.success) {
-                console.error("Gagal Upload ke Drive:", driveResult.message);
-            } else {
-                console.log("Berhasil Upload ke Drive! Link File:", driveResult.file?.link);
-            }
-        } catch (driveErr) {
-            console.error("Error memanggil API Google Drive:", driveErr);
-        }
-
-        // --- STEP 6: RIWAYAT BATCH UPLOAD ---
+        // ==========================================
+        // 3. CATAT KE BATCH UPLOAD (LOG)
+        // ==========================================
         try {
             await _supabase.from('batch_upload').insert([{
                 nama_file_asli: file.name,
-                file_url: fileUrl || '-',
+                file_url: fileUrl,
                 kode_cabang: kodeCabangFix,
                 nama_penginput: namaPenginputPertama,
                 jumlah_data: dataToInsert.length
@@ -867,14 +812,49 @@ document.getElementById('excelUploadForm')?.addEventListener('submit', async fun
             console.warn("Log batch_upload dilewati:", bErr);
         }
 
-        alert(`Alhamdulillah! Berhasil memproses ${dataToInsert.length} data peserta ke Database & Google Drive.`);
+        // ==========================================
+        // 4. EMBED FILE / KIRIM KE GOOGLE DRIVE API
+        // ==========================================
+        try {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = async function () {
+                const base64Data = reader.result.split(',')[1];
+                
+                const apiPayload = {
+                    fileNama: file.name,
+                    cabang: namaCabangFix,
+                    kodeCabang: kodeCabangFix,
+                    fileBase64: base64Data,
+                    fileUrl: fileUrl,
+                    transactions: validRows.map(row => ({
+                        namaLengkap: String(row[3] || 'Tanpa_Nama'),
+                        cabang: namaCabangFix
+                    }))
+                };
+
+                const driveRes = await fetch('/api/upload-to-drive', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(apiPayload)
+                });
+                
+                const driveResult = await driveRes.json();
+                console.log(" Respon Google Drive API:", driveResult);
+            };
+        } catch (dErr) {
+            console.error(" Error Panggil API Google Drive:", dErr);
+        }
+
+        alert(`Alhamdulillah! Berhasil memproses ${dataToInsert.length} data peserta.`);
         document.getElementById('excelUploadForm').reset();
+        
         if (typeof loadPesertaCabang === 'function') loadPesertaCabang();
         if (typeof switchMainTab === 'function') switchMainTab('monitoring');
 
     } catch (err) {
         console.error(err);
-        alert("Gagal proses Excel: " + err.message);
+        alert("Gagal memproses file Excel: " + err.message);
     } finally {
         submitBtn.textContent = "Proses & Kirim Semua Data Excel ke Pusat";
         submitBtn.disabled = false;
