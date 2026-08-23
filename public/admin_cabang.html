@@ -413,13 +413,214 @@
         </div>
 
         <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                const displayExcel = document.getElementById('displayCabangExcel');
-                if (displayExcel) {
-                    displayExcel.textContent = currentCabang || 'PUSAT';
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Menampilkan teks nama cabang
+    const displayExcel = document.getElementById('displayCabangExcel');
+    if (displayExcel) {
+        displayExcel.textContent = (typeof currentCabang !== 'undefined' ? currentCabang : null) || 'PUSAT';
+    }
+
+    // 2. Handling Form Upload Excel
+    const formExcel = document.getElementById('excelUploadForm');
+    if (formExcel) {
+        formExcel.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const fileInput = document.getElementById('excelFileInput');
+            if (!fileInput) {
+                alert("Error: Elemen input 'excelFileInput' tidak ditemukan!");
+                return;
+            }
+
+            const file = fileInput.files ? fileInput.files[0] : null;
+            const submitBtn = this.querySelector('button[type="submit"]');
+
+            if (!file) {
+                alert("Silakan pilih file Excel terlebih dahulu!");
+                return;
+            }
+
+            if (typeof XLSX === 'undefined') {
+                alert("Library SheetJS (XLSX) belum dimuat!");
+                return;
+            }
+
+            const clientSupabase = typeof supabase !== 'undefined' ? supabase : (window.supabaseClient || window.supabase);
+            if (!clientSupabase) {
+                alert("Inisialisasi Supabase gagal/belum dimuat di halaman ini!");
+                return;
+            }
+
+            try {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Membaca File Excel...';
+
+                const arrayBuffer = await file.arrayBuffer();
+                const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                
+                const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                if (rawData.length <= 1) {
+                    alert("File Excel kosong atau hanya berisi header!");
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "Proses & Kirim Semua Data Excel ke Pusat";
+                    return;
                 }
-            });
-        </script>
+
+                const sessionUser = JSON.parse(sessionStorage.getItem("user_terabaca") || "{}");
+                const namaPenginput = sessionUser.nama || "Admin Cabang";
+                const waPenginput = sessionUser.whatsapp || sessionUser.telepon || "";
+                const cabangUser = sessionUser.cabang || "Tasikmalaya";
+                const emailCabang = sessionUser.email || "";
+
+                // Upload File Excel Mentah ke Supabase Storage
+                const timeStamp = Date.now();
+                const cleanFileName = file.name.replace(/[^a-zA-Z0-9_.-]/g, "_");
+                const filePath = `${sessionUser.kode_cabang || 'TSK-01'}/${timeStamp}_${cleanFileName}`;
+
+                const { data: storageData, error: storageErr } = await clientSupabase
+                    .storage
+                    .from('berkas-excel')
+                    .upload(filePath, file);
+
+                let fileUrl = "";
+                if (!storageErr && storageData) {
+                    const { data: publicUrlData } = clientSupabase
+                        .storage
+                        .from('berkas-excel')
+                        .getPublicUrl(filePath);
+                    fileUrl = publicUrlData.publicUrl;
+                }
+
+                // Buat Record Batch Upload
+                await clientSupabase
+                    .from('batch_upload')
+                    .insert([{
+                        nama_file_asli: file.name,
+                        file_url: fileUrl,
+                        kode_cabang: sessionUser.kode_cabang || 'TSK-01',
+                        nama_penginput: namaPenginput,
+                        jumlah_data: rawData.length - 1
+                    }]);
+
+                // Mapping Data
+                const rowsToInsert = [];
+                const transactionsForDrive = [];
+
+                for (let i = 1; i < rawData.length; i++) {
+                    const row = rawData[i];
+                    if (!row || row.length === 0) continue;
+
+                    const namaLengkap = row[3] || "";
+                    if (!namaLengkap) continue;
+
+                    const itemData = {
+                        buktiTransfer: row[0] || "",
+                        gambar: row[1] || "",
+                        jenisPaket: row[2] || "Basic",
+                        namaLengkap: namaLengkap,
+                        noTestee: "",
+                        namaLembaga: row[5] || "",
+                        tempatLahir: row[6] || "",
+                        tanggalLahir: row[7] || "",
+                        usia: row[8] ? String(row[8]) : "",
+                        tanggalTes: row[9] || new Date().toISOString().split('T')[0],
+                        jenisKelamin: row[10] || "",
+                        levelPendidikan: row[11] || "",
+                        jurusanSma: row[12] || "-",
+                        prosesMenggambar: row[13] || "",
+                        kondisiKertas: row[14] || "",
+                        posisiKertas: row[15] || "",
+                        alatGambar: row[16] || "",
+                        dominasiWarna: row[17] || "",
+                        catatanGambar: row[18] || "",
+                        email: row[19] || "",
+                        paketBerbayarBonus: row[20] || "Berbayar",
+                        bentukKerjasama: row[21] || "",
+                        namaPenginput: row[22] || namaPenginput,
+                        noWhatsapp: row[23] || waPenginput,
+                        cabang: row[24] || cabangUser,
+                        catatanKhusus: row[25] || "-",
+                        pilihanJurusan: row[26] || "-"
+                    };
+
+                    transactionsForDrive.push(itemData);
+
+                    rowsToInsert.push({
+                        nama_lengkap: itemData.namaLengkap,
+                        jenis_paket: itemData.jenisPaket,
+                        nama_lembaga: itemData.namaLembaga,
+                        tempat_lahir: itemData.tempatLahir,
+                        tanggal_lahir: itemData.tanggalLahir,
+                        usia: itemData.usia,
+                        tanggal_tes: itemData.tanggalTes,
+                        jenis_kelamin: itemData.jenisKelamin,
+                        level_pendidikan: itemData.levelPendidikan,
+                        jurusan_sma: itemData.jurusanSma,
+                        proses_menggambar: itemData.prosesMenggambar,
+                        kondisi_kertas: itemData.kondisiKertas,
+                        posisi_kertas: itemData.posisiKertas,
+                        alat_gambar: itemData.alatGambar,
+                        dominasi_warna: itemData.dominasiWarna,
+                        catatan_gambar: itemData.catatanGambar,
+                        email: itemData.email,
+                        jenis_paket_bayar: itemData.paketBerbayarBonus,
+                        bentuk_kerjasama: itemData.bentukKerjasama,
+                        nama_penginput: itemData.namaPenginput,
+                        whatsapp_penginput: itemData.noWhatsapp,
+                        cabang: itemData.cabang,
+                        catatan_khusus: itemData.catatanKhusus,
+                        pilihan_jurusan: itemData.pilihanJurusan,
+                        email_cabang: emailCabang,
+                        bukti_transfer_url: itemData.buktiTransfer,
+                        lembar_kerja_url: itemData.gambar
+                    });
+                }
+
+                // Insert ke Supabase DB
+                if (rowsToInsert.length > 0) {
+                    const { error: insertErr } = await clientSupabase
+                        .from('data_peserta')
+                        .insert(rowsToInsert);
+
+                    if (insertErr) throw insertErr;
+                }
+
+                // Kirim ke API Google Drive
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengunggah ke Google Drive...';
+                
+                try {
+                    const driveRes = await fetch('/api/generate-report', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ transactions: transactionsForDrive })
+                    });
+
+                    const driveResult = await driveRes.json();
+                    if (!driveResult.success) {
+                        console.warn("Peringatan Google Drive:", driveResult.message);
+                    }
+                } catch (gDriveErr) {
+                    console.error("Error API Google Drive:", gDriveErr);
+                }
+
+                alert(`Alhamdulillah! Berhasil memproses ${rowsToInsert.length} data peserta dan mengunggah laporan ke Google Drive.`);
+                this.reset();
+                location.reload();
+
+            } catch (err) {
+                console.error("Error Processing Excel:", err);
+                alert("Gagal memproses file Excel: " + err.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Proses & Kirim Semua Data Excel ke Pusat";
+            }
+        });
+    }
+});
+</script>
 
         <!-- SCRIPT UTAMA INTEGRASI -->
         <script>
