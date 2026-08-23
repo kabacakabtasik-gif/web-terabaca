@@ -34,22 +34,21 @@ export default async function handler(req, res) {
     mediaStream.push(buffer);
     mediaStream.push(null);
 
-    // Menentukan Folder ID yang dituju (menggunakan string dengan tanda petik)
+    // Pastikan ID folder di-hardcode dulu sebagai fallback pasti
     const DRIVE_FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID || "1200n_Fra-ci1bPIFE1bTp9fEfCoDq096";
 
-    // Upload file ke folder target Google Drive
     const response = await drive.files.create({
+      supportsAllDrives: true,     // WAJIB DI SINI
+      supportsTeamDrives: true,    // WAJIB DI SINI
       requestBody: {
         name: fileName,
-        parents: [DRIVE_FOLDER_ID], 
+        parents: [DRIVE_FOLDER_ID], // Jalur folder tujuan
       },
       media: {
         mimeType: mimeType || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         body: mediaStream,
       },
       fields: 'id, name, webViewLink',
-      supportsAllDrives: true,
-      supportsTeamDrives: true,
     });
 
     return res.status(200).json({
