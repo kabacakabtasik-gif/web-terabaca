@@ -2,71 +2,75 @@ import { google } from 'googleapis';
 import { Readable } from 'stream';
 
 export default async function handler(req, res) {
-    // Set CORS Header agar dapat dipanggil dari halaman frontend
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method !== 'POST') {
+    return res.status(405).json({ success: false, message: 'Method Not Allowed' });
+  }
 
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
+  try {
+    // Tangkap fileData (atau fileBase64) dari body frontend
+    const { fileName, fileData, fileBase64, mimeType } = req.body;
+    const base64String = fileData || fileBase64;
+
+    if (!fileName || !base64String) {
+      return res.status(400).json({ success: false, message: 'fileName dan fileData/fileBase64 wajib diisi.' });
     }
 
-    if (req.method !== 'POST') {
-        return res.status(405).json({ success: false, message: 'Method Not Allowed' });
-    }
+    // Ambil Kredensial dari Env Variables terpisah
+    const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+    const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
-    try {
-        const { fileName, fileData, mimeType } = req.body;
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: clientEmail,
+        private_key: privateKey,
+      },
+      scopes: [
+        'https://www.googleapis.com/auth/drive.file',
+        'https://www.googleapis.com/auth/drive'
+      ],
+    });
 
-        if (!fileName || !fileData) {
-            return res.status(400).json({ success: false, message: 'fileName dan fileData wajib diisi.' });
-        }
+    const drive = google.drive({ version: 'v3', auth });
 
-        // Autentikasi Google Service Account
-        const auth = new google.auth.GoogleAuth({
-            credentials: {
-                client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-                private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-            },
-            scopes: ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive'],
-        });
+    // Convert Base64 ke Buffer/Stream
+    const pureBase64 = base64String.includes(',') ? base64String.split(',')[1] : base64String;
+    const buffer = Buffer.from(pureBase64, 'base64');
+    
+    const mediaStream = new Readable();
+    mediaStream.push(buffer);
+    mediaStream.push(null);
 
-        const drive = google.drive({ version: 'v3', auth });
+    const media = {
+      mimeType: mimeType || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      body: mediaStream,
+    };
 
-        // Ubah string Base64 menjadi Buffer/Stream
-        const buffer = Buffer.from(fileData, 'base64');
-        const mediaStream = new Readable();
-        mediaStream.push(buffer);
-        mediaStream.push(null);
+    // Tentukan Folder Tujuan Wajib
+    const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID || '1EjBesYcFuDLH2qWYycC2kJItpbJiywU_';
+    const fileMetadata = {
+      name: fileName,
+      parents: [folderId],
+    };
 
-        const fileMetadata = {
-            name: fileName,
-            parents: ['1EjBesYcFuDLH2qWYycC2kJItpbJiywU_'],
-        };
+    const response = await drive.files.create({
+      requestBody: fileMetadata,
+      media: media,
+      fields: 'id, name, webViewLink',
+      supportsAllDrives: true,
+    });
 
-        const media = {
-            mimeType: mimeType || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            body: mediaStream,
-        };
+    return res.status(200).json({
+      success: true,
+      fileId: response.data.id,
+      webViewLink: response.data.webViewLink,
+    });
 
-        const response = await drive.files.create({
-            requestBody: fileMetadata,
-            media: media,
-            fields: 'id, name, webViewLink',
-        });
-
-        return res.status(200).json({
-            success: true,
-            fileId: response.data.id,
-            webViewLink: response.data.webViewLink,
-        });
-
-    } catch (error) {
-        console.error('Drive Upload Error:', error);
-        return res.status(500).json({ success: false, message: error.message });
-    }
+  } catch (error) {
+    console.error('Drive Upload Error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
 }
 
 export const config = {
-    api: { bodyParser: { sizeLimit: '10mb' } },
+  api: { bodyParser: { sizeLimit: '10mb' } },
 };
