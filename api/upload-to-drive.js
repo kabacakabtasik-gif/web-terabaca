@@ -21,7 +21,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // Mengirimkan request ke Apps Script (Wajib ikuti redirect HTTP 302)
+    // Mengirim request ke Apps Script dengan instruksi wajib follow redirect
     const response = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
