@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { fileName, fileData, fileBase64, mimeType } = req.body;
+    const { fileName, fileData, fileBase64 } = req.body;
     const base64String = fileData || fileBase64;
 
     if (!fileName || !base64String) {
@@ -27,26 +27,27 @@ export default async function handler(req, res) {
 
     const drive = google.drive({ version: 'v3', auth });
 
+    // Membersihkan prefix data URL jika ada
     const pureBase64 = base64String.includes(',') ? base64String.split(',')[1] : base64String;
     const buffer = Buffer.from(pureBase64, 'base64');
     
+    // Membuat Readable Stream dari Buffer
     const mediaStream = new Readable();
     mediaStream.push(buffer);
     mediaStream.push(null);
 
-    // Pastikan ID folder di-hardcode dulu sebagai fallback pasti
     const DRIVE_FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID || "1200n_Fra-ci1bPIFE1bTp9fEfCoDq096";
 
     const response = await drive.files.create({
-      supportsAllDrives: true,     // WAJIB DI SINI
-      supportsTeamDrives: true,    // WAJIB DI SINI
+      supportsAllDrives: true,
+      supportsTeamDrives: true,
       requestBody: {
         name: fileName,
-        parents: ['1200n_Fra-ci1bPIFE1bTp9fEfCoDq096'], // Jalur folder tujuan
+        parents: [DRIVE_FOLDER_ID], // Mengarahkan file ke folder yang sudah dibagikan
       },
       media: {
         mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        body: streamOrBuffer,
+        body: mediaStream, // PERBAIKAN: Menggunakan mediaStream
       },
       fields: 'id, webViewLink',
     });

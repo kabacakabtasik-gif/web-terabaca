@@ -16,65 +16,87 @@ export default async function handler(req, res) {
     try { body = JSON.parse(body); } catch (e) { body = {}; }
   }
 
-  const { email, password } = body || {};
+  // Menerima identifier (bisa berupa email atau username)
+  const identifier = (body.email || body.username || '').trim();
+  const password = body.password;
 
-  if (!email || !password) {
-    return res.status(400).json({ success: false, message: 'Email dan password harus diisi!' });
+  if (!identifier || !password) {
+    return res.status(400).json({ success: false, message: 'Email/Username dan password harus diisi!' });
   }
 
   try {
     let authenticatedUser = null;
 
-    // 1. Cek dulu ke tabel data_cabang (Fallback Manual DB)
-    const { data: dbCabang } = await supabase
+    // 1. Cek tabel data_cabang (Mendukung login via Email ATAU Username)
+    const { data: dbCabang, error: dbErr } = await supabase
       .from('data_cabang')
       .select('*')
-      .eq('email', email)
+      .or(`email.eq.${identifier},username.eq.${identifier}`)
       .eq('password', password)
       .maybeSingle();
 
     if (dbCabang) {
       authenticatedUser = {
-        email: dbCabang.email,
-        cabang: dbCabang.nama_cabang || dbCabang.cabang,
-        kode_cabang: dbCabang.kode_cabang
+        email: dbCabang.email || identifier,
+        username: dbCabang.username || identifier,
+        nama_cabang: dbCabang.nama_cabang || dbCabang.cabang || 'Cabang Utama',
+        kode_cabang: dbCabang.kode_cabang || 'TSK-01',
+        role: dbCabang.role
       };
     } else {
-      // 2. Jika tidak ada di tabel, coba via Supabase Auth
-      try {
-        const { data: authData } = await supabase.auth.signInWithPassword({ email, password });
-        if (authData?.user) {
-          authenticatedUser = {
-            email: authData.user.email,
-            cabang: 'Cabang',
-            kode_cabang: ''
-          };
+      // 2. Fallback: Coba via Supabase Auth jika menggunakan Email
+      if (identifier.includes('@')) {
+        try {
+          const { data: authData } = await supabase.auth.signInWithPassword({
+            email: identifier,
+            password: password
+          });
+          
+          if (authData?.user) {
+            authenticatedUser = {
+              email: authData.user.email,
+              username: authData.user.email.split('@')[0],
+              nama_cabang: 'Cabang Utama',
+              kode_cabang: '',
+              role: 'admin_cabang'
+            };
+          }
+        } catch (authErr) {
+          console.warn("Auth Native Error:", authErr.message);
         }
-      } catch (authErr) {
-        console.warn("Auth Native Error (Abaikan jika user DB):", authErr.message);
       }
     }
 
-    // Jika keduanya gagal
+    // Jika akun tidak ditemukan
     if (!authenticatedUser) {
-      return res.status(401).json({ success: false, message: 'Email atau password salah!' });
+      return res.status(401).json({ success: false, message: 'Email/Username atau password salah!' });
     }
 
-    // Tentukan Role & Redirect
-    const isPusat = email.includes('pusat') || email.includes('admin@terabaca') || authenticatedUser.kode_cabang === 'PST-01';
+    // Tentukan Role & Halaman Redirect
+    const isPusat = 
+      identifier.includes('pusat') || 
+      identifier.includes('admin@terabaca') || 
+      authenticatedUser.kode_cabang === 'PST-01' ||
+      authenticatedUser.role === 'super_admin';
+
     const userRole = isPusat ? 'super_admin' : 'admin_cabang';
     const redirectUrl = isPusat ? 'admin.html' : 'admin_cabang.html';
+
+    const userData = {
+      email: authenticatedUser.email,
+      username: authenticatedUser.username,
+      role: userRole,
+      nama_cabang: authenticatedUser.nama_cabang,
+      cabang: authenticatedUser.nama_cabang,
+      kode_cabang: authenticatedUser.kode_cabang,
+      redirectUrl: redirectUrl
+    };
 
     return res.status(200).json({
       success: true,
       message: 'Login berhasil',
-      data: {
-        email: authenticatedUser.email,
-        role: userRole,
-        cabang: authenticatedUser.cabang,
-        kode_cabang: authenticatedUser.kode_cabang,
-        redirectUrl: redirectUrl
-      }
+      user: userData, // Dikirim ke kunci 'user' dan 'data' untuk kompatibilitas frontend
+      data: userData
     });
 
   } catch (error) {

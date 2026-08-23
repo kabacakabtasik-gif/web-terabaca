@@ -8,6 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="shortcut icon" href="#">
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex">
 
@@ -260,9 +261,9 @@
   </main>
 
   <script>
-    // 1. Konfigurasi Client Supabase (Menghindari Uncaught SyntaxError)
-    const SUPABASE_URL = "https://zdealocdcweemecirdap.supabase.co"; // Ganti URL Supabase Anda
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkZWFsb2NkY3dlZW1lY2lyZGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5ODEyNTgsImV4cCI6MjA5NDU1NzI1OH0._fgstIY2k0s0zv-7_EnupEmFlExFsXRLZP7BAYHd_-c"; // Ganti Anon Key Supabase Anda
+    // 1. Konfigurasi Client Supabase (Ganti dengan Kredensial Asli Anda)
+    const SUPABASE_URL = "https://zdwwwwwwwwwww.supabase.co"; 
+    const SUPABASE_KEY = "eyJh......_-c"; 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let currentCabang = "";
@@ -299,7 +300,7 @@
       window.location.href = '/login.html';
     }
 
-    // 3. Submit Form Satuan (27 Kolom Data)
+    // 3. Submit Form Satuan
     async function handleSingleSubmit(e) {
       e.preventDefault();
       const btn = document.getElementById('btn-submit-satuan');
@@ -349,7 +350,7 @@
         alert('Gagal menyimpan data: ' + err.message);
       } finally {
         btn.disabled = false;
-        btn.innerText = "Simpan Data Peserta";
+        btn.innerText = "Simpan Data Satuan";
       }
     }
 
@@ -363,58 +364,67 @@
       btn.disabled = true;
       btn.innerText = "Memproses Excel...";
 
-      try {
-        // Convert File ke Base64 untuk Serverless Endpoint
-        const reader = new FileReader();
-        reader.onload = async (e) => {
+      const reader = new FileReader();
+      
+      reader.onload = async (e) => {
+        try {
           const base64Data = e.target.result;
+          
+          // Memisahkan prefix data URL untuk mendapatkan string Base64 murni
+          const cleanBase64 = base64Data.includes(',') ? base64Data.split(',')[1] : base64Data;
 
           // 1. Upload File Fisik ke Google Drive via Serverless API
           const driveRes = await fetch('/api/upload-to-drive', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              fileName: `${currentCabang}_${Date.now()}_${file.name}.xlsx`,
+              fileName: `${currentCabang}_${Date.now()}_${file.name}`,
               fileData: cleanBase64
             })
           });
 
           const driveData = await driveRes.json();
-          if (!driveData.success) throw new Error(driveData.message);
+          if (!driveRes.ok || !driveData.success) {
+            throw new Error(driveData.message || 'Gagal mengunggah ke Google Drive');
+          }
 
           // 2. Baca Isian Excel di Browser untuk Rekam Teks ke Supabase
-          const binaryStr = atob(base64Data.split(',')[1]);
+          const binaryStr = atob(cleanBase64);
           const workbook = XLSX.read(binaryStr, { type: 'binary' });
           const sheetName = workbook.SheetNames[0];
           const sheet = workbook.Sheets[sheetName];
           const rows = XLSX.utils.sheet_to_json(sheet);
 
-          // 3. Catat Batch Upload
+          // 3. Catat Batch Upload ke Database Supabase
           const { data: batch, error: batchErr } = await supabaseClient
             .from('batch_upload')
             .insert([{
               cabang: currentCabang,
               nama_file: file.name,
-              drive_link: driveData.webViewLink,
+              drive_link: driveData.webViewLink || driveData.fileId,
               total_row: rows.length
-            }])
-            .select();
+            }]);
 
           if (batchErr) throw batchErr;
 
           alert(`Berhasil mengunggah ${rows.length} data peserta ke sistem!`);
           fileInput.value = '';
+
+        } catch (err) {
+          alert('Error: ' + err.message);
+        } finally {
           btn.disabled = false;
           btn.innerText = "Proses & Unggah Excel";
-        };
+        }
+      };
 
-        reader.readAsDataURL(file);
-
-      } catch (err) {
-        alert('Error: ' + err.message);
+      reader.onerror = (error) => {
+        alert('Gagal membaca file Excel!');
         btn.disabled = false;
         btn.innerText = "Proses & Unggah Excel";
-      }
+      };
+
+      reader.readAsDataURL(file);
     }
   </script>
 </body>
