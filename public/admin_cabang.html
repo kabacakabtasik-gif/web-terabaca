@@ -16,7 +16,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        /* Custom scrollbar & spinner styles */
         .spinner-border {
             display: inline-block;
             width: 1rem;
@@ -71,6 +70,9 @@
                 <button id="navBtnMonitoring" onclick="switchMainTab('monitoring')" class="w-full text-left px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50">
                     Monitoring Peserta
                 </button>
+                <button id="navBtnBatchUpload" onclick="switchMainTab('batch_upload')" class="w-full text-left px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50">
+                    Hasil Tes (Batch Upload)
+                </button>
             </div>
         </aside>
 
@@ -80,128 +82,184 @@
         <!-- Main Content Container -->
         <main class="flex-1 p-4 md:p-8 max-w-5xl mx-auto w-full">
             
-            <!-- SECTION 1: Form Input Satuan -->
+            <!-- SECTION 1: Form Input Satuan (27 Field Standard Pusat) -->
             <section id="secUpload" class="space-y-6">
                 <div class="border-b border-slate-200 pb-4">
-                    <h2 class="text-xl font-bold text-slate-800">Form Input Data Peserta</h2>
-                    <p class="text-xs text-slate-500 mt-1">Lengkapi seluruh formulir dan unggah berkas fisik/coretan peserta.</p>
+                    <h2 class="text-xl font-bold text-slate-800">Form Input Data Peserta (Personal)</h2>
+                    <p class="text-xs text-slate-500 mt-1">Isi formulir secara berurutan sesuai format standar dari Pusat.</p>
                 </div>
 
                 <form id="uploadForm" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- 1. Bukti Transfer -->
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Paket Tes *</label>
-                            <input type="text" id="paket_tes" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">1. Upload Bukti Transfer *</label>
+                            <input type="file" id="f_1_bukti_transfer" accept="image/*,application/pdf" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
                         </div>
+
+                        <!-- 2. Gambar / Hasil Coretan -->
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Peserta/Testee *</label>
-                            <input type="text" id="nama_testee" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">2. Upload Gambar / Hasil Coretan *</label>
+                            <input type="file" id="f_2_upload_gambar" multiple accept="image/*,application/pdf" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
                         </div>
+
+                        <!-- 3. Jenis Paket -->
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">No. Testee (Opsional)</label>
-                            <input type="text" id="no_testee" class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">3. Jenis Paket *</label>
+                            <input type="text" id="f_3_jenis_paket" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
                         </div>
+
+                        <!-- 4. Nama Lengkap Testee -->
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Lembaga / Institusi *</label>
-                            <input type="text" id="lembaga_institusi" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">4. Nama Lengkap Testee *</label>
+                            <input type="text" id="f_4_nama_testee" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
                         </div>
+
+                        <!-- 5. No Testee -->
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Tempat Lahir *</label>
-                            <input type="text" id="tempat_lahir" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">5. No Testee</label>
+                            <input type="text" id="f_5_no_testee" placeholder="(Dikosongkan saja)" class="w-full text-xs p-2.5 border border-slate-300 rounded-lg bg-slate-50">
                         </div>
+
+                        <!-- 6. Nama Lembaga -->
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Tanggal Lahir *</label>
-                            <input type="date" id="tanggal_lahir" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">6. Nama Lembaga/Institusi/Komunitas/Umum *</label>
+                            <input type="text" id="f_6_lembaga" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
                         </div>
+
+                        <!-- 7. Tempat Lahir Testee -->
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Usia *</label>
-                            <input type="text" id="usia" required placeholder="Contoh: 17 Tahun" class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">7. Tempat Lahir Testee *</label>
+                            <input type="text" id="f_7_tempat_lahir" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
                         </div>
+
+                        <!-- 8. Tanggal Lahir Testee -->
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Tanggal Tes *</label>
-                            <input type="date" id="tanggal_tes" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">8. Tanggal Lahir Testee *</label>
+                            <input type="date" id="f_8_tanggal_lahir" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
                         </div>
+
+                        <!-- 9. Usia Testee -->
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Jenis Kelamin *</label>
-                            <select id="jenis_kelamin" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">9. Usia Testee *</label>
+                            <input type="text" id="f_9_usia" required placeholder="Contoh: 17 Tahun" class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
+                        </div>
+
+                        <!-- 10. Tanggal Tes -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">10. Tanggal Tes *</label>
+                            <input type="date" id="f_10_tanggal_tes" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
+                        </div>
+
+                        <!-- 11. Jenis Kelamin -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">11. Jenis Kelamin *</label>
+                            <select id="f_11_jenis_kelamin" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
                                 <option value="">-- Pilih --</option>
                                 <option value="Laki-laki">Laki-laki</option>
                                 <option value="Perempuan">Perempuan</option>
                             </select>
                         </div>
+
+                        <!-- 12. Level Pendidikan -->
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Level Pendidikan *</label>
-                            <input type="text" id="level_pendidikan" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">12. Level Pendidikan *</label>
+                            <input type="text" id="f_12_level_pendidikan" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
                         </div>
+
+                        <!-- 13. Jurusan SMA/SMK -->
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Jurusan SMA</label>
-                            <input type="text" id="jurusan_sma" class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">13. Jurusan SMA/SMK (*Khusus Level SMA/SMK)</label>
+                            <input type="text" id="f_13_jurusan_sma" placeholder="Isi '-' jika bukan SMA" class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
                         </div>
+
+                        <!-- 14. Proses Menggambar Dibantu oleh -->
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Jurusan Terlintas / Minat</label>
-                            <input type="text" id="jurusan_terlintas" class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">14. Proses Menggambar Dibantu oleh *</label>
+                            <input type="text" id="f_14_proses_dibantu" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
                         </div>
+
+                        <!-- 15. Kondisi Kertas -->
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Bantuan Menggambar *</label>
-                            <input type="text" id="bantuan_menggambar" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">15. Kondisi Kertas *</label>
+                            <input type="text" id="f_15_kondisi_kertas" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
                         </div>
+
+                        <!-- 16. Posisi Kertas -->
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Kondisi Kertas *</label>
-                            <input type="text" id="kondisi_kertas" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">16. Posisi Kertas *</label>
+                            <input type="text" id="f_16_posisi_kertas" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
                         </div>
+
+                        <!-- 17. Alat Gambar -->
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Posisi Kertas *</label>
-                            <input type="text" id="posisi_kertas" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">17. Alat Gambar *</label>
+                            <input type="text" id="f_17_alat_gambar" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
                         </div>
+
+                        <!-- 18. Dominasi Warna -->
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Alat Gambar *</label>
-                            <input type="text" id="alat_gambar" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">18. Dominasi Warna *</label>
+                            <select id="f_18_dominasi_warna" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
+                                <option value="">-- Pilih --</option>
+                                <option value="Merah">Merah (Hitam, cokelat, abu, dan gelap)</option>
+                                <option value="Biru">Biru (Semua warna terang)</option>
+                            </select>
                         </div>
+
+                        <!-- 20. Alamat Email -->
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Dominasi Warna *</label>
-                            <input type="text" id="dominasi_warna" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">20. Alamat E-mail *</label>
+                            <input type="email" id="f_20_email" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
                         </div>
+
+                        <!-- 21. Paket Berbayar/Bonus -->
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Jenis Paket Bayar *</label>
-                            <input type="text" id="jenis_paket_bayar" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">21. Paket Berbayar/Bonus *</label>
+                            <input type="text" id="f_21_paket_berbayar" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
                         </div>
+
+                        <!-- 22. Bentuk Kerjasama -->
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Bentuk Kerjasama *</label>
-                            <input type="text" id="bentuk_kerjasama" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">22. Bentuk Kerja Sama *</label>
+                            <input type="text" id="f_22_bentuk_kerjasama" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
                         </div>
+
+                        <!-- 23. Nama Penginput -->
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Email Cabang *</label>
-                            <input type="email" id="email_cabang" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">23. Nama Penginput *</label>
+                            <input type="text" id="f_23_nama_penginput" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
                         </div>
+
+                        <!-- 24. No Whatsapp -->
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Penginput *</label>
-                            <input type="text" id="nama_penginput" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">24. No Whatsapp yang Bisa Dihubungi *</label>
+                            <input type="tel" id="f_24_whatsapp" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
                         </div>
+
+                        <!-- 25. Cabang -->
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">WhatsApp Penginput *</label>
-                            <input type="tel" id="whatsapp_penginput" required class="w-full text-xs p-2.5 border border-slate-300 rounded-lg">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">25. Cabang *</label>
+                            <input type="text" id="f_25_cabang" readonly class="w-full text-xs p-2.5 border border-slate-300 rounded-lg bg-slate-100 text-slate-600 font-semibold">
                         </div>
                     </div>
 
+                    <!-- 19. Catatan Terkait Gambar -->
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Catatan Gambar</label>
-                        <textarea id="catatan_gambar" rows="2" class="w-full text-xs p-2.5 border border-slate-300 rounded-lg"></textarea>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">19. Catatan Terkait Gambar (Temuan-temuan saat menggambar)</label>
+                        <textarea id="f_19_catatan_gambar" rows="2" class="w-full text-xs p-2.5 border border-slate-300 rounded-lg"></textarea>
                     </div>
 
+                    <!-- 26. Catatan Khusus -->
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Catatan Khusus</label>
-                        <textarea id="catatan_khusus" rows="2" class="w-full text-xs p-2.5 border border-slate-300 rounded-lg"></textarea>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">26. Catatan Khusus</label>
+                        <textarea id="f_26_catatan_khusus" rows="2" class="w-full text-xs p-2.5 border border-slate-300 rounded-lg"></textarea>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Bukti Transfer (Gambar/PDF)</label>
-                            <input type="file" id="buktiTransferInput" accept="image/*,application/pdf" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">File Coretan / Hasil Tes (Bisa Banyak)</label>
-                            <input type="file" id="fileCoretanInput" multiple accept="image/*,application/pdf" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
-                        </div>
+                    <!-- 27. Pilihan Jurusan -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">27. Maksimal 3 Jurusan Terlintas (*Khusus Paket Jurusan/Talent. Jika tidak ada ketik '-') *</label>
+                        <textarea id="f_27_pilihan_jurusan" rows="2" required placeholder="Contoh: 1. Teknik Informatika, 2. Desain Grafis, 3. Manajemen" class="w-full text-xs p-2.5 border border-slate-300 rounded-lg"></textarea>
                     </div>
 
                     <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition">
@@ -210,11 +268,17 @@
                 </form>
             </section>
 
-            <!-- SECTION 2: Process Upload Excel (Batch Process) -->
+            <!-- SECTION 2: Process Upload Excel (Massal) -->
             <section id="secExcel" class="hidden space-y-6">
-                <div class="border-b border-slate-200 pb-4">
-                    <h2 class="text-xl font-bold text-slate-800">Upload Massal Laporan via Excel</h2>
-                    <p class="text-xs text-slate-500 mt-1">Unggah file spreadsheet (.xlsx / .xls) untuk memproses puluhan data peserta sekaligus.</p>
+                <div class="border-b border-slate-200 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800">Upload Massal Data Peserta (Excel)</h2>
+                        <p class="text-xs text-slate-500 mt-1">Unggah file spreadsheet (.xlsx) sesuai dengan format urutan dari Pusat.</p>
+                    </div>
+                    <button onclick="downloadExcelTemplate()" class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Unduh Template Excel Format Pusat
+                    </button>
                 </div>
 
                 <form id="excelForm" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
@@ -223,16 +287,16 @@
                         <input type="file" id="excelFileInput" accept=".xlsx, .xls" required class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
                     </div>
                     <button type="submit" id="submitExcelBtn" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition">
-                        Proses Upload Excel
+                        Proses & Kirim Data Excel Massal
                     </button>
                 </form>
             </section>
 
-            <!-- SECTION 3: Monitoring Peserta -->
+            <!-- SECTION 3: Monitoring Peserta (Diambil dari data_peserta) -->
             <section id="secMonitoring" class="hidden space-y-6">
                 <div class="border-b border-slate-200 pb-4">
                     <h2 class="text-xl font-bold text-slate-800">Monitoring Peserta Cabang</h2>
-                    <p class="text-xs text-slate-500 mt-1">Daftar riwayat peserta yang berhasil diinputkan ke sistem.</p>
+                    <p class="text-xs text-slate-500 mt-1">Daftar riwayat peserta yang telah berhasil terkirim.</p>
                 </div>
 
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
@@ -242,6 +306,7 @@
                                 <tr>
                                     <th class="p-3">No</th>
                                     <th class="p-3">Nama Testee</th>
+                                    <th class="p-3">No Testee</th>
                                     <th class="p-3">Lembaga</th>
                                     <th class="p-3">Paket</th>
                                     <th class="p-3">Tanggal Tes</th>
@@ -250,7 +315,36 @@
                             </thead>
                             <tbody id="monitoringTableBody" class="divide-y divide-slate-100 text-slate-700">
                                 <tr>
-                                    <td colspan="6" class="p-4 text-center text-slate-400">Memuat data peserta...</td>
+                                    <td colspan="7" class="p-4 text-center text-slate-400">Memuat data peserta...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 4: Batch Upload / Unduh Hasil Tes dari Pusat -->
+            <section id="secBatchUpload" class="hidden space-y-6">
+                <div class="border-b border-slate-200 pb-4">
+                    <h2 class="text-xl font-bold text-slate-800">Unduh Hasil Tes Peserta (Batch Upload)</h2>
+                    <p class="text-xs text-slate-500 mt-1">Daftar file hasil tes / sertifikat yang telah diunggah oleh Pusat untuk Cabang Anda.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead class="bg-slate-50 text-slate-600 uppercase font-semibold border-b border-slate-200">
+                                <tr>
+                                    <th class="p-3">No</th>
+                                    <th class="p-3">Nama File / Batch</th>
+                                    <th class="p-3">Tanggal Upload Pusat</th>
+                                    <th class="p-3">Keterangan</th>
+                                    <th class="p-3">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="batchUploadTableBody" class="divide-y divide-slate-100 text-slate-700">
+                                <tr>
+                                    <td colspan="5" class="p-4 text-center text-slate-400">Memuat data berkas hasil...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -260,7 +354,7 @@
         </main>
     </div>
 
-    <!-- Modal Profil & Ubah Password (Admin Cabang) -->
+    <!-- Modal Profil & Ubah Password -->
     <div id="profileModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
         <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-6">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -273,7 +367,6 @@
                 <button id="tabBtnPassword" onclick="switchProfileTab('password')" class="py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-600 font-semibold">Ubah Password</button>
             </div>
 
-            <!-- Form Edit Info Profil Cabang -->
             <form id="formEditProfile" onsubmit="simpanProfilCabang(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-medium text-slate-600 mb-1">Email Cabang (Akun)</label>
@@ -292,7 +385,6 @@
                 </button>
             </form>
 
-            <!-- Form Ubah Password Cabang -->
             <form id="formUbahPassword" onsubmit="simpanPasswordCabang(event)" class="space-y-4 hidden">
                 <div>
                     <label class="block text-xs font-medium text-slate-600 mb-1">Password Baru</label>
@@ -311,21 +403,19 @@
 
     <!-- Application Script Logic -->
     <script>
-        // Inisialisasi Supabase Client (Ganti URL & Key Sesuai Project Supabase Anda)
-        const SUPABASE_URL = 'https://zdealocdcweemecirdap.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkZWFsb2NkY3dlZW1lY2lyZGFwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODk4MTI1OCwiZXhwIjoyMDk0NTU3MjU4fQ.LY4QrzuD31kXOrAWYURxZ8KUJysKB7wcV14mPLqf7Kg';
+        // Inisialisasi Supabase Client
+        const SUPABASE_URL = 'https://your-supabase-url.supabase.co';
+        const SUPABASE_ANON_KEY = 'your-anon-key';
         const _supabase = typeof supabase !== 'undefined' ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
         let currentCabang = '';
 
-        // Executed on page DOM loaded
         document.addEventListener('DOMContentLoaded', () => {
             checkUserSession();
             initExcelFormHandler();
             initSingleUploadFormHandler();
         });
 
-        // 1. Cek User Session & Cabang
         function checkUserSession() {
             const rawSession = sessionStorage.getItem('user_session') ||
                 localStorage.getItem('user_session') ||
@@ -340,49 +430,174 @@
 
             try {
                 const user = JSON.parse(rawSession);
-                currentCabang = user.cabang || user.nama_cabang || 'Cabang Utama';
+                currentCabang = user.cabang || user.nama_cabang || user.kode_cabang || 'Cabang Utama';
                 const email = user.email || user.user_email || user.username || '';
                 
-                const emailInput = document.getElementById('email_cabang');
+                const cabangInput = document.getElementById('f_25_cabang');
+                if (cabangInput) cabangInput.value = currentCabang;
+
+                const emailInput = document.getElementById('f_20_email');
                 if (emailInput && email) emailInput.value = email;
             } catch (e) {
                 console.error("Gagal parsing session:", e);
             }
         }
 
-        // 2. Navigation Tab Switcher
         function switchMainTab(tab) {
             const secUpload = document.getElementById('secUpload');
             const secExcel = document.getElementById('secExcel');
             const secMonitoring = document.getElementById('secMonitoring');
+            const secBatchUpload = document.getElementById('secBatchUpload');
 
             const navBtnUpload = document.getElementById('navBtnUpload');
             const navBtnExcel = document.getElementById('navBtnExcel');
             const navBtnMonitoring = document.getElementById('navBtnMonitoring');
+            const navBtnBatchUpload = document.getElementById('navBtnBatchUpload');
 
-            // Hide all
             secUpload.classList.add('hidden');
             secExcel.classList.add('hidden');
             secMonitoring.classList.add('hidden');
+            secBatchUpload.classList.add('hidden');
 
-            navBtnUpload.className = "w-full text-left px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50";
-            navBtnExcel.className = "w-full text-left px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50";
-            navBtnMonitoring.className = "w-full text-left px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50";
+            const inactiveClass = "w-full text-left px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50";
+            const activeClass = "w-full text-left px-4 py-2.5 rounded-xl text-xs font-semibold bg-indigo-50 text-indigo-600";
+
+            navBtnUpload.className = inactiveClass;
+            navBtnExcel.className = inactiveClass;
+            navBtnMonitoring.className = inactiveClass;
+            navBtnBatchUpload.className = inactiveClass;
 
             if (tab === 'upload') {
                 secUpload.classList.remove('hidden');
-                navBtnUpload.className = "w-full text-left px-4 py-2.5 rounded-xl text-xs font-semibold bg-indigo-50 text-indigo-600";
+                navBtnUpload.className = activeClass;
             } else if (tab === 'excel') {
                 secExcel.classList.remove('hidden');
-                navBtnExcel.className = "w-full text-left px-4 py-2.5 rounded-xl text-xs font-semibold bg-indigo-50 text-indigo-600";
+                navBtnExcel.className = activeClass;
             } else if (tab === 'monitoring') {
                 secMonitoring.classList.remove('hidden');
-                navBtnMonitoring.className = "w-full text-left px-4 py-2.5 rounded-xl text-xs font-semibold bg-indigo-50 text-indigo-600";
+                navBtnMonitoring.className = activeClass;
                 loadPesertaCabang();
+            } else if (tab === 'batch_upload') {
+                secBatchUpload.classList.remove('hidden');
+                navBtnBatchUpload.className = activeClass;
+                loadBatchUploadCabang();
             }
         }
 
-        // 3. Handling Process Excel Upload (Batch Upload)
+        // 1. Form Upload Satuan -> Mengisi data_peserta & batch_upload
+        function initSingleUploadFormHandler() {
+            const uploadForm = document.getElementById('uploadForm');
+            if (!uploadForm) return;
+
+            uploadForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btnSubmit = uploadForm.querySelector('button[type="submit"]');
+                btnSubmit.disabled = true;
+                btnSubmit.textContent = 'Mengirim Data & Mengunggah...';
+
+                try {
+                    const buktiFileInput = document.getElementById('f_1_bukti_transfer');
+                    const coretanFileInput = document.getElementById('f_2_upload_gambar');
+
+                    const buktiFile = buktiFileInput && buktiFileInput.files ? buktiFileInput.files[0] : null;
+                    const coretanFiles = coretanFileInput && coretanFileInput.files ? Array.from(coretanFileInput.files) : [];
+
+                    let buktiUrl = '';
+                    if (buktiFile && _supabase) {
+                        const pathBukti = `bukti/${Date.now()}_${buktiFile.name}`;
+                        const { error: errBukti } = await _supabase.storage.from('berkas-excel').upload(pathBukti, buktiFile);
+                        if (errBukti) throw errBukti;
+                        const { data: publicUrlData } = _supabase.storage.from('berkas-excel').getPublicUrl(pathBukti);
+                        buktiUrl = publicUrlData.publicUrl;
+                    }
+
+                    const coretanUrls = [];
+                    if (coretanFiles.length > 0 && _supabase) {
+                        for (const file of coretanFiles) {
+                            const pathCoretan = `coretan/${Date.now()}_${file.name}`;
+                            const { error: errCoretan } = await _supabase.storage.from('berkas-excel').upload(pathCoretan, file);
+                            if (errCoretan) throw errCoretan;
+                            const { data: publicUrlData } = _supabase.storage.from('berkas-excel').getPublicUrl(pathCoretan);
+                            coretanUrls.push(publicUrlData.publicUrl);
+                        }
+                    }
+
+                    const namaPenginput = document.getElementById('f_23_nama_penginput').value;
+
+                    // Data Rinci untuk Tabel data_peserta
+                    const rowPeserta = {
+                        upload_bukti_transfer: buktiUrl,
+                        upload_gambar: coretanUrls.join(','),
+                        jenis_paket: document.getElementById('f_3_jenis_paket').value,
+                        nama_lengkap_testee: document.getElementById('f_4_nama_testee').value,
+                        no_testee: document.getElementById('f_5_no_testee').value || '',
+                        nama_lembaga: document.getElementById('f_6_lembaga').value,
+                        tempat_lahir: document.getElementById('f_7_tempat_lahir').value,
+                        tanggal_lahir: document.getElementById('f_8_tanggal_lahir').value,
+                        usia_testee: document.getElementById('f_9_usia').value,
+                        tanggal_tes: document.getElementById('f_10_tanggal_tes').value,
+                        jenis_kelamin: document.getElementById('f_11_jenis_kelamin').value,
+                        level_pendidikan: document.getElementById('f_12_level_pendidikan').value,
+                        jurusan_sma: document.getElementById('f_13_jurusan_sma').value || '-',
+                        proses_dibantu: document.getElementById('f_14_proses_dibantu').value,
+                        kondisi_kertas: document.getElementById('f_15_kondisi_kertas').value,
+                        posisi_kertas: document.getElementById('f_16_posisi_kertas').value,
+                        alat_gambar: document.getElementById('f_17_alat_gambar').value,
+                        dominasi_warna: document.getElementById('f_18_dominasi_warna').value,
+                        catatan_gambar: document.getElementById('f_19_catatan_gambar').value || '-',
+                        email: document.getElementById('f_20_email').value,
+                        paket_berbayar_bonus: document.getElementById('f_21_paket_berbayar').value,
+                        bentuk_kerjasama: document.getElementById('f_22_bentuk_kerjasama').value,
+                        nama_penginput: namaPenginput,
+                        no_whatsapp: document.getElementById('f_24_whatsapp').value,
+                        cabang: currentCabang,
+                        catatan_khusus: document.getElementById('f_26_catatan_khusus').value || '-',
+                        pilihan_jurusan: document.getElementById('f_27_pilihan_jurusan').value || '-'
+                    };
+
+                    if (_supabase) {
+                        // 1. Simpan detail ke data_peserta
+                        const { error: errPeserta } = await _supabase.from('data_peserta').insert([rowPeserta]);
+                        if (errPeserta) throw errPeserta;
+
+                        // 2. Simpan info log ke batch_upload
+                        const batchInfo = {
+                            nama_file_asli: 'Input Satuan - ' + rowPeserta.nama_lengkap_testee,
+                            file_url: buktiUrl || '',
+                            kode_cabang: currentCabang,
+                            nama_penginput: namaPenginput,
+                            jumlah_data: 1
+                        };
+                        await _supabase.from('batch_upload').insert([batchInfo]);
+                    }
+
+                    // Kirim ke API Google Drive
+                    try {
+                        await fetch('/api/generate-report', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ transactions: [rowPeserta] })
+                        });
+                    } catch (driveErr) {
+                        console.warn("Gagal koneksi ke Google Drive:", driveErr);
+                    }
+
+                    alert('Alhamdulillah! Data peserta berhasil disimpan.');
+                    uploadForm.reset();
+                    document.getElementById('f_25_cabang').value = currentCabang;
+                    switchMainTab('monitoring');
+
+                } catch (err) {
+                    console.error(err);
+                    alert('Gagal mengirim data: ' + err.message);
+                } finally {
+                    btnSubmit.disabled = false;
+                    btnSubmit.textContent = 'Kirim Seluruh Data & Berkas ke Pusat';
+                }
+            });
+        }
+
+        // 2. Upload Massal Excel -> Mengisi data_peserta & Simpan File di batch_upload
         function initExcelFormHandler() {
             const excelForm = document.getElementById('excelForm');
             if (!excelForm) return;
@@ -393,7 +608,7 @@
                 const fileInput = document.getElementById('excelFileInput');
 
                 if (!fileInput.files.length) {
-                    alert("Silakan pilih file Excel terlebih dahulu.");
+                    alert("Pilih file Excel terlebih dahulu.");
                     return;
                 }
 
@@ -411,101 +626,87 @@
                         throw new Error("File Excel kosong atau format tidak sesuai.");
                     }
 
-                    submitBtn.innerHTML = '<span class="loading spinner-border spinner-border-sm me-2"></span>Menyimpan Data ke Supabase...';
+                    submitBtn.innerHTML = '<span class="loading spinner-border spinner-border-sm me-2"></span>Mengunggah File ke Storage...';
+
+                    let excelPublicUrl = '';
+                    if (_supabase) {
+                        const pathExcel = `excel_imports/${Date.now()}_${file.name}`;
+                        const { error: errUpload } = await _supabase.storage.from('berkas-excel').upload(pathExcel, file);
+                        if (!errUpload) {
+                            const { data: pubData } = _supabase.storage.from('berkas-excel').getPublicUrl(pathExcel);
+                            excelPublicUrl = pubData.publicUrl;
+                        }
+                    }
+
+                    submitBtn.innerHTML = '<span class="loading spinner-border spinner-border-sm me-2"></span>Menyimpan Data Peserta...';
 
                     const rowsToInsert = [];
-                    const transactionsForDrive = [];
+                    let lastPenginput = 'Admin Excel';
 
                     jsonData.forEach(row => {
-                        const payload = {
-                            bukti_transfer_url: row['Bukti Transfer'] || row['bukti_transfer_url'] || '',
-                            file_coretan_url: row['Hasil Coretan'] || row['file_coretan_url'] || '',
-                            paket_tes: row['Paket Tes'] || row['paket_tes'] || '-',
-                            nama_testee: row['Nama Testee'] || row['nama_testee'] || '-',
-                            no_testee: row['No Testee'] || row['no_testee'] || null,
-                            lembaga_institusi: row['Lembaga'] || row['lembaga_institusi'] || '-',
-                            tempat_lahir: row['Tempat Lahir'] || row['tempat_lahir'] || '-',
-                            tanggal_lahir: row['Tanggal Lahir'] || row['tanggal_lahir'] || '-',
-                            usia: row['Usia'] || row['usia'] || '-',
+                        const pName = row['Nama Penginput'] || row['nama_penginput'] || 'Admin Excel';
+                        if (pName !== 'Admin Excel') lastPenginput = pName;
+
+                        const rowData = {
+                            upload_bukti_transfer: row['Upload Bukti Transfer'] || row['bukti_transfer'] || '',
+                            upload_gambar: row['Upload gambar'] || row['upload_gambar'] || '',
+                            jenis_paket: row['Jenis Paket'] || row['jenis_paket'] || '-',
+                            nama_lengkap_testee: row['Nama Lengkap Testee'] || row['nama_testee'] || '-',
+                            no_testee: row['No Testee'] || '',
+                            nama_lembaga: row['Nama Lembaga/Institusi/Komunitas/umum'] || row['nama_lembaga'] || '-',
+                            tempat_lahir: row['Tempat Lahir Testee'] || row['tempat_lahir'] || '-',
+                            tanggal_lahir: row['Tanggal lahir Testee'] || row['tanggal_lahir'] || '-',
+                            usia_testee: row['Usia Testee'] || row['usia'] || '-',
                             tanggal_tes: row['Tanggal Tes'] || row['tanggal_tes'] || '-',
                             jenis_kelamin: row['Jenis Kelamin'] || row['jenis_kelamin'] || '-',
-                            level_pendidikan: row['Pendidikan'] || row['level_pendidikan'] || '-',
-                            jurusan_sma: row['Jurusan SMA'] || row['jurusan_sma'] || '-',
-                            jurusan_terlintas: row['Jurusan Terlintas'] || row['jurusan_terlintas'] || '-',
-                            bantuan_menggambar: row['Bantuan Menggambar'] || row['bantuan_menggambar'] || '-',
-                            kondisi_kertas: row['Kondisi Kertas'] || row['kondisi_kertas'] || '-',
-                            posisi_kertas: row['Posisi Kertas'] || row['posisi_kertas'] || '-',
-                            alat_gambar: row['Alat Gambar'] || row['alat_gambar'] || '-',
+                            level_pendidikan: row['Level Pendidikan'] || row['level_pendidikan'] || '-',
+                            jurusan_sma: row['Jurusan yang di jalani ketika di SMA/SMK'] || row['jurusan_sma'] || '-',
+                            proses_dibantu: row['Proses menggambar dibantu oleh'] || row['proses_dibantu'] || '-',
+                            kondisi_kertas: row['Kondisi kertas'] || row['kondisi_kertas'] || '-',
+                            posisi_kertas: row['Posisi kertas'] || row['posisi_kertas'] || '-',
+                            alat_gambar: row['Alat gambar'] || row['alat_gambar'] || '-',
                             dominasi_warna: row['Dominasi Warna'] || row['dominasi_warna'] || '-',
-                            catatan_gambar: row['Catatan Gambar'] || row['catatan_gambar'] || '-',
-                            email_cabang: row['Email Cabang'] || row['email_cabang'] || '',
-                            jenis_paket_bayar: row['Paket Bayar'] || row['jenis_paket_bayar'] || '-',
-                            bentuk_kerjasama: row['Bentuk Kerjasama'] || row['bentuk_kerjasama'] || '-',
-                            nama_penginput: row['Nama Penginput'] || row['nama_penginput'] || '-',
-                            whatsapp_penginput: row['WA Penginput'] || row['whatsapp_penginput'] || '-',
+                            catatan_gambar: row['Catatan terkait gambar'] || row['catatan_gambar'] || '-',
+                            email: row['Alamat e-mail'] || row['email'] || '',
+                            paket_berbayar_bonus: row['Paket Berbayar/Bonus'] || row['paket_berbayar_bonus'] || '-',
+                            bentuk_kerjasama: row['Bentuk kerja sama'] || row['bentuk_kerjasama'] || '-',
+                            nama_penginput: pName,
+                            no_whatsapp: row['No Whatsapp yang bisa dihubungi'] || row['no_whatsapp'] || '-',
                             cabang: currentCabang,
-                            catatan_khusus: row['Catatan Khusus'] || row['catatan_khusus'] || '-'
+                            catatan_khusus: row['Catatan khusus'] || row['catatan_khusus'] || '-',
+                            pilihan_jurusan: row['Sebutkan maksimal 3 Jurusan apa saja yang ingin dipilih/terlintas dalam fikiran'] || row['pilihan_jurusan'] || '-'
                         };
-
-                        rowsToInsert.push(payload);
-
-                        // Structure untuk drive API
-                        transactionsForDrive.push({
-                            buktiTransfer: payload.bukti_transfer_url,
-                            gambar: payload.file_coretan_url,
-                            jenisPaket: payload.paket_tes,
-                            namaLengkap: payload.nama_testee,
-                            noTestee: payload.no_testee || '',
-                            namaLembaga: payload.lembaga_institusi,
-                            tempatLahir: payload.tempat_lahir,
-                            tanggalLahir: payload.tanggal_lahir,
-                            usia: payload.usia,
-                            tanggalTes: payload.tanggal_tes,
-                            jenisKelamin: payload.jenis_kelamin,
-                            levelPendidikan: payload.level_pendidikan,
-                            jurusanSma: payload.jurusan_sma,
-                            prosesMenggambar: payload.bantuan_menggambar,
-                            kondisiKertas: payload.kondisi_kertas,
-                            posisiKertas: payload.posisi_kertas,
-                            alatGambar: payload.alat_gambar,
-                            dominasiWarna: payload.dominasi_warna,
-                            catatanGambar: payload.catatan_gambar,
-                            email: payload.email_cabang,
-                            paketBerbayarBonus: payload.jenis_paket_bayar,
-                            bentuk_kerjasama: payload.bentuk_kerjasama,
-                            namaPenginput: payload.nama_penginput,
-                            noWhatsapp: payload.whatsapp_penginput,
-                            cabang: payload.cabang,
-                            catatanKhusus: payload.catatan_khusus,
-                            pilihanJurusan: payload.jurusan_terlintas
-                        });
+                        rowsToInsert.push(rowData);
                     });
 
-                    // Batch Insert Ke Database
                     if (_supabase) {
-                        const { error: errInsert } = await _supabase.from('data_peserta').insert(rowsToInsert);
-                        if (errInsert) throw errInsert;
+                        // 1. Simpan detail ke data_peserta
+                        const { error: errInsertPeserta } = await _supabase.from('data_peserta').insert(rowsToInsert);
+                        if (errInsertPeserta) throw errInsertPeserta;
+
+                        // 2. Simpan metadata file ke batch_upload
+                        const batchData = {
+                            nama_file_asli: file.name,
+                            file_url: excelPublicUrl,
+                            kode_cabang: currentCabang,
+                            nama_penginput: lastPenginput,
+                            jumlah_data: rowsToInsert.length
+                        };
+                        await _supabase.from('batch_upload').insert([batchData]);
                     }
 
-                    // Upload Laporan Ke Google Drive via API Vercel
-                    submitBtn.innerHTML = '<span class="loading spinner-border spinner-border-sm me-2"></span>Mengunggah Laporan ke Google Drive...';
-                    
+                    // Kirim laporan massal ke Google Drive
                     try {
-                        const driveRes = await fetch('/api/generate-report', {
+                        await fetch('/api/generate-report', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ transactions: transactionsForDrive })
+                            body: JSON.stringify({ transactions: rowsToInsert })
                         });
-
-                        const driveResult = await driveRes.json();
-                        if (!driveResult.success) {
-                            console.warn("Gagal unggah ke Google Drive:", driveResult.message);
-                        }
-                    } catch (gDriveErr) {
-                        console.error("Error memanggil API Google Drive:", gDriveErr);
+                    } catch (gErr) {
+                        console.warn("Gagal unggah massal ke Drive:", gErr);
                     }
 
-                    alert(`Alhamdulillah! Berhasil memproses ${rowsToInsert.length} data peserta dan mengirim laporan ke Google Drive.`);
+                    alert(`Alhamdulillah! Berhasil memproses ${rowsToInsert.length} data peserta dari Excel.`);
                     excelForm.reset();
                     switchMainTab('monitoring');
 
@@ -514,182 +715,90 @@
                     alert("Gagal memproses file Excel: " + err.message);
                 } finally {
                     submitBtn.disabled = false;
-                    submitBtn.innerText = "Proses Upload Excel";
+                    submitBtn.innerText = "Proses & Kirim Data Excel Massal";
                 }
             });
         }
 
-        // 4. Handling Single Form Upload & File Uploads
-        function initSingleUploadFormHandler() {
-            const uploadForm = document.getElementById('uploadForm');
-            if (!uploadForm) return;
+        function downloadExcelTemplate() {
+            const headers = [
+                "Upload Bukti Transfer",
+                "Upload gambar",
+                "Jenis Paket",
+                "Nama Lengkap Testee",
+                "No Testee",
+                "Nama Lembaga/Institusi/Komunitas/umum",
+                "Tempat Lahir Testee",
+                "Tanggal lahir Testee",
+                "Usia Testee",
+                "Tanggal Tes",
+                "Jenis Kelamin",
+                "Level Pendidikan",
+                "Jurusan yang di jalani ketika di SMA/SMK",
+                "Proses menggambar dibantu oleh",
+                "Kondisi kertas",
+                "Posisi kertas",
+                "Alat gambar",
+                "Dominasi Warna",
+                "Catatan terkait gambar",
+                "Alamat e-mail",
+                "Paket Berbayar/Bonus",
+                "Bentuk kerja sama",
+                "Nama Penginput",
+                "No Whatsapp yang bisa dihubungi",
+                "Cabang",
+                "Catatan khusus",
+                "Sebutkan maksimal 3 Jurusan apa saja yang ingin dipilih/terlintas dalam fikiran"
+            ];
 
-            uploadForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const btnSubmit = uploadForm.querySelector('button[type="submit"]');
-                btnSubmit.disabled = true;
-                btnSubmit.textContent = 'Mengirim Data & Mengunggah ke Drive...';
+            const sampleRow = [
+                "http://...", "http://...", "Paket Talent", "Budi Santoso", "", "SMA Negeri 1",
+                "Jakarta", "2006-05-12", "18 Tahun", "2026-08-01", "Laki-laki", "SMA",
+                "IPA", "Sendiri", "Baik", "Horisontal", "Pensil 2B", "Biru",
+                "Antusias saat menggambar", "budi@gmail.com", "Berbayar", "Kemitraan",
+                "Admin Cabang", "08123456789", currentCabang || "Cabang Utama", "Tidak ada", "1. Teknik Informatika, 2. Sistem Informasi, 3. DKV"
+            ];
 
-                try {
-                    const buktiFileInput = document.getElementById('buktiTransferInput');
-                    const coretanFileInput = document.getElementById('fileCoretanInput');
-
-                    const buktiFile = buktiFileInput && buktiFileInput.files ? buktiFileInput.files[0] : null;
-                    const coretanFiles = coretanFileInput && coretanFileInput.files ? Array.from(coretanFileInput.files) : [];
-
-                    // Upload Bukti Transfer ke Supabase Storage
-                    let buktiUrl = '';
-                    if (buktiFile && _supabase) {
-                        const pathBukti = `bukti/${Date.now()}_${buktiFile.name}`;
-                        const { error: errBukti } = await _supabase.storage.from('berkas').upload(pathBukti, buktiFile);
-                        if (errBukti) throw errBukti;
-                        const { data: publicUrlData } = _supabase.storage.from('berkas').getPublicUrl(pathBukti);
-                        buktiUrl = publicUrlData.publicUrl;
-                    }
-
-                    // Upload Berkas Coretan ke Supabase Storage
-                    const coretanUrls = [];
-                    if (coretanFiles.length > 0 && _supabase) {
-                        for (const file of coretanFiles) {
-                            const pathCoretan = `coretan/${Date.now()}_${file.name}`;
-                            const { error: errCoretan } = await _supabase.storage.from('berkas').upload(pathCoretan, file);
-                            if (errCoretan) throw errCoretan;
-                            const { data: publicUrlData } = _supabase.storage.from('berkas').getPublicUrl(pathCoretan);
-                            coretanUrls.push(publicUrlData.publicUrl);
-                        }
-                    }
-
-                    const payloadSupabase = {
-                        bukti_transfer_url: buktiUrl,
-                        file_coretan_url: coretanUrls.join(','),
-                        paket_tes: document.getElementById('paket_tes').value,
-                        nama_testee: document.getElementById('nama_testee').value,
-                        no_testee: document.getElementById('no_testee').value || null,
-                        lembaga_institusi: document.getElementById('lembaga_institusi').value,
-                        tempat_lahir: document.getElementById('tempat_lahir').value,
-                        tanggal_lahir: document.getElementById('tanggal_lahir').value,
-                        usia: document.getElementById('usia').value,
-                        tanggal_tes: document.getElementById('tanggal_tes').value,
-                        jenis_kelamin: document.getElementById('jenis_kelamin').value,
-                        level_pendidikan: document.getElementById('level_pendidikan').value,
-                        jurusan_sma: document.getElementById('jurusan_sma').value || '-',
-                        jurusan_terlintas: document.getElementById('jurusan_terlintas').value || '-',
-                        bantuan_menggambar: document.getElementById('bantuan_menggambar').value,
-                        kondisi_kertas: document.getElementById('kondisi_kertas').value,
-                        posisi_kertas: document.getElementById('posisi_kertas').value,
-                        alat_gambar: document.getElementById('alat_gambar').value,
-                        dominasi_warna: document.getElementById('dominasi_warna').value,
-                        catatan_gambar: document.getElementById('catatan_gambar').value || '-',
-                        email_cabang: document.getElementById('email_cabang').value,
-                        jenis_paket_bayar: document.getElementById('jenis_paket_bayar').value,
-                        bentuk_kerjasama: document.getElementById('bentuk_kerjasama').value,
-                        nama_penginput: document.getElementById('nama_penginput').value,
-                        whatsapp_penginput: document.getElementById('whatsapp_penginput').value,
-                        cabang: currentCabang,
-                        catatan_khusus: document.getElementById('catatan_khusus').value || '-'
-                    };
-
-                    if (_supabase) {
-                        const { error: errInsert } = await _supabase.from('data_peserta').insert([payloadSupabase]);
-                        if (errInsert) throw errInsert;
-                    }
-
-                    // Send API Request to Drive Integration
-                    try {
-                        const payloadDrive = {
-                            transactions: [
-                                {
-                                    buktiTransfer: payloadSupabase.bukti_transfer_url,
-                                    gambar: payloadSupabase.file_coretan_url,
-                                    jenisPaket: payloadSupabase.paket_tes,
-                                    namaLengkap: payloadSupabase.nama_testee,
-                                    noTestee: payloadSupabase.no_testee || '',
-                                    namaLembaga: payloadSupabase.lembaga_institusi,
-                                    tempatLahir: payloadSupabase.tempat_lahir,
-                                    tanggalLahir: payloadSupabase.tanggal_lahir,
-                                    usia: payloadSupabase.usia,
-                                    tanggalTes: payloadSupabase.tanggal_tes,
-                                    jenisKelamin: payloadSupabase.jenis_kelamin,
-                                    levelPendidikan: payloadSupabase.level_pendidikan,
-                                    jurusanSma: payloadSupabase.jurusan_sma,
-                                    prosesMenggambar: payloadSupabase.bantuan_menggambar,
-                                    kondisiKertas: payloadSupabase.kondisi_kertas,
-                                    posisiKertas: payloadSupabase.posisi_kertas,
-                                    alatGambar: payloadSupabase.alat_gambar,
-                                    dominasiWarna: payloadSupabase.dominasi_warna,
-                                    catatanGambar: payloadSupabase.catatan_gambar,
-                                    email: payloadSupabase.email_cabang,
-                                    paketBerbayarBonus: payloadSupabase.jenis_paket_bayar,
-                                    bentuk_kerjasama: payloadSupabase.bentuk_kerjasama,
-                                    namaPenginput: payloadSupabase.nama_penginput,
-                                    noWhatsapp: payloadSupabase.whatsapp_penginput,
-                                    cabang: payloadSupabase.cabang,
-                                    catatanKhusus: payloadSupabase.catatan_khusus,
-                                    pilihanJurusan: payloadSupabase.jurusan_terlintas
-                                }
-                            ]
-                        };
-
-                        const resDrive = await fetch('/api/generate-report', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payloadDrive)
-                        });
-
-                        const resDriveData = await resDrive.json();
-                        if (!resDrive.ok || !resDriveData.success) {
-                            console.warn("Gagal unggah laporan ke Drive:", resDriveData.message);
-                        }
-                    } catch (driveErr) {
-                        console.warn("Gagal terhubung ke API Google Drive:", driveErr);
-                    }
-
-                    alert('Berhasil! Data dan berkas peserta telah terkirim ke Pusat & Google Drive.');
-                    uploadForm.reset();
-                    switchMainTab('monitoring');
-
-                } catch (err) {
-                    console.error(err);
-                    alert('Gagal mengirim data: ' + err.message);
-                } finally {
-                    btnSubmit.disabled = false;
-                    btnSubmit.textContent = 'Kirim Seluruh Data & Berkas ke Pusat';
-                }
-            });
+            const wsData = [headers, sampleRow];
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "FormatPusat");
+            XLSX.writeFile(wb, "Template_Upload_Peserta_Format_Pusat.xlsx");
         }
 
-        // 5. Load Data Peserta (Monitoring Tab)
+        // Monitoring diambil dari data_peserta
         async function loadPesertaCabang() {
             const tbody = document.getElementById('monitoringTableBody');
             if (!tbody) return;
 
-            tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Memuat data peserta...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400">Memuat data peserta...</td></tr>';
 
             try {
                 if (!_supabase) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-rose-500">Koneksi Supabase belum terkonfigurasi.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-rose-500">Koneksi Supabase belum terkonfigurasi.</td></tr>';
                     return;
                 }
 
                 const { data, error } = await _supabase
                     .from('data_peserta')
-                    .select('nama_testee, lembaga_institusi, paket_tes, tanggal_tes, nama_penginput')
+                    .select('nama_lengkap_testee, no_testee, nama_lembaga, jenis_paket, tanggal_tes, nama_penginput')
                     .eq('cabang', currentCabang)
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
 
                 if (!data || data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Belum ada data peserta terdaftar untuk cabang ini.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400">Belum ada data peserta terdaftar untuk cabang ini.</td></tr>';
                     return;
                 }
 
                 tbody.innerHTML = data.map((row, idx) => `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                         <td class="p-3 font-semibold text-slate-500">${idx + 1}</td>
-                        <td class="p-3 font-semibold text-slate-800">${row.nama_testee || '-'}</td>
-                        <td class="p-3">${row.lembaga_institusi || '-'}</td>
-                        <td class="p-3"><span class="px-2 py-0.5 text-[10px] bg-indigo-50 text-indigo-600 font-semibold rounded">${row.paket_tes || '-'}</span></td>
+                        <td class="p-3 font-semibold text-slate-800">${row.nama_lengkap_testee || '-'}</td>
+                        <td class="p-3 font-mono text-slate-600">${row.no_testee || '-'}</td>
+                        <td class="p-3">${row.nama_lembaga || '-'}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 text-[10px] bg-indigo-50 text-indigo-600 font-semibold rounded">${row.jenis_paket || '-'}</span></td>
                         <td class="p-3">${row.tanggal_tes || '-'}</td>
                         <td class="p-3 text-slate-500">${row.nama_penginput || '-'}</td>
                     </tr>
@@ -697,11 +806,55 @@
 
             } catch (err) {
                 console.error("Gagal memuat monitoring:", err);
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-rose-500">Gagal memuat data: ${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-rose-500">Gagal memuat data: ${err.message}</td></tr>`;
             }
         }
 
-        // 6. Modal Profile & Password Operations
+        // Batch Upload Result dari Pusat
+        async function loadBatchUploadCabang() {
+            const tbody = document.getElementById('batchUploadTableBody');
+            if (!tbody) return;
+
+            tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Memuat berkas hasil tes dari Pusat...</td></tr>';
+
+            try {
+                if (!_supabase) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-rose-500">Koneksi Supabase belum terkonfigurasi.</td></tr>';
+                    return;
+                }
+
+                const { data, error } = await _supabase
+                    .from('batch_upload_results')
+                    .select('id, nama_file, file_url, created_at, keterangan')
+                    .eq('cabang', currentCabang)
+                    .order('created_at', { ascending: false });
+
+                if (error || !data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Belum ada berkas hasil tes dari Pusat yang diunggah.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.map((row, idx) => `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="p-3 font-semibold text-slate-500">${idx + 1}</td>
+                        <td class="p-3 font-semibold text-slate-800">${row.nama_file || 'Hasil_Tes_Batch.pdf'}</td>
+                        <td class="p-3 text-slate-500">${new Date(row.created_at).toLocaleDateString('id-ID')}</td>
+                        <td class="p-3 text-slate-600">${row.keterangan || '-'}</td>
+                        <td class="p-3">
+                            <a href="${row.file_url}" target="_blank" download class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded text-[10px] transition inline-flex items-center">
+                                Unduh File
+                            </a>
+                        </td>
+                    </tr>
+                `).join('');
+
+            } catch (err) {
+                console.error("Gagal memuat batch upload:", err);
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-rose-500">Gagal memuat data berkas.</td></tr>`;
+            }
+        }
+
+        // Modal Profil & Password Logic
         async function openProfileModal() {
             const modal = document.getElementById('profileModal');
             modal.classList.remove('hidden');
@@ -846,7 +999,6 @@
             }
         }
 
-        // 7. Logout & Layout Utilities
         async function logoutAdmin() {
             if (!confirm("Apakah Anda yakin ingin keluar dari Portal Cabang?")) return;
 
@@ -864,8 +1016,6 @@
 
             window.location.href = 'index.html';
         }
-
-        const logout = logoutAdmin;
 
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
