@@ -7,15 +7,13 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Tangkap fileData (atau fileBase64) dari body frontend
     const { fileName, fileData, fileBase64, mimeType } = req.body;
     const base64String = fileData || fileBase64;
 
     if (!fileName || !base64String) {
-      return res.status(400).json({ success: false, message: 'fileName dan fileData/fileBase64 wajib diisi.' });
+      return res.status(400).json({ success: false, message: 'Data file tidak ditemukan.' });
     }
 
-    // Ambil Kredensial dari Env Variables terpisah
     const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
     const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
@@ -24,15 +22,11 @@ export default async function handler(req, res) {
         client_email: clientEmail,
         private_key: privateKey,
       },
-      scopes: [
-        'https://www.googleapis.com/auth/drive.file',
-        'https://www.googleapis.com/auth/drive'
-      ],
+      scopes: ['https://www.googleapis.com/auth/drive'],
     });
 
     const drive = google.drive({ version: 'v3', auth });
 
-    // Convert Base64 ke Buffer/Stream
     const pureBase64 = base64String.includes(',') ? base64String.split(',')[1] : base64String;
     const buffer = Buffer.from(pureBase64, 'base64');
     
@@ -40,23 +34,21 @@ export default async function handler(req, res) {
     mediaStream.push(buffer);
     mediaStream.push(null);
 
-    const media = {
-      mimeType: mimeType || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      body: mediaStream,
-    };
+    const targetFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID || '1EjBesYcFuDLH2qWYycC2kJItpbJiywU_';
 
-    // Tentukan Folder Tujuan Wajib
-    const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID || '1EjBesYcFuDLH2qWYycC2kJItpbJiywU_';
-    const fileMetadata = {
-      name: fileName,
-      parents: [folderId],
-    };
-
+    // 1. Upload file ke folder target
     const response = await drive.files.create({
-      requestBody: fileMetadata,
-      media: media,
+      requestBody: {
+        name: fileName,
+        parents: [targetFolderId],
+      },
+      media: {
+        mimeType: mimeType || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        body: mediaStream,
+      },
       fields: 'id, name, webViewLink',
       supportsAllDrives: true,
+      supportsTeamDrives: true,
     });
 
     return res.status(200).json({
