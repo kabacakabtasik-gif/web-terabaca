@@ -11,30 +11,39 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, message: 'Data file tidak ditemukan.' });
     }
 
-    // Membersihkan prefix data URL jika ada
     const pureBase64 = base64Content.includes(',') ? base64Content.split(',')[1] : base64Content;
-
-    // Mengambil URL Google Apps Script dari Environment Variable Vercel
     const APPS_SCRIPT_URL = process.env.GOOGLE_APPS_SCRIPT_URL;
 
     if (!APPS_SCRIPT_URL) {
       return res.status(500).json({ 
         success: false, 
-        message: 'GOOGLE_APPS_SCRIPT_URL belum dikonfigurasi di Environment Variables Vercel.' 
+        message: 'GOOGLE_APPS_SCRIPT_URL belum diisi di Environment Variables Vercel.' 
       });
     }
 
-    // Mengirimkan request ke Apps Script
+    // Mengirimkan request ke Apps Script (Wajib ikuti redirect HTTP 302)
     const response = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         fileName: fileName,
         fileData: pureBase64
-      })
+      }),
+      redirect: 'follow'
     });
 
-    const result = await response.json();
+    const textResponse = await response.text();
+
+    let result;
+    try {
+      result = JSON.parse(textResponse);
+    } catch (e) {
+      console.error("Non-JSON Response from Apps Script:", textResponse);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Apps Script mengembalikan HTML. Pastikan opsi akses di Google Apps Script sudah diatur ke "Anyone" (Siapa saja).' 
+      });
+    }
 
     if (result.success) {
       return res.status(200).json({
