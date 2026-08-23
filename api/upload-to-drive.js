@@ -42,13 +42,13 @@ export default async function handler(req, res) {
       supportsTeamDrives: true,    // WAJIB DI SINI
       requestBody: {
         name: fileName,
-        parents: [DRIVE_FOLDER_ID], // Jalur folder tujuan
+        parents: ['1200n_Fra-ci1bPIFE1bTp9fEfCoDq096'], // Jalur folder tujuan
       },
       media: {
-        mimeType: mimeType || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        body: mediaStream,
+        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        body: streamOrBuffer,
       },
-      fields: 'id, name, webViewLink',
+      fields: 'id, webViewLink',
     });
 
     return res.status(200).json({
