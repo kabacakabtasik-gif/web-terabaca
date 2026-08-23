@@ -1,9 +1,7 @@
 {
   "cleanUrls": true,
   "rewrites": [
-    {
-      "source": "/((?!api/).*)",
-      "destination": "/$1"
-    }
+    { "source": "/login", "destination": "/login.html" },
+    { "source": "/admin_cabang", "destination": "/admin_cabang.html" }
   ]
 }
