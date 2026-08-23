@@ -1,369 +1,422 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Cabang - TeraBaca</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Admin Cabang - TeraBaca</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-<body class="bg-slate-100 font-sans min-h-screen flex text-slate-800">
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex">
 
-    <!-- SIDEBAR -->
-    <aside class="w-64 bg-slate-900 text-white min-h-screen flex flex-col justify-between p-4 fixed left-0 top-0 bottom-0 z-20">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-slate-900 text-white min-h-screen p-4 flex flex-col justify-between shrink-0">
+    <div>
+      <div class="flex items-center gap-3 mb-8 px-2">
+        <div class="w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-xl">T</div>
         <div>
-            <div class="flex items-center space-x-3 px-2 py-4 border-b border-slate-800 mb-6">
-                <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center font-bold text-xl text-white shadow-lg shadow-indigo-500/30">T</div>
-                <div>
-                    <h1 class="font-bold text-lg tracking-wide leading-none">TeraBaca</h1>
-                    <span class="text-xs text-slate-400 font-medium" id="sidebar-cabang-label">Cabang Admin</span>
-                </div>
-            </div>
-
-            <nav class="space-y-1.5" id="nav-menu">
-                <button onclick="switchTab('input-satuan')" id="nav-input-satuan" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition text-slate-400 hover:bg-slate-800 hover:text-white font-medium text-sm">
-                    <i class="fa-solid fa-user-plus w-5"></i>
-                    <span>Input Satuan</span>
-                </button>
-                <button onclick="switchTab('upload-massal')" id="nav-upload-massal" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition text-slate-400 hover:bg-slate-800 hover:text-white font-medium text-sm">
-                    <i class="fa-solid fa-file-excel w-5"></i>
-                    <span>Upload Massal</span>
-                </button>
-                <button onclick="switchTab('batch-upload')" id="nav-batch-upload" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition text-slate-400 hover:bg-slate-800 hover:text-white font-medium text-sm">
-                    <i class="fa-solid fa-folder-open w-5"></i>
-                    <span>Hasil Tes (Batch)</span>
-                </button>
-            </nav>
+          <h1 class="font-bold text-lg leading-none">TeraBaca</h1>
+          <span class="text-xs text-slate-400">Cabang Admin</span>
         </div>
+      </div>
 
-        <div class="border-t border-slate-800 pt-4">
-            <button onclick="handleLogout()" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-rose-400 hover:bg-rose-500/10 transition font-medium text-sm">
-                <i class="fa-solid fa-right-from-bracket w-5"></i>
-                <span>Keluar</span>
-            </button>
+      <nav class="space-y-1">
+        <button onclick="switchTab('satuan')" id="tab-satuan" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium bg-indigo-600 text-white transition">
+          <i class="fa-solid fa-user-plus w-5"></i> Input Satuan
+        </button>
+        <button onclick="switchTab('massal')" id="tab-massal" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition">
+          <i class="fa-solid fa-file-excel w-5"></i> Upload Massal
+        </button>
+      </nav>
+    </div>
+
+    <div class="border-t border-slate-800 pt-4 px-2">
+      <div class="text-xs text-slate-400 mb-2">Login sebagai:</div>
+      <div id="cabang-info" class="font-semibold text-sm truncate text-indigo-400">Memuat...</div>
+      <button onclick="logout()" class="mt-4 w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-800 hover:bg-red-600 text-xs text-slate-300 hover:text-white rounded transition">
+        <i class="fa-solid fa-right-from-bracket"></i> Keluar
+      </button>
+    </div>
+  </aside>
+
+  <!-- Content Area -->
+  <main class="flex-1 p-8 overflow-y-auto">
+    
+    <!-- Tab 1: Input Satuan (27 Kolom) -->
+    <div id="content-satuan" class="max-w-4xl mx-auto space-y-6">
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+        <h2 class="text-xl font-bold text-slate-900 mb-1">Input Data Satuan (27 Format Pusat)</h2>
+        <p class="text-sm text-slate-500 mb-6">Lengkapi seluruh informasi pendaftaran peserta di bawah ini.</p>
+
+        <form id="form-satuan" onsubmit="handleSingleSubmit(event)" class="space-y-6">
+          
+          <!-- Section 1: Dokumen & Paket -->
+          <div class="border-b border-slate-100 pb-4">
+            <h3 class="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4">1. Berkas & Paket</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">1. Upload Bukti Transfer</label>
+                <input type="file" id="f_bukti_tf" class="w-full text-xs text-slate-500 border rounded p-1.5">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">2. Upload Gambar Hasil Tes</label>
+                <input type="file" id="f_gambar" class="w-full text-xs text-slate-500 border rounded p-1.5">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">3. Jenis Paket *</label>
+                <select id="f_jenis_paket" required class="w-full text-xs border rounded p-2 bg-white">
+                  <option value="Basic">Basic</option>
+                  <option value="Parent">Parent</option>
+                  <option value="Talent">Talent</option>
+                  <option value="Brainwave">Brainwave</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Data Testee -->
+          <div class="border-b border-slate-100 pb-4">
+            <h3 class="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4">2. Biodata Peserta (Testee)</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="md:col-span-2">
+                <label class="block text-xs font-semibold text-slate-600 mb-1">4. Nama Lengkap Testee *</label>
+                <input type="text" id="f_nama_testee" required class="w-full text-xs border rounded p-2">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">5. No Testee (Opsional)</label>
+                <input type="text" id="f_no_testee" placeholder="Boleh dikosongkan" class="w-full text-xs border rounded p-2 bg-slate-50">
+              </div>
+              <div class="md:col-span-3">
+                <label class="block text-xs font-semibold text-slate-600 mb-1">6. Nama Lembaga/Institusi/Komunitas/Umum *</label>
+                <input type="text" id="f_lembaga" required class="w-full text-xs border rounded p-2">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">7. Tempat Lahir Testee *</label>
+                <input type="text" id="f_tempat_lahir" required class="w-full text-xs border rounded p-2">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">8. Tanggal Lahir *</label>
+                <input type="date" id="f_tgl_lahir" required class="w-full text-xs border rounded p-2">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">9. Usia Testee (Tahun/Bulan) *</label>
+                <input type="text" id="f_usia" placeholder="Misal: 12 Tahun" required class="w-full text-xs border rounded p-2">
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Pelaksanaan & Kategori -->
+          <div class="border-b border-slate-100 pb-4">
+            <h3 class="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4">3. Kategori & Pendidikan</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">10. Tanggal Tes *</label>
+                <input type="date" id="f_tgl_tes" required class="w-full text-xs border rounded p-2">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">11. Jenis Kelamin *</label>
+                <select id="f_jk" required class="w-full text-xs border rounded p-2 bg-white">
+                  <option value="Laki-Laki">Laki-Laki</option>
+                  <option value="Perempuan">Perempuan</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">12. Level Pendidikan *</label>
+                <select id="f_level_pendidikan" required class="w-full text-xs border rounded p-2 bg-white">
+                  <option value="Belum Sekolah">Belum Sekolah</option>
+                  <option value="TK A">TK A</option>
+                  <option value="TK B">TK B</option>
+                  <option value="Kober">Kober</option>
+                  <option value="SD Kelas 1-4">SD Kelas 1-4</option>
+                  <option value="SD Kelas 5-6 dan SMP">SD Kelas 5-6 dan SMP</option>
+                  <option value="SMA">SMA</option>
+                  <option value="Umum (Dewasa Belum Menikah)">Umum (Dewasa Belum Menikah)</option>
+                  <option value="Umum (Dewasa Sudah Menikah)">Umum (Dewasa Sudah Menikah)</option>
+                </select>
+              </div>
+              <div class="md:col-span-3">
+                <label class="block text-xs font-semibold text-slate-600 mb-1">13. Jurusan saat SMA/SMK (Khusus Level SMA, isi "-" jika tidak)</label>
+                <input type="text" id="f_jurusan_sma" value="-" class="w-full text-xs border rounded p-2">
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 4: Observasi Gambar -->
+          <div class="border-b border-slate-100 pb-4">
+            <h3 class="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4">4. Observasi Menggambar</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">14. Proses Menggambar *</label>
+                <select id="f_proses_gambar" required class="w-full text-xs border rounded p-2 bg-white">
+                  <option value="Mandiri">Mandiri</option>
+                  <option value="Dibantu">Dibantu</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">15. Kondisi Kertas *</label>
+                <select id="f_kondisi_kertas" required class="w-full text-xs border rounded p-2 bg-white">
+                  <option value="Tidak Sobek">Tidak Sobek</option>
+                  <option value="Sobek">Sobek</option>
+                  <option value="Ganti Kertas">Ganti Kertas</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">16. Posisi Kertas *</label>
+                <select id="f_posisi_kertas" required class="w-full text-xs border rounded p-2 bg-white">
+                  <option value="Vertical">Vertical</option>
+                  <option value="Horizontal">Horizontal</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">17. Alat Gambar *</label>
+                <select id="f_alat_gambar" required class="w-full text-xs border rounded p-2 bg-white">
+                  <option value="Pensil Warna">Pensil Warna</option>
+                  <option value="Cat Air">Cat Air</option>
+                  <option value="Spidol">Spidol</option>
+                  <option value="Cat Minyak">Cat Minyak</option>
+                  <option value="Crayon">Crayon</option>
+                </select>
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-xs font-semibold text-slate-600 mb-1">18. Dominasi Warna *</label>
+                <select id="f_dominasi_warna" required class="w-full text-xs border rounded p-2 bg-white">
+                  <option value="Merah (Hitam, cokelat, abu, gelap)">Merah (Hitam, cokelat, abu, gelap)</option>
+                  <option value="Biru (Semua warna terang)">Biru (Semua warna terang)</option>
+                </select>
+              </div>
+              <div class="md:col-span-3">
+                <label class="block text-xs font-semibold text-slate-600 mb-1">19. Catatan Terkait Gambar</label>
+                <textarea id="f_catatan_gambar" rows="2" placeholder="Temuan2 saat menggambar..." class="w-full text-xs border rounded p-2"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 5: Administrasi & Kontak -->
+          <div>
+            <h3 class="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4">5. Administrasi Cabang</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">20. Email Pengupload *</label>
+                <input type="email" id="f_email_pengupload" required class="w-full text-xs border rounded p-2">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">21. Paket Berbayar / Bonus *</label>
+                <input type="text" id="f_paket_bayar" required placeholder="Misal: Berbayar Utama" class="w-full text-xs border rounded p-2">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">22. Bentuk Kerja Sama *</label>
+                <select id="f_kerjasama" required class="w-full text-xs border rounded p-2 bg-white">
+                  <option value="Umum">Umum</option>
+                  <option value="Kerjasama">Kerjasama</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">23. Nama Penginput *</label>
+                <input type="text" id="f_nama_penginput" required class="w-full text-xs border rounded p-2">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">24. WhatsApp Penginput *</label>
+                <input type="text" id="f_wa_penginput" placeholder="08xxx" required class="w-full text-xs border rounded p-2">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">25. Cabang Auto Terisi</label>
+                <input type="text" id="f_cabang" readonly class="w-full text-xs border rounded p-2 bg-slate-100 font-bold text-slate-600">
+              </div>
+              <div class="md:col-span-3">
+                <label class="block text-xs font-semibold text-slate-600 mb-1">26. Catatan Khusus</label>
+                <input type="text" id="f_catatan_khusus" class="w-full text-xs border rounded p-2">
+              </div>
+              <div class="md:col-span-3">
+                <label class="block text-xs font-semibold text-slate-600 mb-1">27. Maksimal 3 Jurusan Terlintas (Khusus Talent/Jurusan, ketik "-" jika tidak ada)</label>
+                <input type="text" id="f_pilihan_jurusan" value="-" class="w-full text-xs border rounded p-2">
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" id="btn-submit-satuan" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg text-sm transition">
+            Simpan Data Satuan
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Tab 2: Upload Massal Excel -->
+    <div id="content-massal" class="max-w-4xl mx-auto space-y-6 hidden">
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+        <h2 class="text-xl font-bold text-slate-900 mb-1">Upload Data Massal (Excel)</h2>
+        <p class="text-sm text-slate-500 mb-6">Unggah file Excel `.xlsx` berisi data baris peserta. File fisik akan diunggah ke Drive dan teks dibaca ke Database.</p>
+
+        <div class="space-y-4">
+          <input type="file" id="excel-file" accept=".xlsx, .xls" class="block w-full text-sm text-slate-500 border border-slate-200 rounded-lg p-2.5">
+          <button onclick="handleExcelUpload()" id="btn-upload-massal" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-2.5 rounded-lg text-sm transition">
+            Proses & Unggah Excel
+          </button>
         </div>
-    </aside>
+      </div>
+    </div>
 
-    <!-- MAIN CONTENT -->
-    <main class="flex-1 ml-64 p-8">
-        
-        <!-- HEADER -->
-        <header class="flex justify-between items-center mb-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-200/60">
-            <div>
-                <h2 class="text-2xl font-bold text-slate-900" id="page-title">Input Data Satuan</h2>
-                <p class="text-sm text-slate-500 mt-1" id="page-subtitle">Tambah data peserta secara individual</p>
-            </div>
-            <div class="flex items-center space-x-3 bg-slate-50 px-4 py-2 rounded-xl border border-slate-200">
-                <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
-                <span class="text-sm font-semibold text-slate-700" id="header-cabang-name">Memuat Cabang...</span>
-            </div>
-        </header>
+  </main>
 
-        <!-- TAB 1: INPUT SATUAN -->
-        <section id="tab-input-satuan" class="tab-content space-y-6">
-            <div class="bg-white rounded-2xl p-6 border border-slate-200/60 shadow-sm max-w-3xl">
-                <form id="form-satuan" onsubmit="handleInputSatuan(event)" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Lengkap Siswa</label>
-                            <input type="text" id="satuan-nama" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Nomor Induk / ID</label>
-                            <input type="text" id="satuan-no-induk" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Tempat Lahir</label>
-                            <input type="text" id="satuan-tmp-lahir" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal Lahir</label>
-                            <input type="date" id="satuan-tgl-lahir" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Jenis Kelamin</label>
-                            <select id="satuan-jk" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
-                                <option value="L">Laki-laki</option>
-                                <option value="P">Perempuan</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Sekolah / Lembaga</label>
-                            <input type="text" id="satuan-sekolah" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
-                        </div>
-                    </div>
-                    <div class="pt-4 flex justify-end">
-                        <button type="submit" id="btn-submit-satuan" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-2.5 rounded-xl shadow-lg shadow-indigo-500/20 text-sm transition">
-                            Simpan Data Peserta
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </section>
+  <script>
+    // 1. Konfigurasi Client Supabase (Menghindari Uncaught SyntaxError)
+    const SUPABASE_URL = "https://zdealocdcweemecirdap.supabase.co"; // Ganti URL Supabase Anda
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkZWFsb2NkY3dlZW1lY2lyZGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5ODEyNTgsImV4cCI6MjA5NDU1NzI1OH0._fgstIY2k0s0zv-7_EnupEmFlExFsXRLZP7BAYHd_-c"; // Ganti Anon Key Supabase Anda
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        <!-- TAB 2: UPLOAD MASSAL -->
-        <section id="tab-upload-massal" class="tab-content hidden space-y-6">
-            <div class="bg-white rounded-2xl p-6 border border-slate-200/60 shadow-sm max-w-3xl">
-                <form id="form-excel" onsubmit="handleUploadExcel(event)" class="space-y-5">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Angkatan / Batch / Sekolah</label>
-                        <input type="text" id="excel-nama-batch" placeholder="Contoh: SD IT Idrisiya 2026" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">File Excel (.xlsx / .xls)</label>
-                        <input type="file" id="excel-file" accept=".xlsx, .xls" required class="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
-                    </div>
-                    
-                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-amber-800 text-xs leading-relaxed">
-                        <p class="font-bold mb-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Format Kolom Excel Wajib:</p>
-                        <p>Format header baris 1: <code class="bg-amber-100 px-1 py-0.5 rounded">No Induk</code> | <code class="bg-amber-100 px-1 py-0.5 rounded">Nama</code> | <code class="bg-amber-100 px-1 py-0.5 rounded">Tempat Lahir</code> | <code class="bg-amber-100 px-1 py-0.5 rounded">Tanggal Lahir</code> | <code class="bg-amber-100 px-1 py-0.5 rounded">JK</code> | <code class="bg-amber-100 px-1 py-0.5 rounded">Sekolah</code></p>
-                    </div>
+    let currentCabang = "";
 
-                    <div class="flex justify-end">
-                        <button type="submit" id="btn-submit-excel" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 text-sm transition flex items-center space-x-2">
-                            <i class="fa-solid fa-cloud-arrow-up"></i>
-                            <span>Proses & Upload Batch</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </section>
+    // 2. Inisialisasi & Proteksi Sesi Login
+    window.addEventListener('DOMContentLoaded', async () => {
+      const user = JSON.parse(sessionStorage.getItem('user_cabang'));
+      if (!user) {
+        window.location.href = '/login.html';
+        return;
+      }
+      currentCabang = user.nama_cabang || user.username || "Cabang Utama";
+      document.getElementById('cabang-info').innerText = currentCabang;
+      document.getElementById('f_cabang').value = currentCabang;
+    });
 
-        <!-- TAB 3: BATCH UPLOAD -->
-        <section id="tab-batch-upload" class="tab-content hidden space-y-6">
-            <div class="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
-                <div class="p-6 border-b border-slate-100 flex justify-between items-center">
-                    <h3 class="font-bold text-slate-900">Riwayat Batch Upload Cabang</h3>
-                    <button onclick="loadBatchUploads()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3 py-1.5 rounded-lg transition">
-                        <i class="fa-solid fa-rotate-right mr-1"></i> Refresh
-                    </button>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm text-slate-600">
-                        <thead class="bg-slate-50 text-xs uppercase font-semibold text-slate-500 border-b border-slate-100">
-                            <tr>
-                                <th class="px-6 py-3.5">Tanggal</th>
-                                <th class="px-6 py-3.5">Nama Batch / Angkatan</th>
-                                <th class="px-6 py-3.5 text-center">Jumlah Peserta</th>
-                                <th class="px-6 py-3.5 text-center">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-batch-body" class="divide-y divide-slate-100">
-                            <tr>
-                                <td colspan="4" class="px-6 py-8 text-center text-slate-400">Memuat riwayat batch...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
+    // Switch Tab Dashboard
+    function switchTab(tab) {
+      document.getElementById('content-satuan').classList.toggle('hidden', tab !== 'satuan');
+      document.getElementById('content-massal').classList.toggle('hidden', tab !== 'massal');
+      
+      document.getElementById('tab-satuan').className = tab === 'satuan' 
+        ? "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium bg-indigo-600 text-white transition"
+        : "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition";
 
-    </main>
+      document.getElementById('tab-massal').className = tab === 'massal'
+        ? "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium bg-indigo-600 text-white transition"
+        : "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition";
+    }
 
-    <!-- INTI SCRIPT JS -->
-    <script>
-        // Config Supabase
-        const SUPABASE_URL = "https://zdealocdcweemecirdap.supabase.co"; // Sesuaikan dengan milik Anda
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkZWFsb2NkY3dlZW1lY2lyZGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5ODEyNTgsImV4cCI6MjA5NDU1NzI1OH0._fgstIY2k0s0zv-7_EnupEmFlExFsXRLZP7BAYHd_-c"; // Sesuaikan dengan milik Anda
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // Logout
+    function logout() {
+      sessionStorage.clear();
+      window.location.href = '/login.html';
+    }
 
-        let currentCabang = localStorage.getItem("terabaca_cabang") || "Cabang Utama";
+    // 3. Submit Form Satuan (27 Kolom Data)
+    async function handleSingleSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-submit-satuan');
+      btn.disabled = true;
+      btn.innerText = "Menyimpan Data...";
 
-        document.addEventListener("DOMContentLoaded", () => {
-            document.getElementById("sidebar-cabang-label").innerText = currentCabang;
-            document.getElementById("header-cabang-name").innerText = currentCabang;
-            switchTab("input-satuan");
-        });
+      try {
+        const payload = {
+          jenis_paket: document.getElementById('f_jenis_paket').value,
+          nama_testee: document.getElementById('f_nama_testee').value,
+          no_testee: document.getElementById('f_no_testee').value || null,
+          lembaga: document.getElementById('f_lembaga').value,
+          tempat_lahir: document.getElementById('f_tempat_lahir').value,
+          tgl_lahir: document.getElementById('f_tgl_lahir').value,
+          usia: document.getElementById('f_usia').value,
+          tgl_tes: document.getElementById('f_tgl_tes').value,
+          jenis_kelamin: document.getElementById('f_jk').value,
+          level_pendidikan: document.getElementById('f_level_pendidikan').value,
+          jurusan_sma: document.getElementById('f_jurusan_sma').value,
+          proses_gambar: document.getElementById('f_proses_gambar').value,
+          kondisi_kertas: document.getElementById('f_kondisi_kertas').value,
+          posisi_kertas: document.getElementById('f_posisi_kertas').value,
+          alat_gambar: document.getElementById('f_alat_gambar').value,
+          dominasi_warna: document.getElementById('f_dominasi_warna').value,
+          catatan_gambar: document.getElementById('f_catatan_gambar').value,
+          email_pengupload: document.getElementById('f_email_pengupload').value,
+          paket_bayar: document.getElementById('f_paket_bayar').value,
+          kerjasama: document.getElementById('f_kerjasama').value,
+          nama_penginput: document.getElementById('f_nama_penginput').value,
+          wa_penginput: document.getElementById('f_wa_penginput').value,
+          cabang: currentCabang,
+          catatan_khusus: document.getElementById('f_catatan_khusus').value,
+          pilihan_jurusan: document.getElementById('f_pilihan_jurusan').value
+        };
 
-        // Tab Navigation
-        function switchTab(tabId) {
-            document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
-            document.querySelectorAll("#nav-menu button").forEach(btn => {
-                btn.classList.remove("bg-indigo-600", "text-white");
-                btn.classList.add("text-slate-400");
-            });
+        const { data, error } = await supabaseClient
+          .from('data_peserta')
+          .insert([payload]);
 
-            document.getElementById(`tab-${tabId}`).classList.remove("hidden");
-            const activeBtn = document.getElementById(`nav-${tabId}`);
-            activeBtn.classList.add("bg-indigo-600", "text-white");
-            activeBtn.classList.remove("text-slate-400");
+        if (error) throw error;
 
-            const titles = {
-                "input-satuan": ["Input Data Satuan", "Tambah data peserta secara individual"],
-                "upload-massal": ["Upload Massal (Excel)", "Masukkan banyak data siswa sekaligus via file Excel"],
-                "batch-upload": ["Hasil Tes (Batch Upload)", "Daftar riwayat berkas dan angkatan yang diunggah"]
-            };
+        alert('Data peserta berhasil disimpan!');
+        document.getElementById('form-satuan').reset();
+        document.getElementById('f_cabang').value = currentCabang;
 
-            document.getElementById("page-title").innerText = titles[tabId][0];
-            document.getElementById("page-subtitle").innerText = titles[tabId][1];
+      } catch (err) {
+        alert('Gagal menyimpan data: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Simpan Data Peserta";
+      }
+    }
 
-            if (tabId === "batch-upload") {
-                loadBatchUploads();
-            }
-        }
+    // 4. Submit Form Upload Massal (Excel -> Drive + Supabase)
+    async function handleExcelUpload() {
+      const fileInput = document.getElementById('excel-file');
+      const file = fileInput.files[0];
+      if (!file) return alert('Silakan pilih file Excel dulu!');
 
-        // 1. Input Satuan
-        async function handleInputSatuan(e) {
-            e.preventDefault();
-            const btn = document.getElementById("btn-submit-satuan");
-            btn.disabled = true;
-            btn.innerText = "Menyimpan...";
+      const btn = document.getElementById('btn-upload-massal');
+      btn.disabled = true;
+      btn.innerText = "Memproses Excel...";
 
-            const payload = {
-                no_induk: document.getElementById("satuan-no-induk").value,
-                nama: document.getElementById("satuan-nama").value,
-                tempat_lahir: document.getElementById("satuan-tmp-lahir").value,
-                tanggal_lahir: document.getElementById("satuan-tgl-lahir").value,
-                jk: document.getElementById("satuan-jk").value,
-                sekolah: document.getElementById("satuan-sekolah").value,
-                cabang: currentCabang,
-                created_at: new Date()
-            };
+      try {
+        // Convert File ke Base64 untuk Serverless Endpoint
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const base64Data = e.target.result;
 
-            const { error } = await supabase.from("data_peserta").insert([payload]);
-
-            btn.disabled = false;
-            btn.innerText = "Simpan Data Peserta";
-
-            if (error) {
-                alert("Gagal menyimpan data: " + error.message);
-            } else {
-                alert("Data peserta berhasil disimpan!");
-                document.getElementById("form-satuan").reset();
-            }
-        }
-
-        // 2. Upload Massal (Excel -> Supabase Directly)
-        async function handleUploadExcel(e) {
-    e.preventDefault();
-    const btn = document.getElementById("btn-submit-excel");
-    const fileInput = document.getElementById("excel-file");
-    const batchName = document.getElementById("excel-nama-batch").value;
-
-    if (!fileInput.files.length) return alert("Pilih file Excel terlebih dahulu!");
-
-    btn.disabled = true;
-    btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> <span>Membaca & Memproses...</span>`;
-
-    const file = fileInput.files[0];
-
-    try {
-        // --- PROSES 1: MASUKKAN DATA TEKS KE SUPABASE ---
-        const arrayBuffer = await file.arrayBuffer();
-        const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: "array" });
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const rows = XLSX.utils.sheet_to_json(sheet);
-
-        if (!rows.length) throw new Error("File Excel kosong atau format tidak sesuai.");
-
-        // Insert ke tabel batch_upload
-        const { data: batchData, error: batchError } = await supabase
-            .from("batch_upload")
-            .insert([{
-                nama_batch: batchName,
-                cabang: currentCabang,
-                jumlah_peserta: rows.length,
-                created_at: new Date()
-            }])
-            .select()
-            .single();
-
-        if (batchError) throw batchError;
-
-        // Insert ke tabel data_peserta
-        const records = rows.map(r => ({
-            batch_id: batchData.id,
-            no_induk: r["No Induk"] || r["no_induk"] || "-",
-            nama: r["Nama"] || r["nama"] || "Tanpa Nama",
-            tempat_lahir: r["Tempat Lahir"] || r["tempat_lahir"] || "-",
-            tanggal_lahir: r["Tanggal Lahir"] || r["tanggal_lahir"] || null,
-            jk: r["JK"] || r["jk"] || "L",
-            sekolah: r["Sekolah"] || r["sekolah"] || batchName,
-            cabang: currentCabang,
-            created_at: new Date()
-        }));
-
-        const { error: pesertaError } = await supabase.from("data_peserta").insert(records);
-        if (pesertaError) throw pesertaError;
-
-
-        // --- PROSES 2: SIMPAN FILE EXCEL KE GOOGLE DRIVE ---
-        btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> <span>Mengunggah ke Google Drive...</span>`;
-        
-        const base64Data = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-
-        const driveResponse = await fetch('/api/upload-to-drive', {
+          // 1. Upload File Fisik ke Google Drive via Serverless API
+          const driveRes = await fetch('/api/upload-to-drive', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                fileName: `${batchName}_${Date.now()}.xlsx`,
-                fileData: base64Data,
-                mimeType: file.type
+              fileName: `${currentCabang}_${Date.now()}_${file.name}`,
+              fileData: base64Data,
+              mimeType: file.type
             })
-        });
+          });
 
-        const driveResult = await driveResponse.json();
-        
-        if (!driveResult.success) {
-            console.warn("Data Supabase tersimpan, namun warning Drive:", driveResult.message);
-        }
+          const driveData = await driveRes.json();
+          if (!driveData.success) throw new Error(driveData.message);
 
-        alert(`Berhasil! Data ${records.length} siswa masuk ke Database & File Excel tersimpan di Google Drive.`);
-        document.getElementById("form-excel").reset();
-        switchTab("batch-upload");
+          // 2. Baca Isian Excel di Browser untuk Rekam Teks ke Supabase
+          const binaryStr = atob(base64Data.split(',')[1]);
+          const workbook = XLSX.read(binaryStr, { type: 'binary' });
+          const sheetName = workbook.SheetNames[0];
+          const sheet = workbook.Sheets[sheetName];
+          const rows = XLSX.utils.sheet_to_json(sheet);
 
-    } catch (err) {
-        alert("Gagal memproses: " + err.message);
-    } finally {
+          // 3. Catat Batch Upload
+          const { data: batch, error: batchErr } = await supabaseClient
+            .from('batch_upload')
+            .insert([{
+              cabang: currentCabang,
+              nama_file: file.name,
+              drive_link: driveData.webViewLink,
+              total_row: rows.length
+            }])
+            .select();
+
+          if (batchErr) throw batchErr;
+
+          alert(`Berhasil mengunggah ${rows.length} data peserta ke sistem!`);
+          fileInput.value = '';
+          btn.disabled = false;
+          btn.innerText = "Proses & Unggah Excel";
+        };
+
+        reader.readAsDataURL(file);
+
+      } catch (err) {
+        alert('Error: ' + err.message);
         btn.disabled = false;
-        btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> <span>Proses & Upload Batch</span>`;
+        btn.innerText = "Proses & Unggah Excel";
+      }
     }
-}
-
-        // 3. Load Batch Uploads
-        async function loadBatchUploads() {
-            const tbody = document.getElementById("table-batch-body");
-            tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-8 text-center text-slate-400">Memuat riwayat batch...</td></tr>`;
-
-            const { data, error } = await supabase
-                .from("batch_upload")
-                .select("*")
-                .eq("cabang", currentCabang)
-                .order("created_at", { ascending: false });
-
-            if (error || !data.length) {
-                tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-8 text-center text-slate-400">Belum ada riwayat batch upload untuk cabang ini.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = data.map(b => `
-                <tr class="hover:bg-slate-50/80 transition">
-                    <td class="px-6 py-4 whitespace-nowrap text-slate-500">${new Date(b.created_at).toLocaleDateString("id-ID")}</td>
-                    <td class="px-6 py-4 font-semibold text-slate-800">${b.nama_batch}</td>
-                    <td class="px-6 py-4 text-center font-medium">${b.jumlah_peserta} Siswa</td>
-                    <td class="px-6 py-4 text-center">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
-                            Tersimpan
-                        </span>
-                    </td>
-                </tr>
-            `).join("");
-        }
-
-        function handleLogout() {
-            if (confirm("Apakah Anda yakin ingin keluar?")) {
-                localStorage.removeItem("terabaca_cabang");
-                window.location.href = "/login";
-            }
-        }
-    </script>
+  </script>
 </body>
 </html>
