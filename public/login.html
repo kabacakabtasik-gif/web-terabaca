@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login Cabang - TeraBaca</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-slate-900 text-slate-800 min-h-screen flex items-center justify-center p-4">
 
@@ -17,12 +18,12 @@
 
     <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
       <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">Username / ID Cabang</label>
-        <input type="text" id="username" required class="w-full text-sm border rounded-lg p-3 outline-none focus:ring-2 focus:ring-indigo-500">
+        <label class="block text-xs font-semibold text-slate-700 mb-1">Email / Username Cabang</label>
+        <input type="text" id="username" required placeholder="Masukkan email atau username" class="w-full text-sm border rounded-lg p-3 outline-none focus:ring-2 focus:ring-indigo-500">
       </div>
       <div>
         <label class="block text-xs font-semibold text-slate-700 mb-1">Password</label>
-        <input type="password" id="password" required class="w-full text-sm border rounded-lg p-3 outline-none focus:ring-2 focus:ring-indigo-500">
+        <input type="password" id="password" required placeholder="Masukkan password" class="w-full text-sm border rounded-lg p-3 outline-none focus:ring-2 focus:ring-indigo-500">
       </div>
       <button type="submit" id="btn-submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg text-sm transition">
         Masuk
@@ -37,25 +38,30 @@
       btn.disabled = true;
       btn.innerText = "Memeriksa...";
 
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
+      const inputVal = document.getElementById('username').value.trim();
+      const passwordVal = document.getElementById('password').value.trim();
 
       try {
-        // Memanggil Serverless API api/login.js
+        // Mengirim email & username sekaligus agar cocok dengan ekspektasi api/login.js
         const res = await fetch('/api/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
+          body: JSON.stringify({ 
+            email: inputVal,
+            username: inputVal,
+            password: passwordVal 
+          })
         });
 
         const data = await res.json();
 
         if (!res.ok || !data.success) {
-          throw new Error(data.message || 'Username atau password salah!');
+          throw new Error(data.message || 'Login gagal! Periksa kembali email/username dan password.');
         }
 
         // Simpan sesi login
-        sessionStorage.setItem('user_cabang', JSON.stringify(data.user));
+        const userData = data.user || data.data || { username: inputVal };
+        sessionStorage.setItem('user_cabang', JSON.stringify(userData));
 
         // Pindah ke dashboard admin cabang
         window.location.href = 'admin_cabang.html';
@@ -68,5 +74,7 @@
       }
     }
   </script>
+  <!-- Menghubungkan ke script login frontend tambahan jika ada -->
+  <script src="login.js"></script>
 </body>
 </html>
