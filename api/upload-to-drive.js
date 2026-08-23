@@ -41,7 +41,7 @@ export default async function handler(req, res) {
 
         const fileMetadata = {
             name: fileName,
-            parents: process.env.GOOGLE_DRIVE_FOLDER_ID ? [process.env.GOOGLE_DRIVE_FOLDER_ID] : [],
+            parents: ['1EjBesYcFuDLH2qWYycC2kJItpbJiywU_'],
         };
 
         const media = {
