@@ -413,6 +413,11 @@
         </div>
 
         <script>
+// MENCEGAH ERROR: Mendefinisikan supabaseClient jika belum ada
+if (typeof supabaseClient === 'undefined') {
+    var supabaseClient = typeof supabase !== 'undefined' ? supabase : (window.supabaseClient || window.supabase);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Menampilkan teks nama cabang
     const displayExcel = document.getElementById('displayCabangExcel');
@@ -445,8 +450,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const clientSupabase = typeof supabase !== 'undefined' ? supabase : (window.supabaseClient || window.supabase);
-            if (!clientSupabase) {
+            // Memastikan client Supabase siap digunakan
+            const activeSupabase = supabaseClient || (typeof supabase !== 'undefined' ? supabase : null);
+            if (!activeSupabase) {
                 alert("Inisialisasi Supabase gagal/belum dimuat di halaman ini!");
                 return;
             }
@@ -480,14 +486,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const cleanFileName = file.name.replace(/[^a-zA-Z0-9_.-]/g, "_");
                 const filePath = `${sessionUser.kode_cabang || 'TSK-01'}/${timeStamp}_${cleanFileName}`;
 
-                const { data: storageData, error: storageErr } = await clientSupabase
+                const { data: storageData, error: storageErr } = await activeSupabase
                     .storage
                     .from('berkas-excel')
                     .upload(filePath, file);
 
                 let fileUrl = "";
                 if (!storageErr && storageData) {
-                    const { data: publicUrlData } = clientSupabase
+                    const { data: publicUrlData } = activeSupabase
                         .storage
                         .from('berkas-excel')
                         .getPublicUrl(filePath);
@@ -495,7 +501,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // Buat Record Batch Upload
-                await clientSupabase
+                await activeSupabase
                     .from('batch_upload')
                     .insert([{
                         nama_file_asli: file.name,
@@ -581,7 +587,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Insert ke Supabase DB
                 if (rowsToInsert.length > 0) {
-                    const { error: insertErr } = await clientSupabase
+                    const { error: insertErr } = await activeSupabase
                         .from('data_peserta')
                         .insert(rowsToInsert);
 
