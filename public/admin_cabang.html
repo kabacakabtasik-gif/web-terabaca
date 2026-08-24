@@ -341,19 +341,39 @@
     let allBatchData = []; // Menampung array data batch untuk filter pencarian
 
     // 2. Inisialisasi & Proteksi Sesi Login
-    window.addEventListener('DOMContentLoaded', async () => {
-      const user = JSON.parse(sessionStorage.getItem('user_cabang'));
-      if (!user) {
-        window.location.href = '/login.html';
-        return;
-      }
-      currentCabang = user.nama_cabang || user.username || "Cabang Utama";
-      document.getElementById('cabang-info').innerText = currentCabang;
-      document.getElementById('f_cabang').value = currentCabang;
-      
-      // Muat awal data batch
-      loadBatchUploads();
-    });
+window.addEventListener('DOMContentLoaded', async () => {
+  const user = JSON.parse(sessionStorage.getItem('user_cabang'));
+  if (!user) {
+    window.location.href = '/login.html';
+    return;
+  }
+
+  // 1. Coba ambil nama cabang langsung dari Supabase
+  try {
+    const { data: dbCabang } = await supabaseClient
+      .from('data_cabang')
+      .select('nama_cabang')
+      .eq('email', user.email)
+      .single();
+
+    if (dbCabang && dbCabang.nama_cabang) {
+      currentCabang = dbCabang.nama_cabang;
+    } else {
+      currentCabang = user.nama_cabang || user.cabang || user.nama || "Cabang Utama";
+    }
+  } catch (err) {
+    currentCabang = user.nama_cabang || user.cabang || user.nama || "Cabang Utama";
+  }
+
+  // 2. Tampilkan ke halaman
+  document.getElementById('cabang-info').innerText = currentCabang;
+  if (document.getElementById('f_cabang')) {
+    document.getElementById('f_cabang').value = currentCabang;
+  }
+  
+  // 3. Muat data batch
+  loadBatchUploads();
+});
 
     // Switch Tab Dashboard
     function switchTab(tab) {
