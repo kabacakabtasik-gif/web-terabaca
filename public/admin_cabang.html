@@ -506,96 +506,131 @@
 
     // 4. Submit Form Upload Massal (Excel -> Drive + Supabase)
     async function handleExcelUpload() {
-      const fileInput = document.getElementById('excel-file');
-      const file = fileInput.files[0];
-      if (!file) return alert('Silakan pilih file Excel dulu!');
+  const fileInput = document.getElementById('excel-file');
+  const file = fileInput.files[0];
+  if (!file) return alert('Silakan pilih file Excel dulu!');
 
-      const btn = document.getElementById('btn-upload-massal');
-      btn.disabled = true;
-      btn.innerText = "Memproses Excel...";
+  const btn = document.getElementById('btn-upload-massal');
+  btn.disabled = true;
+  btn.innerText = "Memproses Excel...";
 
-      const reader = new FileReader();
+  const reader = new FileReader();
+
+  reader.onload = async (e) => {
+    try {
+      const base64Data = e.target.result;
+      const cleanBase64 = base64Data.includes(',') ? base64Data.split(',')[1] : base64Data;
+
+      // 1. Upload File Fisik ke Google Apps Script (Drive)
+      const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbya1vzhQ993URT53aofily26Y7LPRmMMl17eZwAzh5BYeD4UR7NUmqfKVsHuNvFg7yF/exec';
+
+      const driveRes = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          fileName: `${currentCabang}_${Date.now()}_${file.name}`,
+          fileData: cleanBase64
+        })
+      });
+
+      const driveData = await driveRes.json();
+      if (!driveData.success) {
+        throw new Error(driveData.message || 'Gagal mengunggah ke Google Drive');
+      }
+
+      // 2. Baca Isian Excel Menggunakan Array Index (Mendukung 27 Kolom Presisi)
+      const binaryStr = atob(cleanBase64);
+      const workbook = XLSX.read(binaryStr, { type: 'binary' });
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
       
-      reader.onload = async (e) => {
-        try {
-          const base64Data = e.target.result;
-          const cleanBase64 = base64Data.includes(',') ? base64Data.split(',')[1] : base64Data;
+      // Ambil sebagai Array of Arrays (Header di Index 0, Data di Index 1+)
+      const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+      const dataRows = rawRows.slice(1);
 
-          // 1. Upload File Fisik ke Google Apps Script
-          const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbya1vzhQ993URT53aofily26Y7LPRmMMl17eZwAzh5BYeD4UR7NUmqfKVsHuNvFg7yF/exec';
+      // Nilai fallback default dari form/sesi
+      const user = JSON.parse(sessionStorage.getItem('user_cabang')) || {};
+      const kodeCabangVal = user.kode_cabang || user.id || currentCabang;
+      const defaultPaket = document.getElementById('f_jenis_paket_massal')?.value || 'Basic';
 
-          const driveRes = await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({
-              fileName: `${currentCabang}_${Date.now()}_${file.name}`,
-              fileData: cleanBase64
-            })
-          });
+      // 3. Catat Batch Upload ke Supabase
+      const { data: batch, error: batchErr } = await supabaseClient
+        .from('batch_upload')
+        .insert([{
+          nama_file_asli: file.name,
+          file_url: driveData.webViewLink || driveData.fileId,
+          cabang: currentCabang,
+          kode_cabang: kodeCabangVal,
+          nama_penginput: user.nama || currentCabang,
+          jumlah_data: dataRows.length,
+          lembaga: dataRows[0]?.[5] || '-', // Index 5 = Nama Lembaga
+          paket: dataRows[0]?.[2] || defaultPaket // Index 2 = Jenis Paket
+        }])
+        .select()
+        .single();
 
-          const driveData = await driveRes.json();
-          if (!driveData.success) {
-            throw new Error(driveData.message || 'Gagal mengunggah ke Google Drive');
-          }
+      if (batchErr) throw batchErr;
 
-          // 2. Baca Isian Excel
-          const binaryStr = atob(cleanBase64);
-          const workbook = XLSX.read(binaryStr, { type: 'binary' });
-          const sheetName = workbook.SheetNames[0];
-          const sheet = workbook.Sheets[sheetName];
-          const rows = XLSX.utils.sheet_to_json(sheet);
+      // 4. Petakan 27 Kolom ke Tabel data_peserta Supabase
+const payload = dataRows.map(row => ({
+  batch_id:           batch.id, // SANGAT PENTING: Untuk relasi ke tabel batch_upload
+  bukti_transfer_url: row[0] || '-',
+  file_coretan_url:   row[1] || '-',
+  paket_tes:          row[2] || defaultPaket,
+  nama_testee:        row[3] || '',
+  no_testee:          row[4] || '-',
+  lembaga_institusi:  row[5] || '',
+  tempat_lahir:       row[6] || '',
+  tanggal_lahir:      row[7] || null,
+  usia:               row[8] || '',
+  tanggal_tes:        row[9] || null,
+  jenis_kelamin:      row[10] || 'Laki-Laki',
+  level_pendidikan:   row[11] || '-',
+  jurusan_sma:        row[12] || '-',
+  bantuan_menggambar: row[13] || 'Mandiri',
+  kondisi_kertas:     row[14] || 'Tidak Sobek',
+  posisi_kertas:      row[15] || 'Vertical',
+  alat_gambar:        row[16] || 'Pensil Warna',
+  dominasi_warna:     row[17] || 'Biru (Semua warna terang)',
+  catatan_gambar:     row[18] || '-',
+  email_cabang:       row[19] || '',
+  jenis_paket_bayar:  row[20] || 'Berbayar Utama',
+  bentuk_kerjasama:   row[21] || 'Umum',
+  nama_penginput:     row[22] || user.nama || currentCabang,
+  whatsapp_penginput: row[23] || '',
+  cabang:             row[24] || currentCabang,
+  catatan_khusus:     row[25] || '-',
+  jurusan_terlintas:  row[26] || '-'
+})).filter(item => item.nama_testee.toString().trim() !== '');
+      // 5. Insert Massal Detail Peserta
+      if (payload.length > 0) {
+        const { error: insertErr } = await supabaseClient
+          .from('data_peserta')
+          .insert(payload);
 
-          const defaultPaket = document.getElementById('f_jenis_paket_massal')?.value || 'Basic';
-          const paketValue = rows[0]?.['Jenis Paket'] 
-                          || rows[0]?.['jenis paket'] 
-                          || rows[0]?.['JENIS PAKET'] 
-                          || rows[0]?.['Paket'] 
-                          || defaultPaket;
+        if (insertErr) throw insertErr;
+      }
 
-          const lembagaValue = rows[0]?.['Nama Lembaga'] 
-                            || rows[0]?.['nama lembaga'] 
-                            || rows[0]?.['NAMA LEMBAGA'] 
-                            || '-';
+      alert(`Berhasil mengunggah file dan ${payload.length} data peserta ke sistem!`);
+      fileInput.value = '';
+      if (typeof switchTab === 'function') switchTab('batch');
 
-          // 3. Catat Batch Upload ke Supabase
-          const user = JSON.parse(sessionStorage.getItem('user_cabang')) || {};
-          const kodeCabangVal = user.kode_cabang || user.id || currentCabang;
-
-          const { data: batch, error: batchErr } = await supabaseClient
-            .from('batch_upload')
-            .insert([{
-              nama_file_asli: file.name,
-              file_url: driveData.webViewLink || driveData.fileId,
-              cabang: currentCabang,
-              kode_cabang: kodeCabangVal,
-              nama_penginput: user.nama || currentCabang,
-              jumlah_data: rows.length,
-              lembaga: lembagaValue,
-              paket: paketValue
-            }]);
-
-          if (batchErr) throw batchErr;
-
-          alert(`Berhasil mengunggah ${rows.length} data peserta ke sistem!`);
-          fileInput.value = '';
-          switchTab('batch');
-
-        } catch (err) {
-          alert('Error: ' + err.message);
-        } finally {
-          btn.disabled = false;
-          btn.innerText = "Proses & Unggah Excel";
-        }
-      };
-
-      reader.onerror = () => {
-        alert('Gagal membaca file Excel!');
-        btn.disabled = false;
-        btn.innerText = "Proses & Unggah Excel";
-      };
-
-      reader.readAsDataURL(file);
+    } catch (err) {
+      alert('Error: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerText = "Proses & Unggah Excel";
     }
+  };
+
+  reader.onerror = () => {
+    alert('Gagal membaca file Excel!');
+    btn.disabled = false;
+    btn.innerText = "Proses & Unggah Excel";
+  };
+
+  reader.readAsDataURL(file);
+}
 
     // 5. Load Data Batch Upload dari Supabase
     async function loadBatchUploads() {
