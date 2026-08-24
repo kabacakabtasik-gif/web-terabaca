@@ -373,10 +373,13 @@
           // Memisahkan prefix data URL untuk mendapatkan string Base64 murni
           const cleanBase64 = base64Data.includes(',') ? base64Data.split(',')[1] : base64Data;
 
-          // 1. Upload File Fisik ke Google Drive via Serverless API
-          const driveRes = await fetch('/api/upload-to-drive', {
+          // 1. Upload File Fisik Langsung ke Google Apps Script (Bypass Vercel Serverless Limit)
+          const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbya1vzhQ993URT53aofily26Y7LPRmMMl17eZwAzh5BYeD4UR7NUmqfKVsHuNvFg7yF/exec';
+
+          const driveRes = await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            // Gunakan text/plain untuk menghindari pemblokiran CORS Preflight di browser
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({
               fileName: `${currentCabang}_${Date.now()}_${file.name}`,
               fileData: cleanBase64
@@ -384,7 +387,7 @@
           });
 
           const driveData = await driveRes.json();
-          if (!driveRes.ok || !driveData.success) {
+          if (!driveData.success) {
             throw new Error(driveData.message || 'Gagal mengunggah ke Google Drive');
           }
 
