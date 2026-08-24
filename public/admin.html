@@ -54,6 +54,9 @@
                 <button onclick="shareRegistrationLink()" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-emerald-400 hover:bg-slate-800 rounded-xl transition">
                     <i class="fas fa-share-alt"></i> Bagikan Link Cabang
                 </button>
+                <button onclick="handleLogout()" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-rose-400 hover:bg-rose-950/50 hover:text-rose-300 rounded-xl transition border border-rose-900/40 mt-2">
+                    <i class="fas fa-sign-out-alt"></i> Keluar / Logout
+                </button>
             </div>
         </aside>
 
@@ -76,7 +79,7 @@
 
             <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
 
-                <!-- SECTION 1: BATCH UPLOAD MANAGEMENT (Pusat & Cabang) -->
+                <!-- SECTION 1: BATCH UPLOAD MANAGEMENT -->
                 <section id="sectionBatch" class="space-y-4">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
@@ -162,11 +165,13 @@
                                         <th class="p-3.5">Email</th>
                                         <th class="p-3.5">WhatsApp</th>
                                         <th class="p-3.5">Alamat</th>
+                                        <th class="p-3.5">Status</th>
+                                        <th class="p-3.5 text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tabelCabangBody" class="divide-y divide-slate-100 text-slate-700">
                                     <tr>
-                                        <td colspan="5" class="p-6 text-center text-slate-400">Memuat data cabang...</td>
+                                        <td colspan="7" class="p-6 text-center text-slate-400">Memuat data cabang...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -178,26 +183,98 @@
         </main>
     </div>
 
-    <!-- Modal Input/Edit Link Hasil Batch Pusat -->
-    <div id="modalHasilBatch" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+    <!-- Modal Edit Cabang -->
+    <div id="modalEditCabang" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
         <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="text-base font-bold text-slate-800">Unggah Link Hasil Analisa Batch</h3>
-                <button onclick="closeModalHasilBatch()" class="text-slate-400 hover:text-slate-600 font-bold p-1">✕</button>
+                <h3 class="text-base font-bold text-slate-800">Edit Data Cabang</h3>
+                <button onclick="closeModalEditCabang()" class="text-slate-400 hover:text-slate-600 font-bold p-1">✕</button>
             </div>
-            <p class="text-xs text-slate-500">Masukkan link Google Drive / folder PDF hasil analisa yang sudah diselesaikan oleh Tim Pusat untuk batch ini.</p>
-            <form onsubmit="simpanHasilBatch(event)" class="space-y-4">
-                <input type="hidden" id="batchIdTarget">
+            <form onsubmit="simpanEditCabang(event)" class="space-y-3 text-xs">
+                <input type="hidden" id="editCabangId">
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">URL Google Drive Hasil Analisa</label>
-                    <input type="url" id="urlHasilPusat" required placeholder="https://drive.google.com/..." class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                    <label class="block font-medium text-slate-600 mb-1">Nama Cabang</label>
+                    <input type="text" id="editNamaCabang" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
                 </div>
-                <button type="submit" id="btnSimpanHasilBatch" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
-                    Simpan Link Hasil Analisa
+                <div>
+                    <label class="block font-medium text-slate-600 mb-1">Penanggung Jawab</label>
+                    <input type="text" id="editPjCabang" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block font-medium text-slate-600 mb-1">No. WhatsApp</label>
+                    <input type="tel" id="editWaCabang" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block font-medium text-slate-600 mb-1">Alamat Cabang</label>
+                    <textarea id="editAlamatCabang" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500"></textarea>
+                </div>
+                <button type="submit" id="btnSimpanCabang" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-sm transition">
+                    Simpan Perubahan
                 </button>
             </form>
         </div>
     </div>
+
+    <!-- Modal Set Link Hasil Batch -->
+<div id="modalHasilBatch" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900 bg-opacity-50 transition-opacity">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+        
+        <!-- Header Modal -->
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <i class="fas fa-link text-indigo-600"></i> Set Link Hasil Pusat
+            </h3>
+            <button onclick="closeModalHasilBatch()" class="text-slate-400 hover:text-rose-500 transition">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Body Modal (Form) -->
+        <form onsubmit="simpanHasilBatch(event)" class="p-6">
+            <!-- Input tersembunyi untuk menyimpan ID Batch -->
+            <input type="hidden" id="batchIdTarget">
+
+            <div class="mb-5">
+                <label for="urlHasilPusat" class="block text-sm font-semibold text-slate-700 mb-2">
+                    URL Google Drive Hasil Analisa
+                </label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-cloud-upload-alt text-slate-400"></i>
+                    </div>
+                    <input 
+                        type="url" 
+                        id="urlHasilPusat" 
+                        placeholder="https://drive.google.com/..." 
+                        class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition outline-none shadow-sm"
+                        required
+                    >
+                </div>
+                <p class="mt-2 text-[11px] text-slate-500">
+                    Masukkan link folder/file dari Google Drive Pusat yang berisi hasil skoring. Pastikan akses sharing link diset ke "Anyone with the link".
+                </p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-end gap-3 mt-6">
+                <button 
+                    type="button" 
+                    onclick="closeModalHasilBatch()" 
+                    class="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition"
+                >
+                    Batal
+                </button>
+                <button 
+                    type="submit" 
+                    id="btnSimpanHasilBatch" 
+                    class="px-4 py-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-md transition flex items-center gap-2"
+                >
+                    <i class="fas fa-save"></i> Simpan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
     <!-- Modal Bagikan Link Registrasi Cabang -->
     <div id="shareLinkModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
@@ -275,6 +352,7 @@
 
         let rawData = [];
         let rawBatch = [];
+        let rawCabang = [];
 
         window.addEventListener('DOMContentLoaded', () => {
             loadAllData();
@@ -286,6 +364,18 @@
                 loadDataPeserta(),
                 loadDataCabang()
             ]);
+        }
+
+        // FUNGSI LOGOUT (KE HALAMAN LOGIN)
+        async function handleLogout() {
+            if (confirm("Apakah Anda yakin ingin keluar dari sistem?")) {
+                try {
+                    await _supabase.auth.signOut();
+                } catch (e) {}
+                sessionStorage.clear();
+                localStorage.removeItem('user_terabaca');
+                window.location.href = 'index.html';
+            }
         }
 
         // Tab Navigation
@@ -322,131 +412,100 @@
             }
         }
 
-        // 1. DATA BATCH MANAGEMENT
-        async function loadDataBatch() {
-            const tbody = document.getElementById('tabelBatchBody');
-            try {
-                const { data, error } = await _supabase
-                    .from('data_batch')
-                    .select('*')
-                    .order('created_at', { ascending: false });
+        // 1. MEMBACA DATA DARI TABEL batch_upload
+async function loadDataBatch() {
+    const tbody = document.getElementById('tabelBatchBody');
+    try {
+        const { data, error } = await _supabase
+            .from('batch_upload')
+            .select('*')
+            .order('created_at', { ascending: false });
 
-                if (error) throw error;
-                rawBatch = data || [];
+        if (error) throw error;
+        rawBatch = data || [];
 
-                if (rawBatch.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400">Belum ada data pengiriman batch dari cabang.</td></tr>`;
-                    return;
-                }
-
-                tbody.innerHTML = rawBatch.map(b => {
-                    const tgl = b.created_at ? new Date(b.created_at).toLocaleDateString('id-ID') : '-';
-                    const linkCabang = b.drive_url ? `<a href="${b.drive_url}" target="_blank" class="text-indigo-600 hover:underline font-medium"><i class="fas fa-external-link-alt"></i> Open Drive</a>` : '-';
-                    const linkPusat = b.hasil_pusat_url ? `<a href="${b.hasil_pusat_url}" target="_blank" class="text-emerald-600 hover:underline font-medium"><i class="fas fa-folder font-bold"></i> Hasil Pusat</a>` : '<span class="text-slate-400 italic">Belum diunggah</span>';
-
-                    return `
-                        <tr class="hover:bg-slate-50 transition">
-                            <td class="p-3.5">${tgl}</td>
-                            <td class="p-3.5 font-semibold text-slate-800">${b.cabang || 'Pusat'}</td>
-                            <td class="p-3.5">${b.nama_batch || b.catatan || '-'}</td>
-                            <td class="p-3.5 font-bold">${b.jumlah_peserta || 0}</td>
-                            <td class="p-3.5">${linkCabang}</td>
-                            <td class="p-3.5">${linkPusat}</td>
-                            <td class="p-3.5 text-center">
-                                <button onclick="openModalHasilBatch('${b.id}', '${b.hasil_pusat_url || ''}')" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-semibold text-[11px] rounded-lg transition">
-                                    <i class="fas fa-upload"></i> Set Link Hasil
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-            } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-rose-500">Gagal memuat batch: ${err.message}</td></tr>`;
-            }
+        if (rawBatch.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400">Belum ada data pengiriman batch dari cabang.</td></tr>`;
+            return;
         }
 
-        function openModalHasilBatch(idBatch, currentUrl) {
-            document.getElementById('batchIdTarget').value = idBatch;
-            document.getElementById('urlHasilPusat').value = currentUrl;
-            document.getElementById('modalHasilBatch').classList.remove('hidden');
-        }
+        tbody.innerHTML = rawBatch.map(b => {
+            const tgl = b.created_at ? new Date(b.created_at).toLocaleDateString('id-ID') : '-';
+            
+            const namaCabang = b.cabang || b.kode_cabang || 'Pusat';
+            const namaFileBatch = b.nama_file_asli || '-';
+            const totalPeserta = b.jumlah_data || 0;
+            const driveCabangUrl = b.file_url || '';
+            const hasilPusatUrl = b.hasil_pusat_url || '';
 
-        function closeModalHasilBatch() {
-            document.getElementById('modalHasilBatch').classList.add('hidden');
-        }
+            const linkCabang = driveCabangUrl 
+                ? `<a href="${driveCabangUrl}" target="_blank" class="text-indigo-600 hover:underline font-medium"><i class="fas fa-external-link-alt"></i> Open Drive</a>` 
+                : '-';
+            
+            const linkPusat = hasilPusatUrl 
+                ? `<a href="${hasilPusatUrl}" target="_blank" class="text-emerald-600 hover:underline font-medium"><i class="fas fa-folder font-bold"></i> Hasil Pusat</a>` 
+                : '<span class="text-slate-400 italic">Belum diunggah</span>';
 
-        async function simpanHasilBatch(e) {
-            e.preventDefault();
-            const idBatch = document.getElementById('batchIdTarget').value;
-            const urlHasil = document.getElementById('urlHasilPusat').value.trim();
-            const btn = document.getElementById('btnSimpanHasilBatch');
+            return `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-3.5">${tgl}</td>
+                    <td class="p-3.5 font-semibold text-slate-800">${namaCabang}</td>
+                    <td class="p-3.5 font-medium">${namaFileBatch}</td>
+                    <td class="p-3.5 font-bold text-center">${totalPeserta}</td>
+                    <td class="p-3.5">${linkCabang}</td>
+                    <td class="p-3.5">${linkPusat}</td>
+                    <td class="p-3.5 text-center">
+                        <button onclick="openModalHasilBatch('${b.id}', '${hasilPusatUrl}')" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-semibold text-[11px] rounded-lg transition">
+                            <i class="fas fa-upload"></i> Set Link Hasil
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-rose-500">Gagal memuat batch: ${err.message}</td></tr>`;
+    }
+}
 
-            btn.disabled = true;
-            btn.textContent = "Menyimpan...";
+// 2. FUNGSI POPUP MODAL (BUKA & TUTUP)
+function openModalHasilBatch(idBatch, currentUrl) {
+    document.getElementById('batchIdTarget').value = idBatch;
+    document.getElementById('urlHasilPusat').value = currentUrl;
+    document.getElementById('modalHasilBatch').classList.remove('hidden');
+}
 
-            try {
-                const { error } = await _supabase
-                    .from('data_batch')
-                    .update({ hasil_pusat_url: urlHasil })
-                    .eq('id', idBatch);
+function closeModalHasilBatch() {
+    document.getElementById('modalHasilBatch').classList.add('hidden');
+}
 
-                if (error) throw error;
+// 3. MENYIMPAN LINK HASIL PUSAT KE TABEL batch_upload
+async function simpanHasilBatch(e) {
+    e.preventDefault();
+    const idBatch = document.getElementById('batchIdTarget').value;
+    const urlHasil = document.getElementById('urlHasilPusat').value.trim();
+    const btn = document.getElementById('btnSimpanHasilBatch');
 
-                alert("Alhamdulillah! Link hasil analisa batch berhasil disimpan.");
-                closeModalHasilBatch();
-                loadDataBatch();
-            } catch (err) {
-                alert("Gagal menyimpan link hasil: " + err.message);
-            } finally {
-                btn.disabled = false;
-                btn.textContent = "Simpan Link Hasil Analisa";
-            }
-        }
+    btn.disabled = true;
+    btn.textContent = "Menyimpan...";
 
-        // 2. DATA PESERTA MASTER
-        async function loadDataPeserta() {
-            const tbody = document.getElementById('tabelPesertaBody');
-            try {
-                const { data, error } = await _supabase
-                    .from('data_peserta')
-                    .select('*')
-                    .order('created_at', { ascending: false });
+    try {
+        const { error } = await _supabase
+            .from('batch_upload')
+            .update({ hasil_pusat_url: urlHasil })
+            .eq('id', idBatch);
 
-                if (error) throw error;
-                rawData = data || [];
-                renderPeserta(rawData);
-            } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-rose-500">Gagal memuat peserta: ${err.message}</td></tr>`;
-            }
-        }
+        if (error) throw error;
 
-        function renderPeserta(list) {
-            const tbody = document.getElementById('tabelPesertaBody');
-            if (list.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400">Tidak ada data peserta.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = list.map(p => {
-                let statusBadge = p.is_valid_pembayaran 
-                    ? `<span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 font-bold rounded-full text-[10px]">Lunas / Valid</span>`
-                    : `<span class="px-2 py-0.5 bg-amber-100 text-amber-700 font-bold rounded-full text-[10px]">Pending</span>`;
-
-                return `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-3.5 font-medium text-slate-800">${p.nama_testee || p.nama || '-'}</td>
-                        <td class="p-3.5">${p.cabang || 'Pusat'}</td>
-                        <td class="p-3.5">${p.lembaga || '-'}</td>
-                        <td class="p-3.5">${p.paket_tes || '-'}</td>
-                        <td class="p-3.5">${p.usia || '-'} TH / ${p.tgl_lahir || '-'}</td>
-                        <td class="p-3.5">${statusBadge}</td>
-                        <td class="p-3.5 text-center">
-                            ${!p.is_valid_pembayaran ? `<button onclick="setValidManual('${p.id}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-semibold transition">Set Valid</button>` : '<span class="text-slate-400 text-[10px]">Terverifikasi</span>'}
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
+        alert("Alhamdulillah! Link hasil analisa batch berhasil disimpan.");
+        closeModalHasilBatch();
+        loadDataBatch();
+    } catch (err) {
+        alert("Gagal menyimpan link hasil: " + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "Simpan Link Hasil Analisa";
+    }
+}
 
         function filterPeserta() {
             const query = document.getElementById('searchPeserta').value.toLowerCase();
@@ -465,7 +524,7 @@
             if (!error) { alert("Status berhasil diubah!"); loadDataPeserta(); } else { alert("Gagal: " + error.message); }
         }
 
-        // 3. DATA CABANG
+        // 3. DATA CABANG & AKSI EDIT / NONAKTIFKAN
         async function loadDataCabang() {
             const tbody = document.getElementById('tabelCabangBody');
             try {
@@ -475,22 +534,106 @@
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
-                if (!data || data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400">Belum ada mitra cabang terdaftar.</td></tr>`;
+                rawCabang = data || [];
+
+                if (rawCabang.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400">Belum ada mitra cabang terdaftar.</td></tr>`;
                     return;
                 }
 
-                tbody.innerHTML = data.map(c => `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-3.5 font-bold text-slate-800">${c.nama_cabang || '-'}</td>
-                        <td class="p-3.5">${c.penanggung_jawab || '-'}</td>
-                        <td class="p-3.5">${c.email || '-'}</td>
-                        <td class="p-3.5">${c.whatsapp || '-'}</td>
-                        <td class="p-3.5">${c.alamat || '-'}</td>
-                    </tr>
-                `).join('');
+                tbody.innerHTML = rawCabang.map(c => {
+                    const isNonAktif = c.is_active === false;
+                    const statusBadge = isNonAktif 
+                        ? `<span class="px-2 py-0.5 bg-rose-100 text-rose-700 font-bold rounded-full text-[10px]">Non-Aktif</span>`
+                        : `<span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 font-bold rounded-full text-[10px]">Aktif</span>`;
+
+                    const btnToggle = isNonAktif
+                        ? `<button onclick="toggleStatusCabang('${c.id}', true)" class="px-2 py-1 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-lg text-[11px] font-semibold transition" title="Aktifkan"><i class="fas fa-check-circle"></i></button>`
+                        : `<button onclick="toggleStatusCabang('${c.id}', false)" class="px-2 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg text-[11px] font-semibold transition" title="Non-aktifkan"><i class="fas fa-ban"></i></button>`;
+
+                    return `
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="p-3.5 font-bold text-slate-800">${c.nama_cabang || '-'}</td>
+                            <td class="p-3.5">${c.penanggung_jawab || '-'}</td>
+                            <td class="p-3.5">${c.email || '-'}</td>
+                            <td class="p-3.5">${c.whatsapp || '-'}</td>
+                            <td class="p-3.5">${c.alamat || '-'}</td>
+                            <td class="p-3.5">${statusBadge}</td>
+                            <td class="p-3.5 text-center space-x-1">
+                                <button onclick="openModalEditCabang('${c.id}')" class="px-2 py-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg text-[11px] font-semibold transition" title="Edit Data"><i class="fas fa-edit"></i></button>
+                                ${btnToggle}
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
             } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-rose-500">Gagal memuat cabang: ${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-rose-500">Gagal memuat cabang: ${err.message}</td></tr>`;
+            }
+        }
+
+        function openModalEditCabang(id) {
+            const cabang = rawCabang.find(item => item.id === id);
+            if (!cabang) return;
+
+            document.getElementById('editCabangId').value = cabang.id;
+            document.getElementById('editNamaCabang').value = cabang.nama_cabang || '';
+            document.getElementById('editPjCabang').value = cabang.penanggung_jawab || '';
+            document.getElementById('editWaCabang').value = cabang.whatsapp || '';
+            document.getElementById('editAlamatCabang').value = cabang.alamat || '';
+            
+            document.getElementById('modalEditCabang').classList.remove('hidden');
+        }
+
+        function closeModalEditCabang() {
+            document.getElementById('modalEditCabang').classList.add('hidden');
+        }
+
+        async function simpanEditCabang(e) {
+            e.preventDefault();
+            const id = document.getElementById('editCabangId').value;
+            const nama = document.getElementById('editNamaCabang').value.trim();
+            const pj = document.getElementById('editPjCabang').value.trim();
+            const wa = document.getElementById('editWaCabang').value.trim();
+            const alamat = document.getElementById('editAlamatCabang').value.trim();
+
+            const btn = document.getElementById('btnSimpanCabang');
+            btn.disabled = true;
+            btn.textContent = "Menyimpan...";
+
+            try {
+                const { error } = await _supabase
+                    .from('data_cabang')
+                    .update({ nama_cabang: nama, penanggung_jawab: pj, whatsapp: wa, alamat: alamat })
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                alert("Alhamdulillah! Data cabang berhasil diperbarui.");
+                closeModalEditCabang();
+                loadDataCabang();
+            } catch (err) {
+                alert("Gagal memperbarui cabang: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Simpan Perubahan";
+            }
+        }
+
+        async function toggleStatusCabang(id, setStatusActive) {
+            const statusStr = setStatusActive ? "mengaktifkan" : "menonaktifkan";
+            if (!confirm(`Apakah Anda yakin ingin ${statusStr} akun cabang ini?`)) return;
+
+            try {
+                const { error } = await _supabase
+                    .from('data_cabang')
+                    .update({ is_active: setStatusActive })
+                    .eq('id', id);
+
+                if (error) throw error;
+                alert(`Status cabang berhasil diubah.`);
+                loadDataCabang();
+            } catch (err) {
+                alert("Gagal mengubah status: " + err.message);
             }
         }
 
