@@ -386,59 +386,63 @@
 
     // Fungsi untuk membuat & mengunduh Template Excel otomatis
     function downloadExcelTemplate() {
-      const headers = [
-        "Jenis Paket",
-        "Nama Lengkap Testee",
-        "No Testee",
-        "Nama Lembaga",
-        "Tempat Lahir",
-        "Tanggal Lahir (YYYY-MM-DD)",
-        "Usia",
-        "Tanggal Tes (YYYY-MM-DD)",
-        "Jenis Kelamin",
-        "Level Pendidikan",
-        "Jurusan SMA",
-        "Proses Gambar",
-        "Kondisi Kertas",
-        "Posisi Kertas",
-        "Alat Gambar",
-        "Dominasi Warna",
-        "Catatan Gambar",
-        "Email Pengupload",
-        "Paket Berbayar",
-        "Bentuk Kerjasama",
-        "Nama Penginput",
-        "WA Penginput",
-        "Catatan Khusus",
-        "Pilihan Jurusan"
-      ];
+  const headers = [
+    "Link Bukti Transfer",
+    "Link File Coretan/Gambar",
+    "Jenis Paket",
+    "Nama Lengkap Testee",
+    "No Testee",
+    "Nama Lembaga",
+    "Tempat Lahir",
+    "Tanggal Lahir (YYYY-MM-DD)",
+    "Usia",
+    "Tanggal Tes (YYYY-MM-DD)",
+    "Jenis Kelamin",
+    "Level Pendidikan",
+    "Jurusan SMA",
+    "Proses Gambar",
+    "Kondisi Kertas",
+    "Posisi Kertas",
+    "Alat Gambar",
+    "Dominasi Warna",
+    "Catatan Gambar",
+    "Email Pengupload",
+    "Paket Berbayar",
+    "Bentuk Kerjasama",
+    "Nama Penginput",
+    "WA Penginput",
+    "Catatan Khusus",
+    "Pilihan Jurusan"
+  ];
 
-      const sampleRow = [
-        "Basic",
-        "Budi Santoso",
-        "TST-001",
-        "SDN 01 Bandung",
-        "Bandung",
-        "2012-05-14",
-        "12 Tahun",
-        "2026-08-24",
-        "Laki-Laki",
-        "SD Kelas 5-6 dan SMP",
-        "-",
-        "Mandiri",
-        "Tidak Sobek",
-        "Vertical",
-        "Pensil Warna",
-        "Biru (Semua warna terang)",
-        "Gambar cukup rapi",
-        "admin.bandung@terabaca.com",
-        "Berbayar Utama",
-        "Umum",
-        "Siti Admin",
-        "081234567890",
-        "-",
-        "-"
-      ];
+  const sampleRow = [
+    "-",
+    "-",
+    "Basic",
+    "Budi Santoso",
+    "TST-001",
+    "SDN 01 Bandung",
+    "Bandung",
+    "2012-05-14",
+    "12 Tahun",
+    "2026-08-24",
+    "Laki-Laki",
+    "SD Kelas 5-6 dan SMP",
+    "-",
+    "Mandiri",
+    "Tidak Sobek",
+    "Vertical",
+    "Pensil Warna",
+    "Biru (Semua warna terang)",
+    "Gambar cukup rapi",
+    "admin.bandung@terabaca.com",
+    "Berbayar Utama",
+    "Umum",
+    "Siti Admin",
+    "081234567890",
+    "-",
+    "-"
+  ];
 
       const worksheetData = [headers, sampleRow];
       const ws = XLSX.utils.aoa_to_sheet(worksheetData);
@@ -451,58 +455,65 @@
     }
 
     // 3. Submit Form Satuan
-    async function handleSingleSubmit(e) {
-      e.preventDefault();
-      const btn = document.getElementById('btn-submit-satuan');
-      btn.disabled = true;
-      btn.innerText = "Menyimpan Data...";
+async function handleSingleSubmit(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btn-submit-satuan');
+  btn.disabled = true;
+  btn.innerText = "Menyimpan Data...";
 
-      try {
-        const payload = {
-          jenis_paket: document.getElementById('f_jenis_paket').value,
-          nama_testee: document.getElementById('f_nama_testee').value,
-          no_testee: document.getElementById('f_no_testee').value || null,
-          lembaga: document.getElementById('f_lembaga').value,
-          tempat_lahir: document.getElementById('f_tempat_lahir').value,
-          tgl_lahir: document.getElementById('f_tgl_lahir').value,
-          usia: document.getElementById('f_usia').value,
-          tgl_tes: document.getElementById('f_tgl_tes').value,
-          jenis_kelamin: document.getElementById('f_jk').value,
-          level_pendidikan: document.getElementById('f_level_pendidikan').value,
-          jurusan_sma: document.getElementById('f_jurusan_sma').value,
-          proses_gambar: document.getElementById('f_proses_gambar').value,
-          kondisi_kertas: document.getElementById('f_kondisi_kertas').value,
-          posisi_kertas: document.getElementById('f_posisi_kertas').value,
-          alat_gambar: document.getElementById('f_alat_gambar').value,
-          dominasi_warna: document.getElementById('f_dominasi_warna').value,
-          catatan_gambar: document.getElementById('f_catatan_gambar').value,
-          email_pengupload: document.getElementById('f_email_pengupload').value,
-          paket_bayar: document.getElementById('f_paket_bayar').value,
-          kerjasama: document.getElementById('f_kerjasama').value,
-          nama_penginput: document.getElementById('f_nama_penginput').value,
-          wa_penginput: document.getElementById('f_wa_penginput').value,
-          cabang: currentCabang,
-          catatan_khusus: document.getElementById('f_catatan_khusus').value,
-          pilihan_jurusan: document.getElementById('f_pilihan_jurusan').value
-        };
+  try {
+    const payload = {
+      // Nama Key Disesuaikan dengan Kolom Supabase Terbaru:
+      paket_tes:          document.getElementById('f_jenis_paket').value,
+      nama_testee:        document.getElementById('f_nama_testee').value,
+      no_testee:          document.getElementById('f_no_testee').value || null,
+      lembaga_institusi:  document.getElementById('f_lembaga').value,
+      tempat_lahir:       document.getElementById('f_tempat_lahir').value,
+      tanggal_lahir:      document.getElementById('f_tgl_lahir').value || null,
+      usia:               document.getElementById('f_usia').value,
+      tanggal_tes:        document.getElementById('f_tgl_tes').value || null,
+      jenis_kelamin:      document.getElementById('f_jk').value,
+      level_pendidikan:   document.getElementById('f_level_pendidikan').value,
+      jurusan_sma:        document.getElementById('f_jurusan_sma').value,
+      bantuan_menggambar: document.getElementById('f_proses_gambar').value,
+      kondisi_kertas:     document.getElementById('f_kondisi_kertas').value,
+      posisi_kertas:      document.getElementById('f_posisi_kertas').value,
+      alat_gambar:        document.getElementById('f_alat_gambar').value,
+      dominasi_warna:     document.getElementById('f_dominasi_warna').value,
+      catatan_gambar:     document.getElementById('f_catatan_gambar').value,
+      email_cabang:       document.getElementById('f_email_pengupload').value,
+      jenis_paket_bayar:  document.getElementById('f_paket_bayar').value,
+      bentuk_kerjasama:   document.getElementById('f_kerjasama').value,
+      nama_penginput:     document.getElementById('f_nama_penginput').value,
+      whatsapp_penginput: document.getElementById('f_wa_penginput').value,
+      cabang:             currentCabang,
+      catatan_khusus:     document.getElementById('f_catatan_khusus').value,
+      jurusan_terlintas:  document.getElementById('f_pilihan_jurusan').value,
+      
+      // Default untuk upload satuan (diisi '-' jika belum ada file)
+      bukti_transfer_url: '-',
+      file_coretan_url:   '-'
+    };
 
-        const { data, error } = await supabaseClient
-          .from('data_peserta')
-          .insert([payload]);
+    const { data, error } = await supabaseClient
+      .from('data_peserta')
+      .insert([payload]);
 
-        if (error) throw error;
+    if (error) throw error;
 
-        alert('Data peserta berhasil disimpan!');
-        document.getElementById('form-satuan').reset();
-        document.getElementById('f_cabang').value = currentCabang;
-
-      } catch (err) {
-        alert('Gagal menyimpan data: ' + err.message);
-      } finally {
-        btn.disabled = false;
-        btn.innerText = "Simpan Data Satuan";
-      }
+    alert('Data peserta berhasil disimpan!');
+    document.getElementById('form-satuan').reset();
+    if(document.getElementById('f_cabang')) {
+      document.getElementById('f_cabang').value = currentCabang;
     }
+
+  } catch (err) {
+    alert('Gagal menyimpan data: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerText = "Simpan Data Satuan";
+  }
+}
 
     // 4. Submit Form Upload Massal (Excel -> Drive + Supabase)
     async function handleExcelUpload() {
