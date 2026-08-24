@@ -4,763 +4,470 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Kendali Pusat - TERABACA</title>
+    <title>Dashboard Admin Pusat - TERABACA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
-    <!-- Link Manifest PWA -->
-    <link rel="manifest" href="/manifest.json">
-
-    <!-- Link Icon Browser & PWA -->
-    <link rel="icon" type="image/png" href="/logo-terabaca.png">
-    <link rel="apple-touch-icon" href="/logo-terabaca.png">
 </head>
 
-<body class="bg-slate-100 min-h-screen flex text-slate-800">
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="sidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 z-40 hidden md:hidden"></div>
 
-    <!-- SIDEBAR UTAMA PUSAT -->
-    <aside id="sidebar"
-        class="w-64 bg-slate-900 text-white flex flex-col justify-between p-4 h-screen fixed left-0 top-0 z-50 border-r border-slate-800 shrink-0 transform -translate-x-full md:translate-x-0 transition-transform duration-300">
-        <div>
-            <!-- Header Brand -->
-            <div class="flex items-center justify-between px-2 py-3 border-b border-slate-800 mb-6">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-50 w-64 bg-slate-900 text-slate-300 flex flex-col transition-transform duration-300 transform -translate-x-full md:translate-x-0">
+            <div class="p-5 border-b border-slate-800 flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <span class="font-bold text-xl tracking-wide text-emerald-400">TERABACA</span>
-                    <span
-                        class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/30">Pusat</span>
+                    <div class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center font-bold text-white shadow-md">TB</div>
+                    <div>
+                        <h1 class="font-bold text-white text-sm tracking-wide">TERABACA</h1>
+                        <p class="text-[10px] text-slate-400">Admin Pusat Dashboard</p>
+                    </div>
                 </div>
-                <!-- Tombol Tutup X khusus di HP -->
-                <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white p-1">
-                    <i class="fas fa-times text-lg"></i>
+                <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
 
-            <!-- Menu Navigasi Sidebar -->
-            <nav class="space-y-1">
-                <button onclick="switchTab('approval')" id="btn-tab-approval"
-                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold bg-emerald-600 text-white shadow-sm transition">
-                    <i class="fas fa-check-circle w-4 text-center"></i> Ruang Approval & Berkas
-                </button>
-                <button onclick="switchTab('database')" id="btn-tab-database"
-                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">
-                    <i class="fas fa-database w-4 text-center"></i> Database Testee (Master)
-                </button>
-                <button onclick="switchTab('cabang')" id="btn-tab-cabang"
-                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">
-                    <i class="fas fa-network-wired w-4 text-center"></i> Ruang Kontrol Cabang
-                </button>
+            <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto text-xs">
+                <a href="#section-batch" onclick="switchMainTab('batch')" id="nav-batch" class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-indigo-600 text-white font-medium transition">
+                    <i class="fas fa-folder-open w-4"></i> Data Batch Cabang
+                </a>
+                <a href="#section-peserta" onclick="switchMainTab('peserta')" id="nav-peserta" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-slate-200 font-medium transition">
+                    <i class="fas fa-users w-4"></i> Master Data Peserta
+                </a>
+                <a href="#section-cabang" onclick="switchMainTab('cabang')" id="nav-cabang" class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-slate-200 font-medium transition">
+                    <i class="fas fa-building w-4"></i> Kelola Cabang
+                </a>
             </nav>
-        </div>
 
-        <!-- Tombol Logout & Landing Page -->
-        <div class="border-t border-slate-800 pt-4 space-y-2">
-            <button onclick="openProfileModal()"
-                class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">
-                <i class="fas fa-user-cog w-4 text-center text-indigo-400"></i> Pengaturan Profil
-            </button>
-            </button>
-            <a href="index.html"
-                class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">
-                <i class="fas fa-globe w-4 text-center"></i> Landing Page
-            </a>
-            <button onclick="logoutAdmin()"
-                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold bg-rose-900/30 hover:bg-rose-800/50 text-rose-300 border border-rose-800/50 transition">
-                <i class="fas fa-sign-out-alt w-4 text-center"></i> Keluar Portal
-            </button>
-        </div>
-    </aside>
-
-    <!-- Backdrop Gelap (Tempel tepat di bawah </aside>) -->
-    <div id="sidebarBackdrop" onclick="toggleSidebar()"
-        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden md:hidden"></div>
-
-    <!-- AREA KONTEN UTAMA -->
-    <div class="flex-1 flex flex-col min-h-screen overflow-y-auto">
-
-        <!-- Header Top Bar -->
-        <header
-            class="bg-white border-b border-slate-200 py-4 px-8 flex justify-between items-center sticky top-0 z-10">
-            <div>
-                <h1 id="page-title" class="text-lg font-bold text-slate-800">Ruang Approval & Control Berkas</h1>
-                <p id="page-subtitle" class="text-xs text-slate-500">Verifikasi keuangan, download lembar kerja, dan
-                    unggah hasil analisa.</p>
-            </div>
-            <div class="flex items-center gap-3">
-                <button onclick="downloadRekapExcel()"
-                    class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3.5 py-2 rounded-xl transition font-semibold shadow-sm flex items-center gap-1.5">
-                    <i class="fas fa-file-excel"></i> Unduh Excel (.xlsx)
+            <div class="p-4 border-t border-slate-800 space-y-2">
+                <button onclick="openProfileModal()" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800 rounded-xl transition">
+                    <i class="fas fa-user-cog"></i> Pengaturan Akun
                 </button>
-                <button onclick="refreshData()"
-                    class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs px-3 py-2 rounded-xl border border-slate-200 transition">
-                    <i class="fas fa-sync-alt"></i> Refresh
+                <button onclick="shareRegistrationLink()" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-emerald-400 hover:bg-slate-800 rounded-xl transition">
+                    <i class="fas fa-share-alt"></i> Bagikan Link Cabang
                 </button>
             </div>
-        </header>
+        </aside>
 
         <!-- Main Content -->
-        <main class="md:ml-64 flex-1 p-4 md:p-6 bg-slate-100 min-h-screen">
-            <!-- Header Admin Pusat -->
-            <header
-                class="bg-white border border-slate-200 p-3.5 rounded-xl flex items-center justify-between mb-6 shadow-sm">
-                <button onclick="toggleSidebar()"
-                    class="md:hidden text-slate-600 hover:text-slate-900 p-2 rounded-lg bg-slate-100">
-                    <i class="fas fa-bars text-xl"></i>
-                </button>
-                <div class="text-sm font-semibold text-slate-700">
-                    Dashboard Pusat
+        <main class="flex-1 flex flex-col h-screen overflow-y-auto bg-slate-50">
+            <!-- Header Bar -->
+            <header class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-30 shadow-sm">
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleSidebar()" class="md:hidden text-slate-600 text-lg">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2 id="headerTitle" class="text-base font-bold text-slate-800">Manajemen Batch & Unggah Hasil Pusat</h2>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="downloadRekapExcel()" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3.5 py-2 rounded-xl font-medium shadow-sm transition">
+                        <i class="fas fa-file-excel"></i> Export All Excel
+                    </button>
                 </div>
             </header>
 
-            <!-- TAB 1: RUANG APPROVAL & CONTROL BERKAS -->
-            <section id="tab-approval" class="space-y-6">
-                <div
-                    class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                    <span class="text-xs font-semibold text-slate-600">Filter Sesi Tanggal Input:</span>
-                    <div class="flex items-center gap-2">
-                        <input type="date" id="filterTanggal" onchange="loadDataPeserta()"
-                            class="px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-slate-50 outline-none">
-                        <button onclick="document.getElementById('filterTanggal').value=''; loadDataPeserta();"
-                            class="text-xs text-indigo-600 hover:underline">Reset</button>
-                    </div>
-                </div>
+            <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
 
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="w-full overflow-x-auto">
-                        <table class="w-full text-left border-collapse min-w-[600px]">
-                            <thead class="bg-slate-50 text-slate-700 uppercase font-bold text-xs border-b border-slate-200">
-                                <tr>
-                                    <th class="py-3 px-4">Cabang & Waktu</th>
-                                    <th class="py-3 px-4">No. Testee</th>
-                                    <th class="py-3 px-4">Nama & Lembaga</th>
-                                    <th class="py-3 px-4">Paket</th>
-                                    <th class="py-3 px-4">Status & Berkas</th>
-                                    <th class="py-3 px-4 text-center">Hasil Analisa</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabelDataApproval" class="divide-y divide-slate-100 text-sm text-slate-700">
-                                <tr>
-                                    <td colspan="5" class="text-center py-8 text-slate-400">Memuat data dari database
-                                        pusat...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TAB 2: DATABASE TESTEE (REKAPITULASI MASTER) -->
-            <section id="tab-database" class="hidden space-y-6">
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase">Total Peserta</span>
-                        <div id="statTotalPeserta" class="text-2xl font-extrabold text-blue-900 mt-1">0</div>
-                    </div>
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase">Total Cabang Aktif</span>
-                        <div id="statTotalCabang" class="text-2xl font-extrabold text-indigo-900 mt-1">0</div>
-                    </div>
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase">Paket Basic / Parent</span>
-                        <div id="statBasicParent" class="text-2xl font-extrabold text-emerald-600 mt-1">0</div>
-                    </div>
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase">Paket Talent / Brainwave</span>
-                        <div id="statTalentBrainwave" class="text-2xl font-extrabold text-amber-600 mt-1">0</div>
-                    </div>
-                </div>
-
-                <div
-                    class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
-                    <div class="w-full md:w-1/3">
-                        <input type="text" id="searchInput" onkeyup="applyMasterFilter()"
-                            placeholder="Cari nama murid atau lembaga..."
-                            class="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-900">
-                    </div>
-                    <div class="flex items-center gap-2 w-full md:w-auto justify-end">
-                        <select id="filterCabang" onchange="applyMasterFilter()"
-                            class="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-medium">
-                            <option value="">Semua Cabang</option>
-                        </select>
-                        <select id="filterPaket" onchange="applyMasterFilter()"
-                            class="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-medium">
-                            <option value="">Semua Paket</option>
-                            <option value="Basic">Basic</option>
-                            <option value="Parent">Parent</option>
-                            <option value="Talent">Talent</option>
-                            <option value="Brainwave">Brainwave</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div class="p-4 border-b border-slate-100 flex items-center justify-between">
-                        <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Data Peserta Terdaftar
-                            (<span id="countTable">0</span>)</h2>
-                        <span id="loadingStatusMaster" class="text-xs text-amber-600 font-bold hidden">⏳ Memuat
-                            data...</span>
-                    </div>
-
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-[11px] text-slate-600 whitespace-nowrap min-w-[1800px]">
-                            <thead class="bg-slate-50 text-slate-700 uppercase font-bold border-b border-slate-200">
-                              <tr>
-                                <th class="p-3 text-center">#</th>
-                                <th class="p-3">Bukti Transfer</th>
-                                <th class="p-3">Upload Gambar</th>
-                                <th class="p-3">Jenis Paket</th>
-                                <th class="p-3">Nama Lengkap Testee</th>
-                                <th class="p-3">No Testee</th>
-                                <th class="p-3">Lembaga / Institusi</th>
-                                <th class="p-3">Tempat Lahir</th>
-                                <th class="p-3">Tanggal Lahir</th>
-                                <th class="p-3">Usia</th>
-                                <th class="p-3">Tanggal Tes</th>
-                                <th class="p-3">Jenis Kelamin</th>
-                                <th class="p-3">Level Pendidikan</th>
-                                <th class="p-3">Jurusan SMA/SMK</th>
-                                <th class="p-3">Bantuan Menggambar</th>
-                                <th class="p-3">Kondisi Kertas</th>
-                                <th class="p-3">Posisi Kertas</th>
-                                <th class="p-3">Alat Gambar</th>
-                                <th class="p-3">Dominasi Warna</th>
-                                <th class="p-3">Catatan Gambar</th>
-                                <th class="p-3">Email Penginput</th>
-                                <th class="p-3">Paket Berbayar/Bonus</th>
-                                <th class="p-3">Bentuk Kerja Sama</th>
-                                <th class="p-3">Nama Penginput</th>
-                                <th class="p-3">No WhatsApp</th>
-                                <th class="p-3">Cabang</th>
-                                <th class="p-3">Catatan Khusus</th>
-                                <th class="p-3">Jurusan Terlintas</th>
-                            </tr>
-                        </thead>
-                            <tbody id="tableBodyMaster" class="divide-y divide-slate-100"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TAB 3: RUANG KONTROL CABANG -->
-            <section id="tab-cabang" class="hidden space-y-6">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
-                        <div
-                            class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl font-bold">
-                            <i class="fas fa-store"></i>
-                        </div>
+                <!-- SECTION 1: BATCH UPLOAD MANAGEMENT (Pusat & Cabang) -->
+                <section id="sectionBatch" class="space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
-                            <span class="text-[10px] font-bold text-slate-400 uppercase">Total Cabang Terdaftar</span>
-                            <div id="statTotalCabangKoneksi" class="text-2xl font-extrabold text-slate-800 mt-0.5">0
-                            </div>
+                            <h3 class="text-sm font-bold text-slate-800">Daftar Pengiriman Batch dari Cabang</h3>
+                            <p class="text-xs text-slate-500">Unduh data cabang via Google Drive, lalu lampirkan hasil analisa per batch di bawah ini.</p>
                         </div>
                     </div>
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
-                        <div
-                            class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl font-bold">
-                            <i class="fas fa-user-check"></i>
+
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-slate-100 text-slate-600 font-semibold border-b border-slate-200">
+                                        <th class="p-3.5">Tanggal Batch</th>
+                                        <th class="p-3.5">Cabang</th>
+                                        <th class="p-3.5">Nama Batch / Catatan</th>
+                                        <th class="p-3.5">Jml Peserta</th>
+                                        <th class="p-3.5">Link File Cabang (Drive)</th>
+                                        <th class="p-3.5">Link Hasil Pusat</th>
+                                        <th class="p-3.5 text-center">Aksi Pusat</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabelBatchBody" class="divide-y divide-slate-100 text-slate-700">
+                                    <tr>
+                                        <td colspan="7" class="p-6 text-center text-slate-400">Memuat data batch...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
+                    </div>
+                </section>
+
+                <!-- SECTION 2: MASTER DATA PESERTA -->
+                <section id="sectionPeserta" class="space-y-4 hidden">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
-                            <span class="text-[10px] font-bold text-slate-400 uppercase">Total Entri Data Cabang</span>
-                            <div id="statTotalEntriCabang" class="text-2xl font-extrabold text-slate-800 mt-0.5">0</div>
+                            <h3 class="text-sm font-bold text-slate-800">Master Data Seluruh Peserta</h3>
+                            <p class="text-xs text-slate-500">Database gabungan dari seluruh pendaftaran peserta cabang.</p>
+                        </div>
+                        <input type="text" id="searchPeserta" onkeyup="filterPeserta()" placeholder="Cari nama, cabang, lembaga..." class="text-xs border border-slate-300 px-3 py-2 rounded-xl w-full sm:w-64 focus:outline-none focus:border-indigo-500">
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-slate-100 text-slate-600 font-semibold border-b border-slate-200">
+                                        <th class="p-3.5">Nama Testee</th>
+                                        <th class="p-3.5">Cabang</th>
+                                        <th class="p-3.5">Lembaga</th>
+                                        <th class="p-3.5">Paket</th>
+                                        <th class="p-3.5">Usia / Tgl Lahir</th>
+                                        <th class="p-3.5">Status Bayar</th>
+                                        <th class="p-3.5 text-center">Status Pembayaran</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabelPesertaBody" class="divide-y divide-slate-100 text-slate-700">
+                                    <tr>
+                                        <td colspan="7" class="p-6 text-center text-slate-400">Memuat data peserta...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
-                        <div
-                            class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl font-bold">
-                            <i class="fas fa-signal"></i>
-                        </div>
+                </section>
+
+                <!-- SECTION 3: KELOLA CABANG -->
+                <section id="sectionCabang" class="space-y-4 hidden">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
-                            <span class="text-[10px] font-bold text-slate-400 uppercase">Status Integrasi</span>
-                            <div class="text-sm font-bold text-emerald-600 mt-1 flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Synchronized
-                            </div>
+                            <h3 class="text-sm font-bold text-slate-800">Data Terdaftar Cabang TERABACA</h3>
+                            <p class="text-xs text-slate-500">Manajemen akun mitra cabang yang aktif di sistem.</p>
                         </div>
                     </div>
-                </div>
 
-                <!-- Tabel Monitoring & Tombol Tambah Cabang -->
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div class="p-4 border-b border-slate-100 flex items-center justify-between">
-                        <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Daftar Cabang Terdaftar
-                        </h2>
-                        <div class="flex items-center gap-2">
-                            <!-- Tombol Bagikan Link Registrasi (Diperbarui) -->
-                            <button onclick="shareRegistrationLink()" type="button"
-                                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-xs font-semibold transition border border-indigo-200 shadow-sm cursor-pointer">
-                                <i class="fas fa-share-alt"></i> Bagikan Form Registrasi
-                            </button>
-
-                            <!-- Tombol Tambah Cabang Baru (Eksisting) -->
-                            <button onclick="toggleModalCabang(true)"
-                                class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-xl font-semibold transition flex items-center gap-1.5 shadow-sm">
-                                <i class="fas fa-plus-circle"></i> Tambah Cabang Baru
-                            </button>
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-slate-100 text-slate-600 font-semibold border-b border-slate-200">
+                                        <th class="p-3.5">Nama Cabang</th>
+                                        <th class="p-3.5">Penanggung Jawab</th>
+                                        <th class="p-3.5">Email</th>
+                                        <th class="p-3.5">WhatsApp</th>
+                                        <th class="p-3.5">Alamat</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabelCabangBody" class="divide-y divide-slate-100 text-slate-700">
+                                    <tr>
+                                        <td colspan="5" class="p-6 text-center text-slate-400">Memuat data cabang...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs text-slate-600 min-w-[700px] whitespace-nowrap">
-                            <thead class="bg-slate-50 text-slate-700 uppercase font-bold border-b border-slate-200">
-                                <tr>
-                                    <th class="p-3 text-center">#</th>
-                                    <th class="p-3">Kode Cabang</th>
-                                    <th class="p-3">Nama Cabang / Unit</th>
-                                    <th class="p-3">Penanggung Jawab</th>
-                                    <th class="p-3">Kontak WA</th>
-                                    <th class="p-3 text-center">Total Testee</th>
-                                    <th class="p-3 text-center">Status</th>
-                                    <th class="p-3 text-center">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tableBodyCabang" class="divide-y divide-slate-100">
-                                <tr>
-                                    <td colspan="8" class="text-center py-8 text-slate-400">Memuat data cabang...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
+                </section>
 
-        </main>
-
-        <!-- MODAL FORM TAMBAH CABANG BARU -->
-        <div id="modalCabang"
-            class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md p-6 relative">
-                <button onclick="toggleModalCabang(false)"
-                    class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
-                    <i class="fas fa-times text-base"></i>
-                </button>
-                <h3 class="text-base font-bold text-slate-800 mb-1">Tambah Cabang Baru</h3>
-                <p class="text-xs text-slate-500 mb-5">Daftarkan lokasi unit atau cabang kemitraan baru.</p>
-
-                <form id="formTambahCabang" onsubmit="simpanCabangBaru(event)" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Kode Cabang</label>
-                        <input type="text" id="inputKodeCabang" placeholder="Contoh: DPK-01" required
-                            class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:border-indigo-600">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Cabang / Unit</label>
-                        <input type="text" id="inputNamaCabang" placeholder="Contoh: Kota Depok" required
-                            class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:border-indigo-600">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Penanggung Jawab</label>
-                        <input type="text" id="inputPJ" placeholder="Contoh: Ahmad Hidayat" required
-                            class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:border-indigo-600">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Nomor WhatsApp</label>
-                        <input type="text" id="inputWA" placeholder="Contoh: 08123456789" required
-                            class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:border-indigo-600">
-                    </div>
-                    <div class="pt-2 flex justify-end gap-2">
-                        <button type="button" onclick="toggleModalCabang(false)"
-                            class="px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition">Batal</button>
-                        <button type="submit" id="btnSubmitCabang"
-                            class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-sm transition">Simpan
-                            Cabang</button>
-                    </div>
-                </form>
             </div>
-        </div>
-
-        <!-- Footer -->
-        <footer class="text-center py-4 text-xs text-slate-400 border-t border-slate-200 bg-white">
-            &copy; 2026 Program TERABACA Pusat. All rights reserved.
-        </footer>
+        </main>
     </div>
 
-    <!-- Script Supabase & Logika Utama -->
-    <script>
-        const SUPABASE_URL = 'https://zdealocdcweemecirdap.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkZWFsb2NkY3dlZW1lY2lyZGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5ODEyNTgsImV4cCI6MjA5NDU1NzI1OH0._fgstIY2k0s0zv-7_EnupEmFlExFsXRLZP7BAYHd_-c';
+    <!-- Modal Input/Edit Link Hasil Batch Pusat -->
+    <div id="modalHasilBatch" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-800">Unggah Link Hasil Analisa Batch</h3>
+                <button onclick="closeModalHasilBatch()" class="text-slate-400 hover:text-slate-600 font-bold p-1">✕</button>
+            </div>
+            <p class="text-xs text-slate-500">Masukkan link Google Drive / folder PDF hasil analisa yang sudah diselesaikan oleh Tim Pusat untuk batch ini.</p>
+            <form onsubmit="simpanHasilBatch(event)" class="space-y-4">
+                <input type="hidden" id="batchIdTarget">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">URL Google Drive Hasil Analisa</label>
+                    <input type="url" id="urlHasilPusat" required placeholder="https://drive.google.com/..." class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                </div>
+                <button type="submit" id="btnSimpanHasilBatch" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
+                    Simpan Link Hasil Analisa
+                </button>
+            </form>
+        </div>
+    </div>
 
-        const { createClient } = supabase;
-        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    <!-- Modal Bagikan Link Registrasi Cabang -->
+    <div id="shareLinkModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-800">Bagikan Form Registrasi</h3>
+                <button onclick="closeShareModal()" class="text-slate-400 hover:text-slate-600 font-bold p-1">✕</button>
+            </div>
+            <p class="text-xs text-slate-500">Pilih metode untuk membagikan tautan pendaftaran cabang baru:</p>
+            <div class="space-y-2.5">
+                <button onclick="shareToWhatsApp()" class="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
+                    <i class="fab fa-whatsapp text-base"></i> Kirim via WhatsApp
+                </button>
+                <button onclick="copyRegistrationLink()" class="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition">
+                    📋 Salin Link Pendaftaran
+                </button>
+                <a id="directRegLink" href="#" target="_blank" class="w-full flex items-center justify-center gap-2 py-2 px-4 text-slate-500 hover:text-slate-700 font-medium text-xs rounded-xl transition">
+                    ↗️ Buka Form di Tab Baru
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Profil & Ubah Password -->
+    <div id="profileModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-800">Pengaturan Akun & Profil</h3>
+                <button onclick="closeProfileModal()" class="text-slate-400 hover:text-slate-600 font-bold p-1">✕</button>
+            </div>
+            <div class="flex border-b border-slate-200 text-xs font-semibold">
+                <button id="tabBtnProfile" onclick="switchProfileTab('info')" class="py-2 px-4 border-b-2 border-indigo-600 text-indigo-600">Info Profil</button>
+                <button id="tabBtnPassword" onclick="switchProfileTab('password')" class="py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-600">Ubah Password</button>
+            </div>
+
+            <form id="formEditProfile" onsubmit="simpanProfil(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Email (Akun)</label>
+                    <input type="email" id="profileEmail" disabled class="w-full text-xs px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-500 cursor-not-allowed">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Nama Lengkap / Penanggung Jawab</label>
+                    <input type="text" id="profileNama" required class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">No. WhatsApp</label>
+                    <input type="tel" id="profileWA" required class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                </div>
+                <button type="submit" id="btnSimpanProfil" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
+                    Simpan Perubahan
+                </button>
+            </form>
+
+            <form id="formUbahPassword" onsubmit="simpanPasswordBaru(event)" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Password Baru</label>
+                    <input type="password" id="inputNewPassword" minlength="6" required placeholder="Minimal 6 karakter" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Konfirmasi Password Baru</label>
+                    <input type="password" id="inputConfirmPassword" minlength="6" required placeholder="Ulangi password baru" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                </div>
+                <button type="submit" id="btnSimpanPassword" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
+                    Update Password
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Script -->
+    <script>
+        const SUPABASE_URL = "https://zdealocdcweemecirdap.supabase.co"; // SESUAIKAN DENGAN SUPABASE ANDA
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkZWFsb2NkY3dlZW1lY2lyZGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5ODEyNTgsImV4cCI6MjA5NDU1NzI1OH0._fgstIY2k0s0zv-7_EnupEmFlExFsXRLZP7BAYHd_-c";                       // SESUAIKAN DENGAN KEY ANDA
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let rawData = [];
-        let rawCabang = [];
-        let currentTab = 'approval';
+        let rawBatch = [];
 
-        function switchTab(tabName) {
-            currentTab = tabName;
-            const btnApproval = document.getElementById('btn-tab-approval');
-            const btnDatabase = document.getElementById('btn-tab-database');
-            const btnCabang = document.getElementById('btn-tab-cabang');
+        window.addEventListener('DOMContentLoaded', () => {
+            loadAllData();
+        });
 
-            const tabApproval = document.getElementById('tab-approval');
-            const tabDatabase = document.getElementById('tab-database');
-            const tabCabang = document.getElementById('tab-cabang');
-
-            const title = document.getElementById('page-title');
-            const subtitle = document.getElementById('page-subtitle');
-
-            const activeStyle = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold bg-emerald-600 text-white shadow-sm transition";
-            const inactiveStyle = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition";
-
-            btnApproval.className = inactiveStyle;
-            btnDatabase.className = inactiveStyle;
-            btnCabang.className = inactiveStyle;
-
-            tabApproval.classList.add('hidden');
-            tabDatabase.classList.add('hidden');
-            tabCabang.classList.add('hidden');
-
-            if (tabName === 'approval') {
-                tabApproval.classList.remove('hidden');
-                btnApproval.className = activeStyle;
-                title.innerText = "Ruang Approval & Control Berkas";
-                subtitle.innerText = "Verifikasi keuangan, download lembar kerja, dan unggah hasil analisa.";
-            } else if (tabName === 'database') {
-                tabDatabase.classList.remove('hidden');
-                btnDatabase.className = activeStyle;
-                title.innerText = "Database Testee (Master Record)";
-                subtitle.innerText = "Pemantauan menyeluruh data murid, statistik cabang, dan rincian observasi.";
-            } else if (tabName === 'cabang') {
-                tabCabang.classList.remove('hidden');
-                btnCabang.className = activeStyle;
-                title.innerText = "Ruang Kontrol Cabang Terkoneksi";
-                subtitle.innerText = "Monitoring status cabang terdaftar dan rekapitulasi data per unit.";
-            }
-        }
-
-        function logoutAdmin() {
-            if (confirm("Apakah Anda yakin ingin keluar dari Dashboard Portal?")) {
-                localStorage.clear();
-                window.location.href = "/";
-            }
-        }
-
-        function refreshData() {
-            loadDataPeserta();
-        }
-
-        async function loadDataPeserta() {
-            const tbodyApproval = document.getElementById('tabelDataApproval');
-            const statusMaster = document.getElementById('loadingStatusMaster');
-
-            tbodyApproval.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400">Sedang menyinkronkan data...</td></tr>`;
-            statusMaster.classList.remove('hidden');
-
-            const [pesertaRes, cabangRes] = await Promise.all([
-                _supabase.from('data_peserta').select('*').order('created_at', { ascending: false }),
-                _supabase.from('data_cabang').select('*').order('created_at', { ascending: true })
+        async function loadAllData() {
+            await Promise.all([
+                loadDataBatch(),
+                loadDataPeserta(),
+                loadDataCabang()
             ]);
+        }
 
-            statusMaster.classList.add('hidden');
+        // Tab Navigation
+        function switchMainTab(tab) {
+            const secBatch = document.getElementById('sectionBatch');
+            const secPeserta = document.getElementById('sectionPeserta');
+            const secCabang = document.getElementById('sectionCabang');
 
-            if (pesertaRes.error) {
-                tbodyApproval.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-red-500">Gagal memuat data: ${pesertaRes.error.message}</td></tr>`;
-                return;
+            const navBatch = document.getElementById('nav-batch');
+            const navPeserta = document.getElementById('nav-peserta');
+            const navCabang = document.getElementById('nav-cabang');
+            const headerTitle = document.getElementById('headerTitle');
+
+            secBatch.classList.add('hidden');
+            secPeserta.classList.add('hidden');
+            secCabang.classList.add('hidden');
+
+            navBatch.className = "flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-slate-200 font-medium transition";
+            navPeserta.className = "flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-slate-200 font-medium transition";
+            navCabang.className = "flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-slate-200 font-medium transition";
+
+            if (tab === 'batch') {
+                secBatch.classList.remove('hidden');
+                navBatch.className = "flex items-center gap-3 px-3 py-2.5 rounded-xl bg-indigo-600 text-white font-medium transition";
+                headerTitle.textContent = "Manajemen Batch & Unggah Hasil Pusat";
+            } else if (tab === 'peserta') {
+                secPeserta.classList.remove('hidden');
+                navPeserta.className = "flex items-center gap-3 px-3 py-2.5 rounded-xl bg-indigo-600 text-white font-medium transition";
+                headerTitle.textContent = "Master Data Peserta";
+            } else if (tab === 'cabang') {
+                secCabang.classList.remove('hidden');
+                navCabang.className = "flex items-center gap-3 px-3 py-2.5 rounded-xl bg-indigo-600 text-white font-medium transition";
+                headerTitle.textContent = "Kelola Data Cabang";
             }
-
-            rawData = pesertaRes.data || [];
-            rawCabang = cabangRes.data || [];
-
-            renderApprovalTable(rawData);
-            renderMasterComponents(rawData);
-            renderCabangControl(rawCabang, rawData);
         }
 
-        function renderApprovalTable(data) {
-          const tbody = document.getElementById('tabelDataApproval');
-          const filterTgl = document.getElementById('filterTanggal').value;
-          let filtered = data;
+        // 1. DATA BATCH MANAGEMENT
+        async function loadDataBatch() {
+            const tbody = document.getElementById('tabelBatchBody');
+            try {
+                const { data, error } = await _supabase
+                    .from('data_batch')
+                    .select('*')
+                    .order('created_at', { ascending: false });
 
-          if (filterTgl) {
-            filtered = data.filter(row => row.created_at && row.created_at.startsWith(filterTgl));
-          }
+                if (error) throw error;
+                rawBatch = data || [];
 
-          if (!filtered || filtered.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400">Tidak ada data ditemukan.</td></tr>`;
-            return;
-          }
-
-          tbody.innerHTML = '';
-          filtered.forEach((row) => {
-            const tr = document.createElement('tr');
-            tr.className = "hover:bg-slate-50/60 transition border-b border-slate-100";
-
-            const tanggalInput = new Date(row.created_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
-
-            let statusTransferHTML = row.bukti_transfer_url
-              ? `<a href="${row.bukti_transfer_url}" target="_blank" class="inline-block bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-[11px] font-semibold px-2.5 py-0.5 rounded border border-emerald-200 mb-1"><i class="fas fa-receipt mr-1"></i> Valid (Bukti Transfer)</a>`
-              : row.is_valid_pembayaran
-                ? `<span class="inline-block bg-emerald-50 text-emerald-700 text-[11px] font-semibold px-2.5 py-0.5 rounded border border-emerald-200 mb-1"><i class="fas fa-check-circle mr-1"></i> Valid (Manual)</span>`
-                : `<div class="flex items-center gap-1.5 mb-1"><span class="inline-block bg-amber-50 text-amber-700 text-[11px] font-semibold px-2 py-0.5 rounded border border-amber-200">⚠️ Belum Bukti Bayar</span><button onclick="setValidManual(${row.id})" class="text-[10px] font-bold bg-blue-600 hover:bg-blue-700 text-white px-2 py-0.5 rounded shadow-sm">+ Set Valid</button></div>`;
-
-            let linkCoretanHTML = '<span class="text-xs text-slate-400 block">Tidak ada file coretan</span>';
-            if (row.file_coretan_url) {
-              linkCoretanHTML = `<a href="${row.file_coretan_url.trim()}" target="_blank" class="inline-block bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-semibold px-2.5 py-0.5 rounded border border-indigo-200"><i class="fas fa-file-download mr-1"></i> Unduh Lembar Work</a>`;
-            }
-
-            let analisaHTML = row.hasil_analisa_url ?
-              `<div class="space-y-1">
-                <a href="${row.hasil_analisa_url}" target="_blank" class="block bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-semibold px-2.5 py-1 rounded border border-blue-200 text-center"><i class="fas fa-download"></i> Hasil Analisa</a>
-                <button onclick="unggahAnalisa(${row.id}, '${row.nama_testee}')" class="text-[11px] text-slate-500 hover:text-slate-700 underline block text-center w-full">Ganti File</button>
-              </div>` :
-              `<button onclick="unggahAnalisa(${row.id}, '${row.nama_testee}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm transition w-full"><i class="fas fa-upload mr-1"></i> Upload Hasil</button>`;
-
-            tr.innerHTML = `
-              <td class="py-4 px-4 align-top">
-                <div class="font-semibold text-slate-800">${row.cabang || 'Pusat'}</div>
-                <div class="text-xs text-slate-400 mt-0.5">${tanggalInput}</div>
-                <div class="text-xs text-slate-500 mt-1">Penginput: ${row.nama_penginput || '-'}</div>
-              </td>
-              <td class="py-4 px-4 align-top">
-                <button onclick="editNoTestee('${row.id}', '${row.nama_testee || row.nama}', '${row.no_testee || ''}')" 
-                       class="text-xs font-mono font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded border border-indigo-200 transition-all flex items-center gap-1">
-                  <span>${row.no_testee || '+ Set No. Testee'}</span>
-                  <svg class="w-3 h-3 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
-                  </svg>
-                </button>
-              </td>
-              <td class="py-4 px-4 align-top">
-                <div class="font-bold text-slate-900">${row.nama_testee || row.nama || '-'}</div>
-                <div class="text-xs text-slate-600 mt-0.5">Lembaga: ${row.lembaga || row.lembaga_institusi || '-'}</div>
-              </td>
-              <td class="py-4 px-4 align-top">
-                <div class="text-xs bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded inline-block font-bold mb-1">Paket: ${row.paket_tes || row.paket || 'Basic'}</div>
-                <div class="text-xs text-slate-500">Bayar: ${row.status_paket || row.jenis_paket_bayar || '-'}</div>
-              </td>
-              <td class="py-4 px-4 align-top">
-                <div>${statusTransferHTML}</div>
-                <div class="mt-1">${linkCoretanHTML}</div>
-              </td>
-              <td class="py-4 px-4 align-top w-40">
-                ${analisaHTML}
-              </td>
-            `;
-            tbody.appendChild(tr);
-          });
-        }
-
-
-        function renderMasterComponents(data) {
-            updateStatistics(data);
-            populateCabangDropdown(data);
-            applyMasterFilter();
-        }
-
-        function updateStatistics(data) {
-            document.getElementById('statTotalPeserta').textContent = data.length;
-
-            const cabangSet = new Set(data.map(i => i.cabang).filter(Boolean));
-            document.getElementById('statTotalCabang').textContent = cabangSet.size;
-
-            const basicParent = data.filter(i => {
-                const p = i.paket_tes || i.paket;
-                return p === 'Basic' || p === 'Parent';
-            }).length;
-            document.getElementById('statBasicParent').textContent = basicParent;
-
-            const talentBrainwave = data.filter(i => {
-                const p = i.paket_tes || i.paket;
-                return p === 'Talent' || p === 'Brainwave';
-            }).length;
-            document.getElementById('statTalentBrainwave').textContent = talentBrainwave;
-        }
-
-        function populateCabangDropdown(data) {
-            const select = document.getElementById('filterCabang');
-            select.innerHTML = '<option value="">Semua Cabang</option>';
-            const cabangList = [...new Set(data.map(i => i.cabang).filter(Boolean))];
-
-            cabangList.forEach(cab => {
-                const opt = document.createElement('option');
-                opt.value = cab;
-                opt.textContent = cab;
-                select.appendChild(opt);
-            });
-        }
-
-        function applyMasterFilter() {
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            const cabang = document.getElementById('filterCabang').value;
-            const paket = document.getElementById('filterPaket').value;
-
-            const filtered = rawData.filter(item => {
-                const nama = item.nama_testee || item.nama || '';
-                const lembaga = item.lembaga_institusi || item.nama_lembaga || '';
-                const itemPaket = item.paket_tes || item.paket || '';
-
-                const matchSearch = nama.toLowerCase().includes(search) || lembaga.toLowerCase().includes(search);
-                const matchCabang = cabang === "" || item.cabang === cabang;
-                const matchPaket = paket === "" || itemPaket === paket;
-
-                return matchSearch && matchCabang && matchPaket;
-            });
-
-            renderMasterTable(filtered);
-        }
-
-        function renderMasterTable(data) {
-            const tbody = document.getElementById('tableBodyMaster');
-            const countElem = document.getElementById('countTable');
-            if (countElem) countElem.textContent = data.length;
-
-            if (!data || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="28" class="p-6 text-center text-slate-400 italic">Belum ada data pendaftar.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = data.map((item, idx) => {
-                // Validasi dan Perhitungan Usia Aman
-                let usiaText = item.usia || item.usia_testee || "-";
-                const tglLahir = item.tgl_lahir || item.tanggal_lahir;
-
-                if (tglLahir && tglLahir !== "-") {
-                    const birthDate = new Date(tglLahir);
-                    if (!isNaN(birthDate.getTime())) {
-                        const today = new Date();
-                        let age = today.getFullYear() - birthDate.getFullYear();
-                        const m = today.getMonth() - birthDate.getMonth();
-                        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-                            age--;
-                        }
-                        if (age >= 0) usiaText = `${age} Tahun`;
-                    }
+                if (rawBatch.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400">Belum ada data pengiriman batch dari cabang.</td></tr>`;
+                    return;
                 }
 
-                const linkBukti = item.bukti_transfer_url;
-                const linkGambar = item.file_coretan_url || item.link_foto;
+                tbody.innerHTML = rawBatch.map(b => {
+                    const tgl = b.created_at ? new Date(b.created_at).toLocaleDateString('id-ID') : '-';
+                    const linkCabang = b.drive_url ? `<a href="${b.drive_url}" target="_blank" class="text-indigo-600 hover:underline font-medium"><i class="fas fa-external-link-alt"></i> Open Drive</a>` : '-';
+                    const linkPusat = b.hasil_pusat_url ? `<a href="${b.hasil_pusat_url}" target="_blank" class="text-emerald-600 hover:underline font-medium"><i class="fas fa-folder font-bold"></i> Hasil Pusat</a>` : '<span class="text-slate-400 italic">Belum diunggah</span>';
 
-                return `
-                <tr class="hover:bg-slate-50 transition-colors text-xs whitespace-nowrap border-b border-slate-100">
-                    <td class="p-3 text-center font-bold text-slate-400">${idx + 1}</td>
-                    <td class="p-3">${linkBukti ? `<a href="${linkBukti}" target="_blank" class="text-emerald-600 font-semibold underline"><i class="fas fa-receipt mr-1"></i>Lihat</a>` : '-'}</td>
-                    <td class="p-3">${linkGambar ? `<a href="${linkGambar.trim()}" target="_blank" class="text-indigo-600 font-semibold underline"><i class="fas fa-image mr-1"></i>Lihat</a>` : '-'}</td>
-                    <td class="p-3 font-semibold text-indigo-600">${item.paket_tes || item.paket || '-'}</td>
-                    <td class="p-3 font-bold text-slate-800">${item.nama_testee || item.nama || '-'}</td>
-                    <td class="p-3 text-slate-400 font-mono">-</td>
-                    <td class="p-3 text-slate-700">${item.lembaga || item.lembaga_institusi || item.nama_lembaga || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.tempat_lahir || '-'}</td>
-                    <td class="p-3 text-slate-600">${tglLahir || '-'}</td>
-                    <td class="p-3 text-slate-600">${usiaText}</td>
-                    <td class="p-3 text-slate-600">${item.tgl_tes || item.tanggal_tes || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.jenis_kelamin || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.pendidikan || item.level_pendidikan || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.jurusan_sma || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.bantuan_gambar || item.bantuan_menggambar || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.kondisi_kertas || item.kertas_sobek || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.posisi_kertas || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.alat_gambar || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.dominasi_warna || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.catatan_gambar || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.email_penginput || item.email_cabang || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.status_paket || item.jenis_paket_bayar || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.jenis_layanan || '-'}</td>
-                    <td class="p-3 font-medium text-slate-700">${item.nama_penginput || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.wa_penginput || item.whatsapp_penginput || '-'}</td>
-                    <td class="p-3 font-semibold text-emerald-700">${item.cabang || 'Pusat'}</td>
-                    <td class="p-3 text-slate-600">${item.catatan_khusus || '-'}</td>
-                    <td class="p-3 text-slate-600">${item.jurusan_terlintas || '-'}</td>
-                </tr>
-                `;
-            }).join('');
+                    return `
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="p-3.5">${tgl}</td>
+                            <td class="p-3.5 font-semibold text-slate-800">${b.cabang || 'Pusat'}</td>
+                            <td class="p-3.5">${b.nama_batch || b.catatan || '-'}</td>
+                            <td class="p-3.5 font-bold">${b.jumlah_peserta || 0}</td>
+                            <td class="p-3.5">${linkCabang}</td>
+                            <td class="p-3.5">${linkPusat}</td>
+                            <td class="p-3.5 text-center">
+                                <button onclick="openModalHasilBatch('${b.id}', '${b.hasil_pusat_url || ''}')" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-semibold text-[11px] rounded-lg transition">
+                                    <i class="fas fa-upload"></i> Set Link Hasil
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-rose-500">Gagal memuat batch: ${err.message}</td></tr>`;
+            }
         }
 
-        // LOGIKA BARU: MEMBACA DARI TABEL `data_cabang`
-        function renderCabangControl(listCabang, listPeserta) {
-            const tbody = document.getElementById('tableBodyCabang');
+        function openModalHasilBatch(idBatch, currentUrl) {
+            document.getElementById('batchIdTarget').value = idBatch;
+            document.getElementById('urlHasilPusat').value = currentUrl;
+            document.getElementById('modalHasilBatch').classList.remove('hidden');
+        }
 
-            document.getElementById('statTotalCabangKoneksi').textContent = listCabang.length;
-            document.getElementById('statTotalEntriCabang').textContent = listPeserta.length;
+        function closeModalHasilBatch() {
+            document.getElementById('modalHasilBatch').classList.add('hidden');
+        }
 
-            if (listCabang.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-400 italic">Belum ada cabang terdaftar di tabel data_cabang.</td></tr>`;
+        async function simpanHasilBatch(e) {
+            e.preventDefault();
+            const idBatch = document.getElementById('batchIdTarget').value;
+            const urlHasil = document.getElementById('urlHasilPusat').value.trim();
+            const btn = document.getElementById('btnSimpanHasilBatch');
+
+            btn.disabled = true;
+            btn.textContent = "Menyimpan...";
+
+            try {
+                const { error } = await _supabase
+                    .from('data_batch')
+                    .update({ hasil_pusat_url: urlHasil })
+                    .eq('id', idBatch);
+
+                if (error) throw error;
+
+                alert("Alhamdulillah! Link hasil analisa batch berhasil disimpan.");
+                closeModalHasilBatch();
+                loadDataBatch();
+            } catch (err) {
+                alert("Gagal menyimpan link hasil: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Simpan Link Hasil Analisa";
+            }
+        }
+
+        // 2. DATA PESERTA MASTER
+        async function loadDataPeserta() {
+            const tbody = document.getElementById('tabelPesertaBody');
+            try {
+                const { data, error } = await _supabase
+                    .from('data_peserta')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                rawData = data || [];
+                renderPeserta(rawData);
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-rose-500">Gagal memuat peserta: ${err.message}</td></tr>`;
+            }
+        }
+
+        function renderPeserta(list) {
+            const tbody = document.getElementById('tabelPesertaBody');
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400">Tidak ada data peserta.</td></tr>`;
                 return;
             }
 
-            tbody.innerHTML = listCabang.map((cab, idx) => {
-                const countTestee = listPeserta.filter(p => p.cabang === cab.nama_cabang).length;
-                const isAktif = cab.status === 'Aktif';
+            tbody.innerHTML = list.map(p => {
+                let statusBadge = p.is_valid_pembayaran 
+                    ? `<span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 font-bold rounded-full text-[10px]">Lunas / Valid</span>`
+                    : `<span class="px-2 py-0.5 bg-amber-100 text-amber-700 font-bold rounded-full text-[10px]">Pending</span>`;
 
                 return `
                     <tr class="hover:bg-slate-50 transition">
-                        <td class="p-3 text-center font-semibold text-slate-400">${idx + 1}</td>
-                        <td class="p-3 font-mono font-bold text-slate-700">${cab.kode_cabang}</td>
-                        <td class="p-3 font-bold text-slate-800">${cab.nama_cabang}</td>
-                        <td class="p-3 font-medium text-slate-700">${cab.penanggung_jawab || '-'}</td>
-                        <td class="p-3 text-slate-600">${cab.whatsapp || '-'}</td>
-                        <td class="p-3 text-center font-bold text-indigo-600">${countTestee} Testee</td>
-                        <td class="p-3 text-center">
-                            <span class="inline-flex items-center gap-1 ${isAktif ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'} font-bold px-2.5 py-0.5 rounded-full text-[10px] border">
-                                <span class="w-1.5 h-1.5 rounded-full ${isAktif ? 'bg-emerald-500' : 'bg-rose-500'}"></span> ${cab.status || 'Aktif'}
-                            </span>
-                        </td>
-                        <td class="p-3 text-center">
-                            <button onclick="toggleStatusCabang(${cab.id}, '${cab.status}')" class="text-[11px] font-semibold text-slate-500 hover:text-indigo-600 underline">
-                                ${isAktif ? 'Nonaktifkan' : 'Aktifkan'}
-                            </button>
+                        <td class="p-3.5 font-medium text-slate-800">${p.nama_testee || p.nama || '-'}</td>
+                        <td class="p-3.5">${p.cabang || 'Pusat'}</td>
+                        <td class="p-3.5">${p.lembaga || '-'}</td>
+                        <td class="p-3.5">${p.paket_tes || '-'}</td>
+                        <td class="p-3.5">${p.usia || '-'} TH / ${p.tgl_lahir || '-'}</td>
+                        <td class="p-3.5">${statusBadge}</td>
+                        <td class="p-3.5 text-center">
+                            ${!p.is_valid_pembayaran ? `<button onclick="setValidManual('${p.id}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-semibold transition">Set Valid</button>` : '<span class="text-slate-400 text-[10px]">Terverifikasi</span>'}
                         </td>
                     </tr>
                 `;
             }).join('');
         }
 
-        // ==========================================
-        // 1. FUNGSI MODAL & SIMPAN CABANG BARU (INPUT MANUAL ADMIN)
-        // ==========================================
-        function toggleModalCabang(show) {
-            const modal = document.getElementById('modalCabang');
-            if (show) modal.classList.remove('hidden');
-            else modal.classList.add('hidden');
+        function filterPeserta() {
+            const query = document.getElementById('searchPeserta').value.toLowerCase();
+            const filtered = rawData.filter(item => {
+                const nama = (item.nama_testee || item.nama || '').toLowerCase();
+                const cabang = (item.cabang || '').toLowerCase();
+                const lembaga = (item.lembaga || '').toLowerCase();
+                return nama.includes(query) || cabang.includes(query) || lembaga.includes(query);
+            });
+            renderPeserta(filtered);
         }
 
-        async function simpanCabangBaru(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnSubmitCabang');
-            btn.disabled = true;
-            btn.textContent = "Menyimpan...";
-
-            const payload = {
-                kode_cabang: document.getElementById('inputKodeCabang').value.trim(),
-                nama_cabang: document.getElementById('inputNamaCabang').value.trim(),
-                penanggung_jawab: document.getElementById('inputPJ').value.trim(),
-                whatsapp: document.getElementById('inputWA').value.trim(),
-                status: 'Aktif' // Jika diinput manual admin, status langsung Aktif
-            };
-
-            // Pastikan variabel client Supabase Anda konsisten (_supabase)
-            const { error } = await _supabase.from('data_cabang').insert([payload]);
-
-            btn.disabled = false;
-            btn.textContent = "Simpan Cabang";
-
-            if (error) {
-                alert("Gagal menambahkan cabang: " + error.message);
-                return;
-            }
-
-            alert("Cabang baru berhasil ditambahkan!");
-            document.getElementById('formTambahCabang').reset();
-            toggleModalCabang(false);
-
-            // Refresh data tabel cabang dan peserta
-            loadDataCabang();
-            if (typeof loadDataPeserta === 'function') loadDataPeserta();
+        async function setValidManual(id) {
+            if (!confirm("Tandai pembayaran peserta ini sebagai Valid?")) return;
+            const { error } = await _supabase.from('data_peserta').update({ is_valid_pembayaran: true }).eq('id', id);
+            if (!error) { alert("Status berhasil diubah!"); loadDataPeserta(); } else { alert("Gagal: " + error.message); }
         }
 
-
-        // ==========================================
-        // 2. FUNGSI MUAT & APPROVAL REGISTRASI CABANG MANDIRI
-        // ==========================================
+        // 3. DATA CABANG
         async function loadDataCabang() {
-            const tbody = document.getElementById("tableBodyCabang");
-            if (!tbody) return;
-
+            const tbody = document.getElementById('tabelCabangBody');
             try {
                 const { data, error } = await _supabase
                     .from('data_cabang')
@@ -768,149 +475,26 @@
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
-
                 if (!data || data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">Belum ada data cabang.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400">Belum ada mitra cabang terdaftar.</td></tr>`;
                     return;
                 }
 
-                tbody.innerHTML = data.map(item => {
-                    // Badge Status
-                    let statusBadge = '';
-                    if (item.status === 'Aktif') {
-                        statusBadge = `<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-700">Aktif</span>`;
-                    } else if (item.status === 'Pending') {
-                        statusBadge = `<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-700">Pending</span>`;
-                    } else {
-                        statusBadge = `<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-600">${item.status}</span>`;
-                    }
-
-                    // Tombol Aksi
-                    let actionButtons = '';
-                    if (item.status === 'Pending') {
-                        actionButtons = `
-                            <button onclick="updateStatusCabang('${item.id}', 'Aktif')" 
-                                class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-medium transition shadow-sm">
-                                Setujui
-                            </button>
-                            <button onclick="updateStatusCabang('${item.id}', 'Ditolak')" 
-                                class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded text-xs font-medium transition">
-                                Tolak
-                            </button>
-                        `;
-                    } else if (item.status === 'Aktif') {
-                        actionButtons = `
-                            <button onclick="updateStatusCabang('${item.id}', 'Nonaktif')" 
-                                class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-xs transition">
-                                Nonaktifkan
-                            </button>
-                        `;
-                    } else {
-                        actionButtons = `
-                            <button onclick="updateStatusCabang('${item.id}', 'Aktif')" 
-                                class="px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded text-xs transition">
-                                Aktifkan
-                            </button>
-                        `;
-                    }
-
-                    return `
-                        <tr class="hover:bg-slate-50/80 transition border-b border-slate-100">
-                            <td class="p-4">
-                                <div class="font-bold text-slate-800">${item.kode_cabang || '-'}</div>
-                                <div class="text-xs text-slate-400">${item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-'}</div>
-                            </td>
-                            <td class="p-4">
-                                <div class="font-semibold text-slate-700">${item.nama_cabang}</div>
-                                <div class="text-xs text-slate-500">${item.kota || '-'}</div>
-                            </td>
-                            <td class="p-4 text-slate-700 font-medium">${item.penanggung_jawab || '-'}</td>
-                            <td class="p-4">
-                                <div class="text-xs text-slate-700">${item.whatsapp || item.no_whatsapp || '-'}</div>
-                                <div class="text-xs text-slate-400">${item.email || '-'}</div>
-                            </td>
-                            <td class="p-4">${statusBadge}</td>
-                            <td class="p-4 text-center">
-                                <div class="flex justify-center gap-1.5">${actionButtons}</div>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-
+                tbody.innerHTML = data.map(c => `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3.5 font-bold text-slate-800">${c.nama_cabang || '-'}</td>
+                        <td class="p-3.5">${c.penanggung_jawab || '-'}</td>
+                        <td class="p-3.5">${c.email || '-'}</td>
+                        <td class="p-3.5">${c.whatsapp || '-'}</td>
+                        <td class="p-3.5">${c.alamat || '-'}</td>
+                    </tr>
+                `).join('');
             } catch (err) {
-                console.error("Gagal memuat cabang:", err);
-                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-rose-500">Gagal mengambil data. ${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-rose-500">Gagal memuat cabang: ${err.message}</td></tr>`;
             }
         }
 
-        // 3. FUNGSI UPDATE STATUS CABANG (APPROVE / REJECT / NONAKTIF)
-        async function updateStatusCabang(id, statusBaru) {
-            if (!confirm(`Apakah Anda yakin ingin mengubah status cabang ini menjadi "${statusBaru}"?`)) return;
-
-            try {
-                const { error } = await _supabase
-                    .from('data_cabang')
-                    .update({ status: statusBaru })
-                    .eq('id', id);
-
-                if (error) throw error;
-
-                // Refresh data tabel cabang
-                loadDataCabang();
-            } catch (err) {
-                alert("Gagal memperbarui status: " + err.message);
-            }
-        }
-
-        async function toggleStatusCabang(id, statusCurrent) {
-            const nextStatus = statusCurrent === 'Aktif' ? 'Nonaktif' : 'Aktif';
-            if (!confirm(`Ubah status cabang menjadi ${nextStatus}?`)) return;
-
-            const { error } = await _supabase.from('data_cabang').update({ status: nextStatus }).eq('id', id);
-            if (error) {
-                alert("Gagal mengubah status: " + error.message);
-                return;
-            }
-            loadDataPeserta();
-        }
-
-        async function unggahAnalisa(idData, namaTestee) {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*,.pdf';
-
-            input.onchange = async e => {
-                const file = e.target.files[0];
-                if (!file) return;
-
-                // 1. TAMBAHKAN BARIS INI: Minta Pusat input No Testee
-                const inputNoTestee = prompt(`Masukkan No. Testee untuk ${namaTestee}:`);
-                if (inputNoTestee === null) return; // Batal upload kalau Pusat pencet Cancel
-                const cleanName = namaTestee.replace(/[^a-zA-Z0-9]/g, '_');
-                const ext = file.name.split('.').pop();
-                const filePath = `hasil_analisa/${cleanName}_${idData}_${Date.now()}.${ext}`;
-
-                try {
-                    const { error: uploadError } = await _supabase.storage.from('lembar-coretan').upload(filePath, file);
-                    if (uploadError) throw uploadError;
-
-                    const { data: publicURLData } = _supabase.storage.from('lembar-coretan').getPublicUrl(filePath);
-                    const { error: dbError } = await _supabase.from('data_peserta').update({
-                        hasil_analisa_url: publicURLData.publicUrl,
-                        no_testee: inputNoTestee // <-- TAMBAHKAN INI AKAR TERSIMPAN DI SUPABASE
-                    }).eq('id', idData);
-
-                    if (dbError) throw dbError;
-
-                    alert(`Hasil analisa untuk ${namaTestee} berhasil diunggah.`);
-                    loadDataPeserta();
-                } catch (err) {
-                    alert("Gagal mengunggah: " + err.message);
-                }
-            };
-            input.click();
-        }
-
+        // EXPORT REKAP EXCEL
         function downloadRekapExcel() {
             if (!rawData || rawData.length === 0) {
                 alert("Tidak ada data untuk diunduh!");
@@ -918,80 +502,52 @@
             }
 
             const excelData = rawData.map(row => {
-                // Hitung Usia Otomatis jika tgl_lahir ada
                 let usiaText = row.usia || "-";
                 if (row.tgl_lahir) {
                     const birthDate = new Date(row.tgl_lahir);
                     const today = new Date();
                     let age = today.getFullYear() - birthDate.getFullYear();
                     const m = today.getMonth() - birthDate.getMonth();
-                    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-                        age--;
-                    }
+                    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) { age--; }
                     usiaText = age > 0 ? `${age} Tahun` : "-";
                 }
 
                 return {
-                    "Upload Bukti Transfer": row.bukti_transfer_url || "-",
-                    "Upload gambar": row.file_coretan_url || "-",
-                    "Jenis Paket": row.paket_tes || "-",
                     "Nama Lengkap Testee": row.nama_testee || row.nama || "-",
-                    "No Testee": "", // Dikosongkan sesuai permintaan
-                    "Nama Lembaga/Institusi/Komunitas/umum": row.lembaga || "-",
-                    "Tempat Lahir Testee": row.tempat_lahir || "-",
-                    "Tanggal lahir Testee": row.tgl_lahir || "-",
-                    "Usia Testee": usiaText,
-                    "Tanggal Tes": row.tgl_tes || "-",
-                    "Jenis Kelamin": row.jenis_kelamin || "-",
-                    "Level Pendidikan": row.pendidikan || "-",
-                    "Jurusan yang di jalani ketika di SMA/SMK": row.jurusan_sma || "-",
-                    "Proses menggambar dibantu oleh": row.bantuan_gambar || "-",
-                    "Kondisi kertas": row.kondisi_kertas || "-",
-                    "Posisi kertas": row.posisi_kertas || "-",
-                    "Alat gambar": row.alat_gambar || "-",
-                    "Dominasi Warna (*Merah = Hitam, cokelat, abu, dan gelap / *Biru = Semua warna terang)": row.dominasi_warna || "-",
-                    "Catatan terkait gambar (Temuan2 lainnya saat Testee menggambar)": row.catatan_gambar || "-",
-                    "Alamat e-mail.": row.email_penginput || "-",
-                    "Paket Berbayar/Bonus": row.status_paket || "-",
-                    "Bentuk kerja sama": row.jenis_layanan || "-",
-                    "Nama Penginput": row.nama_penginput || "-",
-                    "No Whatsapp yang bisa dihubungi": row.wa_penginput || "-",
+                    "Jenis Paket": row.paket_tes || "-",
                     "Cabang": row.cabang || "Pusat",
-                    "Catatan khusus :": row.catatan_khusus || "-",
-                    "Sebutkan maksimal 3 Jurusan apa saja yang ingin dipilih/terlintas dalam fikiran": row.jurusan_terlintas || "-"
+                    "Nama Lembaga": row.lembaga || "-",
+                    "Tempat Lahir": row.tempat_lahir || "-",
+                    "Tanggal lahir": row.tgl_lahir || "-",
+                    "Usia": usiaText,
+                    "Jenis Kelamin": row.jenis_kelamin || "-",
+                    "Pendidikan": row.pendidikan || "-",
+                    "No Whatsapp": row.wa_penginput || "-",
+                    "Email Penginput": row.email_penginput || "-"
                 };
             });
 
             const worksheet = XLSX.utils.json_to_sheet(excelData);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Testee");
-
-            // Simpan File
             XLSX.writeFile(workbook, `Rekap_Data_Testee_TERABACA_${new Date().toISOString().slice(0, 10)}.xlsx`);
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            loadDataPeserta();
-        });
-
-        // --- TEMPELKAN FUNGSI INI DI PALING BAWAH DI DALAM TAG <SCRIPT> ---
+        // SIDEBAR TOGGLE
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const backdrop = document.getElementById('sidebarBackdrop');
-
             if (sidebar && backdrop) {
                 sidebar.classList.toggle('-translate-x-full');
                 backdrop.classList.toggle('hidden');
             }
         }
 
-        // Link Target Pendaftaran Cabang
+        // MODAL SHARE REGISTRASI CABANG
         const REGISTRATION_URL = `${window.location.origin}/register-cabang.html`;
         const SHARE_MESSAGE = `Halo! Silakan lakukan pendaftaran cabang baru TERABACA melalui tautan resmi berikut:\n\n${REGISTRATION_URL}`;
 
-        // Fungsi Utama Tombol Bagikan
         async function shareRegistrationLink() {
-            // Jika di HP / Browser yang mendukung Web Share API bawaan
             if (navigator.share) {
                 try {
                     await navigator.share({
@@ -1000,29 +556,22 @@
                         url: REGISTRATION_URL,
                     });
                     return;
-                } catch (err) {
-                    // User membatalkan share -> lanjut tampilkan modal cadangan
-                }
+                } catch (err) {}
             }
-
-            // Jika di Laptop/Desktop -> Tampilkan modal pilihan
             document.getElementById('directRegLink').href = REGISTRATION_URL;
             document.getElementById('shareLinkModal').classList.remove('hidden');
         }
 
-        // Fungsi Tutup Modal
         function closeShareModal() {
             document.getElementById('shareLinkModal').classList.add('hidden');
         }
 
-        // Fungsi Kirim ke WA
         function shareToWhatsApp() {
             const waUrl = `https://wa.me/?text=${encodeURIComponent(SHARE_MESSAGE)}`;
             window.open(waUrl, '_blank');
             closeShareModal();
         }
 
-        // Fungsi Copy Link
         async function copyRegistrationLink() {
             try {
                 await navigator.clipboard.writeText(REGISTRATION_URL);
@@ -1033,292 +582,7 @@
             }
         }
 
-        let currentUser = null;
-
-        // Open & Close Modal Profil
-        async function openProfileModal() {
-            const modal = document.getElementById('profileModal');
-            modal.classList.remove('hidden');
-            switchProfileTab('info');
-
-            try {
-                // 1. Coba ambil dari Supabase Auth dulu
-                const { data: { user } } = await _supabase.auth.getUser();
-                if (user) {
-                    currentUser = user;
-                    document.getElementById('profileEmail').value = user.email || '';
-                    document.getElementById('profileNama').value = user.user_metadata?.full_name || '';
-                    document.getElementById('profileWA').value = user.user_metadata?.whatsapp || '';
-                    return;
-                }
-
-                // 2. Jika Supabase Auth null, ambil dari Storage Lokal aplikasi (tergantung sistem login kamu)
-                const localUser = JSON.parse(sessionStorage.getItem('user_terabaca') || localStorage.getItem('user_terabaca') || '{}');
-
-                document.getElementById('profileEmail').value = localUser.email || 'admin@terabaca.com';
-                document.getElementById('profileNama').value = localUser.nama || localUser.penanggung_jawab || '';
-                document.getElementById('profileWA').value = localUser.whatsapp || localUser.no_whatsapp || '';
-
-            } catch (err) {
-                console.log("Error memuat profil:", err);
-            }
-        }
-
-        // Simpan Profil
-        async function simpanProfil(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnSimpanProfil');
-            btn.disabled = true;
-            btn.textContent = "Menyimpan...";
-
-            const email = document.getElementById('profileEmail').value;
-            const nama = document.getElementById('profileNama').value.trim();
-            const wa = document.getElementById('profileWA').value.trim();
-
-            try {
-                // Update ke Supabase Auth jika session aktif
-                await _supabase.auth.updateUser({
-                    data: { full_name: nama, whatsapp: wa }
-                }).catch(() => { });
-
-                // Update langsung ke database data_cabang
-                if (email) {
-                    await _supabase
-                        .from('data_cabang')
-                        .update({ penanggung_jawab: nama, whatsapp: wa })
-                        .eq('email', email);
-                }
-
-                // Simpan pembaruan ke Session Storage lokal
-                const localUser = JSON.parse(sessionStorage.getItem('user_terabaca') || '{}');
-                localUser.nama = nama;
-                localUser.whatsapp = wa;
-                sessionStorage.setItem('user_terabaca', JSON.stringify(localUser));
-
-                alert("Alhamdulillah! Profil berhasil diperbarui.");
-                closeProfileModal();
-
-                if (typeof loadDataCabang === 'function') loadDataCabang();
-
-            } catch (err) {
-                alert("Gagal memperbarui profil: " + err.message);
-            } finally {
-                btn.disabled = false;
-                btn.textContent = "Simpan Perubahan";
-            }
-        }
-
-        // Switch Tab Info / Password
-        function switchProfileTab(tab) {
-            const formProfile = document.getElementById('formEditProfile');
-            const formPassword = document.getElementById('formUbahPassword');
-            const tabBtnProfile = document.getElementById('tabBtnProfile');
-            const tabBtnPassword = document.getElementById('tabBtnPassword');
-
-            if (tab === 'info') {
-                formProfile.classList.remove('hidden');
-                formPassword.classList.add('hidden');
-                tabBtnProfile.className = "py-2 px-4 border-b-2 border-indigo-600 text-indigo-600 font-semibold";
-                tabBtnPassword.className = "py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-600 font-semibold";
-            } else {
-                formProfile.classList.add('hidden');
-                formPassword.classList.remove('hidden');
-                tabBtnPassword.className = "py-2 px-4 border-b-2 border-indigo-600 text-indigo-600 font-semibold";
-                tabBtnProfile.className = "py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-600 font-semibold";
-            }
-        }
-
-        // Simpan Profil
-        async function simpanProfil(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnSimpanProfil');
-            btn.disabled = true;
-            btn.textContent = "Menyimpan...";
-
-            const nama = document.getElementById('profileNama').value.trim();
-            const wa = document.getElementById('profileWA').value.trim();
-
-            try {
-                const { error } = await _supabase.auth.updateUser({
-                    data: { full_name: nama, whatsapp: wa }
-                });
-
-                if (error) throw error;
-
-                alert("Alhamdulillah! Profil berhasil diperbarui.");
-                closeProfileModal();
-
-                // Refresh tabel jika ada fungsi loadDataCabang
-                if (typeof loadDataCabang === 'function') loadDataCabang();
-
-            } catch (err) {
-                alert("Gagal memperbarui profil: " + err.message);
-            } finally {
-                btn.disabled = false;
-                btn.textContent = "Simpan Perubahan";
-            }
-        }
-
-
-        // Simpan Ubah Password (Mendukung Supabase Auth & Direct DB Update)
-        async function simpanPasswordBaru(e) {
-            e.preventDefault();
-            const newPass = document.getElementById('inputNewPassword').value.trim();
-            const confirmPass = document.getElementById('inputConfirmPassword').value.trim();
-            const email = document.getElementById('profileEmail').value.trim();
-
-            if (!newPass || newPass.length < 6) {
-                alert("Password minimal harus 6 karakter!");
-                return;
-            }
-
-            if (newPass !== confirmPass) {
-                alert("Konfirmasi password baru tidak cocok!");
-                return;
-            }
-
-            if (!email) {
-                alert("Gagal: Email pengguna tidak terdeteksi.");
-                return;
-            }
-
-            const btn = document.getElementById('btnSimpanPassword');
-            btn.disabled = true;
-            btn.textContent = "Memproses...";
-
-            try {
-                // 1. Coba via Supabase Auth
-                const { error: authError } = await _supabase.auth.updateUser({
-                    password: newPass
-                });
-
-                if (!authError) {
-                    alert("Alhamdulillah! Password berhasil diubah via Auth.");
-                    document.getElementById('formUbahPassword').reset();
-                    closeProfileModal();
-                    return;
-                }
-
-                // 2. Fallback: Eksekusi RPC Function Database yang dijamin bypass RLS
-                const { error: rpcError } = await _supabase.rpc('update_user_password', {
-                    user_email: email,
-                    new_password: newPass
-                });
-
-                if (rpcError) throw rpcError;
-
-                alert("Alhamdulillah! Password berhasil diperbarui.");
-                document.getElementById('formUbahPassword').reset();
-                closeProfileModal();
-
-            } catch (err) {
-                alert("Gagal memperbarui password: " + err.message);
-            } finally {
-                btn.disabled = false;
-                btn.textContent = "Update Password";
-            }
-        }
-
-    </script>
-    <!-- Modal Bagikan Link Registrasi Cabang -->
-    <div id="shareLinkModal"
-        class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-        <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-5">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="text-base font-bold text-slate-800">Bagikan Form Registrasi</h3>
-                <button onclick="closeShareModal()" class="text-slate-400 hover:text-slate-600 font-bold p-1">✕</button>
-            </div>
-
-            <p class="text-xs text-slate-500">Pilih metode untuk membagikan tautan pendaftaran cabang baru:</p>
-
-            <div class="space-y-2.5">
-                <!-- Pilihan 1: Kirim WA Langsung -->
-                <button onclick="shareToWhatsApp()"
-                    class="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
-                    <i class="fab fa-whatsapp text-base"></i> Kirim via WhatsApp
-                </button>
-
-                <!-- Pilihan 2: Copy Link -->
-                <button onclick="copyRegistrationLink()"
-                    class="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition">
-                    📋 Salin Link Pendaftaran
-                </button>
-
-                <!-- Pilihan 3: Buka Halaman Direct -->
-                <a id="directRegLink" href="#" target="_blank"
-                    class="w-full flex items-center justify-center gap-2 py-2 px-4 text-slate-500 hover:text-slate-700 font-medium text-xs rounded-xl transition">
-                    ↗️ Buka Form di Tab Baru
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Profil & Ubah Password -->
-    <div id="profileModal"
-        class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-6">
-            <!-- Header -->
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="text-base font-bold text-slate-800">Pengaturan Akun & Profil</h3>
-                <button onclick="closeProfileModal()"
-                    class="text-slate-400 hover:text-slate-600 font-bold p-1">✕</button>
-            </div>
-
-            <!-- Tab Navigasi -->
-            <div class="flex border-b border-slate-200 text-xs font-semibold">
-                <button id="tabBtnProfile" onclick="switchProfileTab('info')"
-                    class="py-2 px-4 border-b-2 border-indigo-600 text-indigo-600">Info Profil</button>
-                <button id="tabBtnPassword" onclick="switchProfileTab('password')"
-                    class="py-2 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-600">Ubah
-                    Password</button>
-            </div>
-
-            <!-- Section 1: Form Edit Info Profil -->
-            <form id="formEditProfile" onsubmit="simpanProfil(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Email (Akun)</label>
-                    <input type="email" id="profileEmail" disabled
-                        class="w-full text-xs px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-500 cursor-not-allowed">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Nama Lengkap / Penanggung Jawab</label>
-                    <input type="text" id="profileNama" required
-                        class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">No. WhatsApp</label>
-                    <input type="tel" id="profileWA" required
-                        class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
-                </div>
-                <button type="submit" id="btnSimpanProfil"
-                    class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
-                    Simpan Perubahan
-                </button>
-            </form>
-
-            <!-- Section 2: Form Ubah Password -->
-            <form id="formUbahPassword" onsubmit="simpanPasswordBaru(event)" class="space-y-4 hidden">
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Password Baru</label>
-                    <input type="password" id="inputNewPassword" minlength="6" required placeholder="Minimal 6 karakter"
-                        class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Konfirmasi Password Baru</label>
-                    <input type="password" id="inputConfirmPassword" minlength="6" required
-                        placeholder="Ulangi password baru"
-                        class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
-                </div>
-                <button type="submit" id="btnSimpanPassword"
-                    class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
-                    Update Password
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        // Open Modal Profil
+        // PROFIL & ACCOUNT SETTINGS
         async function openProfileModal() {
             const modal = document.getElementById('profileModal');
             modal.classList.remove('hidden');
@@ -1342,12 +606,10 @@
             }
         }
 
-        // Close Modal Profil
         function closeProfileModal() {
             document.getElementById('profileModal').classList.add('hidden');
         }
 
-        // Switch Tab Info / Password
         function switchProfileTab(tab) {
             const formProfile = document.getElementById('formEditProfile');
             const formPassword = document.getElementById('formUbahPassword');
@@ -1367,7 +629,6 @@
             }
         }
 
-        // Simpan Profil
         async function simpanProfil(e) {
             e.preventDefault();
             const btn = document.getElementById('btnSimpanProfil');
@@ -1381,7 +642,7 @@
             try {
                 await _supabase.auth.updateUser({
                     data: { full_name: nama, whatsapp: wa }
-                }).catch(() => { });
+                }).catch(() => {});
 
                 if (email) {
                     await _supabase
@@ -1392,9 +653,7 @@
 
                 alert("Alhamdulillah! Profil berhasil diperbarui.");
                 closeProfileModal();
-
-                if (typeof loadDataCabang === 'function') loadDataCabang();
-
+                loadDataCabang();
             } catch (err) {
                 alert("Gagal memperbarui profil: " + err.message);
             } finally {
@@ -1403,7 +662,6 @@
             }
         }
 
-        // Simpan Ubah Password
         async function simpanPasswordBaru(e) {
             e.preventDefault();
             const newPass = document.getElementById('inputNewPassword').value.trim();
@@ -1414,14 +672,8 @@
                 alert("Password minimal harus 6 karakter!");
                 return;
             }
-
             if (newPass !== confirmPass) {
                 alert("Konfirmasi password baru tidak cocok!");
-                return;
-            }
-
-            if (!email) {
-                alert("Gagal: Email pengguna tidak terdeteksi.");
                 return;
             }
 
@@ -1430,19 +682,15 @@
             btn.textContent = "Memproses...";
 
             try {
-                // 1. Coba via Supabase Auth
-                const { error: authError } = await _supabase.auth.updateUser({
-                    password: newPass
-                });
+                const { error: authError } = await _supabase.auth.updateUser({ password: newPass });
 
                 if (!authError) {
-                    alert("Alhamdulillah! Password berhasil diubah via Auth.");
+                    alert("Alhamdulillah! Password berhasil diubah.");
                     document.getElementById('formUbahPassword').reset();
                     closeProfileModal();
                     return;
                 }
 
-                // 2. Fallback: RPC Database jika Auth session missing
                 const { error: rpcError } = await _supabase.rpc('update_user_password', {
                     user_email: email,
                     new_password: newPass
@@ -1453,7 +701,6 @@
                 alert("Alhamdulillah! Password berhasil diperbarui.");
                 document.getElementById('formUbahPassword').reset();
                 closeProfileModal();
-
             } catch (err) {
                 alert("Gagal memperbarui password: " + err.message);
             } finally {
@@ -1461,34 +708,6 @@
                 btn.textContent = "Update Password";
             }
         }
-
-        async function setValidManual(id) {
-            if (!confirm("Tandai pembayaran peserta ini sebagai Valid (Manual)?")) return;
-            const { error } = await _supabase.from('data_peserta').update({ is_valid_pembayaran: true }).eq('id', id);
-            if (!error) { alert("Berhasil!"); loadDataPeserta(); } else { alert("Gagal: " + error.message); }
-        }
-
-        // TARUH DI PALING BAWAH SINI:
-        async function editNoTestee(idData, namaTestee, noLama) {
-            const noBaru = prompt(`Input / Edit No. Testee untuk ${namaTestee}:`, noLama);
-
-            if (noBaru === null) return;
-
-            try {
-                const { error } = await _supabase
-                    .from('data_peserta')
-                    .update({ no_testee: noBaru.trim() })
-                    .eq('id', idData);
-
-                if (error) throw error;
-
-                alert(`No. Testee untuk ${namaTestee} berhasil diperbarui!`);
-                loadDataPeserta();
-            } catch (err) {
-                alert("Gagal memperbarui No. Testee: " + err.message);
-            }
-        }
-
     </script>
 </body>
 

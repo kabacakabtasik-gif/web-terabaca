@@ -30,22 +30,36 @@
         <button onclick="switchTab('massal')" id="tab-massal" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition">
           <i class="fa-solid fa-file-excel w-5"></i> Upload Massal
         </button>
+        <button onclick="switchTab('batch')" id="tab-batch" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition">
+          <i class="fa-solid fa-folder-open w-5"></i> Batch Upload
+        </button>
       </nav>
     </div>
 
-    <div class="border-t border-slate-800 pt-4 px-2">
-      <div class="text-xs text-slate-400 mb-2">Login sebagai:</div>
-      <div id="cabang-info" class="font-semibold text-sm truncate text-indigo-400">Memuat...</div>
-      <button onclick="logout()" class="mt-4 w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-800 hover:bg-red-600 text-xs text-slate-300 hover:text-white rounded transition">
-        <i class="fa-solid fa-right-from-bracket"></i> Keluar
+    <!-- Area Bawah Sidebar -->
+    <div class="border-t border-slate-800 pt-4 px-2 space-y-4">
+      
+      <!-- TOMBOL UNDUH TEMPLATE EXCEL DI SIDEBAR -->
+      <button type="button" onclick="downloadExcelTemplate()" class="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition shadow-sm">
+        <i class="fa-solid fa-file-excel text-sm"></i> Unduh Template Excel
       </button>
+
+      <!-- Profile & Logout -->
+      <div>
+        <div class="text-xs text-slate-400 mb-1">Login sebagai:</div>
+        <div id="cabang-info" class="font-semibold text-sm truncate text-indigo-400">Memuat...</div>
+        <button onclick="logout()" class="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-800 hover:bg-red-600 text-xs text-slate-300 hover:text-white rounded transition">
+          <i class="fa-solid fa-right-from-bracket"></i> Keluar
+        </button>
+      </div>
+
     </div>
   </aside>
 
   <!-- Content Area -->
   <main class="flex-1 p-8 overflow-y-auto">
     
-    <!-- Tab 1: Input Satuan (27 Kolom) -->
+    <!-- Tab 1: Input Satuan (27 Format Pusat) -->
     <div id="content-satuan" class="max-w-4xl mx-auto space-y-6">
       <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
         <h2 class="text-xl font-bold text-slate-900 mb-1">Input Data Satuan (27 Format Pusat)</h2>
@@ -247,10 +261,24 @@
     <div id="content-massal" class="max-w-4xl mx-auto space-y-6 hidden">
       <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
         <h2 class="text-xl font-bold text-slate-900 mb-1">Upload Data Massal (Excel)</h2>
-        <p class="text-sm text-slate-500 mb-6">Unggah file Excel `.xlsx` berisi data baris peserta. File fisik akan diunggah ke Drive dan teks dibaca ke Database.</p>
+        <p class="text-sm text-slate-500 mb-6">Unggah file Excel `.xlsx` berisi data baris peserta. File fisik akan diunggah ke Drive dan tercatat di database batch.</p>
 
         <div class="space-y-4">
-          <input type="file" id="excel-file" accept=".xlsx, .xls" class="block w-full text-sm text-slate-500 border border-slate-200 rounded-lg p-2.5">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Pilih Jenis Paket Data Excel (Fallback jika tidak ada di kolom Excel)</label>
+            <select id="f_jenis_paket_massal" class="w-full text-xs border rounded p-2 bg-white">
+              <option value="Basic">Basic</option>
+              <option value="Parent">Parent</option>
+              <option value="Talent">Talent</option>
+              <option value="Brainwave">Brainwave</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Pilih File Excel (.xlsx) *</label>
+            <input type="file" id="excel-file" accept=".xlsx, .xls" class="block w-full text-sm text-slate-500 border border-slate-200 rounded-lg p-2.5">
+          </div>
+
           <button onclick="handleExcelUpload()" id="btn-upload-massal" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-2.5 rounded-lg text-sm transition">
             Proses & Unggah Excel
           </button>
@@ -258,15 +286,59 @@
       </div>
     </div>
 
+    <!-- Tab 3: Batch Upload & Hasil Testee dari Pusat -->
+    <div id="content-batch" class="max-w-5xl mx-auto space-y-6 hidden">
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900 mb-1">Riwayat Batch Upload & Hasil Testee</h2>
+            <p class="text-sm text-slate-500">Daftar batch yang diunggah dari cabang ini beserta hasil tes yang dirilis oleh Pusat.</p>
+          </div>
+          <button onclick="loadBatchUploads()" class="text-indigo-600 hover:text-indigo-800 text-xs font-semibold flex items-center gap-1.5 bg-indigo-50 px-3 py-2 rounded-lg shrink-0">
+            <i class="fa-solid fa-rotate"></i> Refresh Data
+          </button>
+        </div>
+
+        <!-- INPUT SEARCH FILTER REAL-TIME -->
+        <div class="mb-4">
+          <div class="relative max-w-xs">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+            <input type="text" id="batch-search-input" onkeyup="filterBatchTable()" placeholder="Cari nama file atau lembaga..." class="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 transition">
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
+                <th class="p-3">Nama File</th>
+                <th class="p-3">Lembaga / Instansi</th>
+                <th class="p-3">Paket</th>
+                <th class="p-3">Jumlah Data</th>
+                <th class="p-3">Tanggal Upload</th>
+                <th class="p-3 text-center">Hasil Testee (Pusat)</th>
+              </tr>
+            </thead>
+            <tbody id="batch-table-body" class="divide-y divide-slate-200">
+              <tr>
+                <td colspan="6" class="p-4 text-center text-slate-400">Memuat riwayat batch upload...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </main>
 
   <script>
-    // 1. Konfigurasi Client Supabase (Ganti dengan Kredensial Asli Anda)
+    // 1. Konfigurasi Client Supabase
     const SUPABASE_URL = "https://zdealocdcweemecirdap.supabase.co"; 
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkZWFsb2NkY3dlZW1lY2lyZGFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5ODEyNTgsImV4cCI6MjA5NDU1NzI1OH0._fgstIY2k0s0zv-7_EnupEmFlExFsXRLZP7BAYHd_-c"; 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let currentCabang = "";
+    let allBatchData = []; // Menampung array data batch untuk filter pencarian
 
     // 2. Inisialisasi & Proteksi Sesi Login
     window.addEventListener('DOMContentLoaded', async () => {
@@ -278,12 +350,16 @@
       currentCabang = user.nama_cabang || user.username || "Cabang Utama";
       document.getElementById('cabang-info').innerText = currentCabang;
       document.getElementById('f_cabang').value = currentCabang;
+      
+      // Muat awal data batch
+      loadBatchUploads();
     });
 
     // Switch Tab Dashboard
     function switchTab(tab) {
       document.getElementById('content-satuan').classList.toggle('hidden', tab !== 'satuan');
       document.getElementById('content-massal').classList.toggle('hidden', tab !== 'massal');
+      document.getElementById('content-batch').classList.toggle('hidden', tab !== 'batch');
       
       document.getElementById('tab-satuan').className = tab === 'satuan' 
         ? "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium bg-indigo-600 text-white transition"
@@ -292,12 +368,86 @@
       document.getElementById('tab-massal').className = tab === 'massal'
         ? "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium bg-indigo-600 text-white transition"
         : "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition";
+
+      document.getElementById('tab-batch').className = tab === 'batch'
+        ? "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium bg-indigo-600 text-white transition"
+        : "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition";
+
+      if (tab === 'batch') {
+        loadBatchUploads();
+      }
     }
 
     // Logout
     function logout() {
       sessionStorage.clear();
       window.location.href = '/login.html';
+    }
+
+    // Fungsi untuk membuat & mengunduh Template Excel otomatis
+    function downloadExcelTemplate() {
+      const headers = [
+        "Jenis Paket",
+        "Nama Lengkap Testee",
+        "No Testee",
+        "Nama Lembaga",
+        "Tempat Lahir",
+        "Tanggal Lahir (YYYY-MM-DD)",
+        "Usia",
+        "Tanggal Tes (YYYY-MM-DD)",
+        "Jenis Kelamin",
+        "Level Pendidikan",
+        "Jurusan SMA",
+        "Proses Gambar",
+        "Kondisi Kertas",
+        "Posisi Kertas",
+        "Alat Gambar",
+        "Dominasi Warna",
+        "Catatan Gambar",
+        "Email Pengupload",
+        "Paket Berbayar",
+        "Bentuk Kerjasama",
+        "Nama Penginput",
+        "WA Penginput",
+        "Catatan Khusus",
+        "Pilihan Jurusan"
+      ];
+
+      const sampleRow = [
+        "Basic",
+        "Budi Santoso",
+        "TST-001",
+        "SDN 01 Bandung",
+        "Bandung",
+        "2012-05-14",
+        "12 Tahun",
+        "2026-08-24",
+        "Laki-Laki",
+        "SD Kelas 5-6 dan SMP",
+        "-",
+        "Mandiri",
+        "Tidak Sobek",
+        "Vertical",
+        "Pensil Warna",
+        "Biru (Semua warna terang)",
+        "Gambar cukup rapi",
+        "admin.bandung@terabaca.com",
+        "Berbayar Utama",
+        "Umum",
+        "Siti Admin",
+        "081234567890",
+        "-",
+        "-"
+      ];
+
+      const worksheetData = [headers, sampleRow];
+      const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+      ws['!cols'] = headers.map(h => ({ wch: Math.max(h.length + 3, 15) }));
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Template Upload Massal");
+
+      XLSX.writeFile(wb, "Template_Upload_Massal_TeraBaca.xlsx");
     }
 
     // 3. Submit Form Satuan
@@ -369,16 +519,13 @@
       reader.onload = async (e) => {
         try {
           const base64Data = e.target.result;
-          
-          // Memisahkan prefix data URL untuk mendapatkan string Base64 murni
           const cleanBase64 = base64Data.includes(',') ? base64Data.split(',')[1] : base64Data;
 
-          // 1. Upload File Fisik Langsung ke Google Apps Script (Bypass Vercel Serverless Limit)
+          // 1. Upload File Fisik ke Google Apps Script
           const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbya1vzhQ993URT53aofily26Y7LPRmMMl17eZwAzh5BYeD4UR7NUmqfKVsHuNvFg7yF/exec';
 
           const driveRes = await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
-            // Gunakan text/plain untuk menghindari pemblokiran CORS Preflight di browser
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({
               fileName: `${currentCabang}_${Date.now()}_${file.name}`,
@@ -391,40 +538,47 @@
             throw new Error(driveData.message || 'Gagal mengunggah ke Google Drive');
           }
 
-          // 2. Baca Isian Excel di Browser untuk Rekam Teks ke Supabase
+          // 2. Baca Isian Excel
           const binaryStr = atob(cleanBase64);
           const workbook = XLSX.read(binaryStr, { type: 'binary' });
           const sheetName = workbook.SheetNames[0];
           const sheet = workbook.Sheets[sheetName];
           const rows = XLSX.utils.sheet_to_json(sheet);
 
-         
-          // 1. Ambil nilai Paket dari Dropdown Form
-          const paketValue = document.getElementById('f_jenis_paket')?.value || 'Basic';
+          const defaultPaket = document.getElementById('f_jenis_paket_massal')?.value || 'Basic';
+          const paketValue = rows[0]?.['Jenis Paket'] 
+                          || rows[0]?.['jenis paket'] 
+                          || rows[0]?.['JENIS PAKET'] 
+                          || rows[0]?.['Paket'] 
+                          || defaultPaket;
 
-          // 2. Ambil nilai Lembaga dari kolom Excel "Nama Lembaga" (dengan fallback aman)
           const lembagaValue = rows[0]?.['Nama Lembaga'] 
                             || rows[0]?.['nama lembaga'] 
                             || rows[0]?.['NAMA LEMBAGA'] 
                             || '-';
 
-          // 3. Catat Batch Upload ke Database Supabase
+          // 3. Catat Batch Upload ke Supabase
+          const user = JSON.parse(sessionStorage.getItem('user_cabang')) || {};
+          const kodeCabangVal = user.kode_cabang || user.id || currentCabang;
+
           const { data: batch, error: batchErr } = await supabaseClient
             .from('batch_upload')
             .insert([{
               nama_file_asli: file.name,
               file_url: driveData.webViewLink || driveData.fileId,
               cabang: currentCabang,
+              kode_cabang: kodeCabangVal,
+              nama_penginput: user.nama || currentCabang,
               jumlah_data: rows.length,
               lembaga: lembagaValue,
-              paket: paketValue,
-              tanggal_upload: new Date().toISOString()
+              paket: paketValue
             }]);
 
           if (batchErr) throw batchErr;
 
           alert(`Berhasil mengunggah ${rows.length} data peserta ke sistem!`);
           fileInput.value = '';
+          switchTab('batch');
 
         } catch (err) {
           alert('Error: ' + err.message);
@@ -434,13 +588,90 @@
         }
       };
 
-      reader.onerror = (error) => {
+      reader.onerror = () => {
         alert('Gagal membaca file Excel!');
         btn.disabled = false;
         btn.innerText = "Proses & Unggah Excel";
       };
 
       reader.readAsDataURL(file);
+    }
+
+    // 5. Load Data Batch Upload dari Supabase
+    async function loadBatchUploads() {
+      const tbody = document.getElementById('batch-table-body');
+      tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Memuat riwayat batch upload...</td></tr>`;
+
+      try {
+        const { data, error } = await supabaseClient
+          .from('batch_upload')
+          .select('*')
+          .eq('cabang', currentCabang)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        allBatchData = data || []; // Simpan ke variabel global
+        
+        // Riset input pencarian saat reload
+        const searchInput = document.getElementById('batch-search-input');
+        if (searchInput) searchInput.value = '';
+
+        renderBatchTable(allBatchData);
+
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-rose-500">Gagal mengambil data: ${err.message}</td></tr>`;
+      }
+    }
+
+    // 6. Render Isian Tabel Batch Upload
+    function renderBatchTable(dataList) {
+      const tbody = document.getElementById('batch-table-body');
+
+      if (!dataList || dataList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Data batch tidak ditemukan.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = dataList.map(b => {
+        const hasHasil = b.file_hasil_url;
+        
+        const hasilButton = hasHasil
+          ? `<a href="${hasHasil}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded font-semibold text-xs transition">
+              <i class="fa-solid fa-download"></i> Unduh Hasil
+             </a>`
+          : `<span class="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-600 rounded text-xs border border-amber-200">
+              <i class="fa-solid fa-clock"></i> Menunggu Hasil Pusat
+             </span>`;
+
+        const tglFormat = b.created_at 
+          ? new Date(b.created_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) 
+          : '-';
+
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3 font-medium text-slate-800">${b.nama_file_asli || 'Batch File'}</td>
+            <td class="p-3 text-slate-600">${b.lembaga || '-'}</td>
+            <td class="p-3"><span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 font-semibold rounded text-xs">${b.paket || 'Basic'}</span></td>
+            <td class="p-3 text-slate-600">${b.jumlah_data || 0} Peserta</td>
+            <td class="p-3 text-slate-500">${tglFormat}</td>
+            <td class="p-3 text-center">${hasilButton}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // 7. Filter Real-Time saat Mengetik Nama File / Lembaga
+    function filterBatchTable() {
+      const keyword = (document.getElementById('batch-search-input')?.value || '').toLowerCase().trim();
+      
+      const filtered = allBatchData.filter(b => {
+        const namaFile = (b.nama_file_asli || '').toLowerCase();
+        const lembaga = (b.lembaga || '').toLowerCase();
+        return namaFile.includes(keyword) || lembaga.includes(keyword);
+      });
+
+      renderBatchTable(filtered);
     }
   </script>
 </body>
