@@ -8,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
@@ -268,58 +269,62 @@
         </div>
     </div>
 
-    <!-- Modal Set Link Hasil Batch -->
-    <div id="modalHasilBatch"
-        class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900 bg-opacity-50 transition-opacity">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+    <!-- Modal Set / Upload PDF Hasil Batch -->
+<div id="modalHasilBatch"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900 bg-opacity-50 transition-opacity">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
 
-            <!-- Header Modal -->
-            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                    <i class="fas fa-link text-indigo-600"></i> Set Link Hasil Pusat
-                </h3>
-                <button onclick="closeModalHasilBatch()" class="text-slate-400 hover:text-rose-500 transition">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
+        <!-- Header Modal -->
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <i class="fas fa-file-pdf text-indigo-600"></i> Upload PDF Hasil Pusat
+            </h3>
+            <button onclick="closeModalHasilBatch()" class="text-slate-400 hover:text-rose-500 transition">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Body Modal (Form) -->
+        <div class="p-6">
+            <input type="hidden" id="batchIdTarget">
+
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    Pilih / Drag Ratusan File PDF Peserta
+                </label>
+                <input type="file" id="pusatPdfFiles" multiple accept="application/pdf"
+                    class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 border border-slate-200 rounded-lg p-2 transition">
+                <p class="mt-2 text-[11px] text-slate-500">
+                    * Nama file PDF otomatis dicocokkan dengan <b>No Testee</b> atau <b>Nama Peserta</b> di Supabase.
+                </p>
             </div>
 
-            <!-- Body Modal (Form) -->
-            <form onsubmit="simpanHasilBatch(event)" class="p-6">
-                <!-- Input tersembunyi untuk menyimpan ID Batch -->
-                <input type="hidden" id="batchIdTarget">
-
-                <div class="mb-5">
-                    <label for="urlHasilPusat" class="block text-sm font-semibold text-slate-700 mb-2">
-                        URL Google Drive Hasil Analisa
-                    </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-cloud-upload-alt text-slate-400"></i>
-                        </div>
-                        <input type="url" id="urlHasilPusat" placeholder="https://drive.google.com/..."
-                            class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition outline-none shadow-sm"
-                            required>
-                    </div>
-                    <p class="mt-2 text-[11px] text-slate-500">
-                        Masukkan link folder/file dari Google Drive Pusat yang berisi hasil skoring. Pastikan akses
-                        sharing link diset ke "Anyone with the link".
-                    </p>
+            <!-- Indicator Progress Box -->
+            <div id="pusatProgressBox" class="hidden mb-4 p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs space-y-2">
+                <div class="flex justify-between text-slate-700 font-medium">
+                    <span id="pusatProgressText">Memulai upload...</span>
+                    <span id="pusatPercentText">0%</span>
                 </div>
-
-                <!-- Action Buttons -->
-                <div class="flex justify-end gap-3 mt-6">
-                    <button type="button" onclick="closeModalHasilBatch()"
-                        class="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition">
-                        Batal
-                    </button>
-                    <button type="submit" id="btnSimpanHasilBatch"
-                        class="px-4 py-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-md transition flex items-center gap-2">
-                        <i class="fas fa-save"></i> Simpan
-                    </button>
+                <div class="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
+                    <div id="pusatProgressBar" class="bg-indigo-600 h-full w-0 transition-all duration-300"></div>
                 </div>
-            </form>
+                <div id="pusatUploadLog" class="max-h-32 overflow-y-auto text-[11px] font-mono space-y-1 bg-white p-2 rounded border border-slate-200"></div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-end gap-3 mt-6">
+                <button type="button" onclick="closeModalHasilBatch()"
+                    class="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition">
+                    Batal
+                </button>
+                <button type="button" id="btnSimpanHasilBatch" onclick="eksekusiUploadPdfBatchPusat()"
+                    class="px-4 py-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-md transition flex items-center gap-2">
+                    <i class="fas fa-cloud-upload-alt"></i> Unggah & Simpan
+                </button>
+            </div>
         </div>
     </div>
+</div>
 
     <!-- Modal Bagikan Link Registrasi Cabang -->
     <div id="shareLinkModal"
@@ -644,45 +649,130 @@
             renderPesertaTable(filtered);
         }
 
-        // 3. FUNGSI POPUP MODAL (BUKA & TUTUP)
-        function openModalHasilBatch(idBatch, currentUrl) {
-            document.getElementById('batchIdTarget').value = idBatch;
-            document.getElementById('urlHasilPusat').value = currentUrl;
-            document.getElementById('modalHasilBatch').classList.remove('hidden');
+        let targetPesertaBatch = [];
+
+// 1. BUKA MODAL & AMBIL DATA PESERTA BATCH
+async function openModalHasilBatch(idBatch) {
+    document.getElementById('batchIdTarget').value = idBatch;
+    document.getElementById('pusatPdfFiles').value = '';
+    
+    const progressBox = document.getElementById('pusatProgressBox');
+    const logBox = document.getElementById('pusatUploadLog');
+    if (progressBox) progressBox.classList.add('hidden');
+    if (logBox) logBox.innerHTML = '';
+
+    try {
+        const { data, error } = await _supabase
+            .from('data_peserta')
+            .select('id, no_testee, nama_testee')
+            .eq('batch_id', idBatch);
+
+        if (error) throw error;
+        targetPesertaBatch = data || [];
+
+        document.getElementById('modalHasilBatch').classList.remove('hidden');
+    } catch (err) {
+        alert("Gagal memuat data peserta batch: " + err.message);
+    }
+}
+
+// 2. TUTUP MODAL
+function closeModalHasilBatch() {
+    document.getElementById('modalHasilBatch').classList.add('hidden');
+}
+
+// 3. UPLOAD MULTI PDF KE SUPABASE STORAGE
+async function eksekusiUploadPdfBatchPusat() {
+    const batchId = document.getElementById('batchIdTarget').value;
+    const fileInput = document.getElementById('pusatPdfFiles');
+    const files = Array.from(fileInput.files);
+
+    if (files.length === 0) return alert("Pilih minimal 1 file PDF!");
+
+    const btn = document.getElementById('btnSimpanHasilBatch');
+    const progressBox = document.getElementById('pusatProgressBox');
+    const progressText = document.getElementById('pusatProgressText');
+    const percentText = document.getElementById('pusatPercentText');
+    const progressBar = document.getElementById('pusatProgressBar');
+    const logBox = document.getElementById('pusatUploadLog');
+
+    btn.disabled = true;
+    progressBox.classList.remove('hidden');
+
+    let sukses = 0;
+    let gagal = 0;
+
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const cleanFileName = file.name.replace(/\.[^/.]+$/, "").toLowerCase().trim();
+
+        // Matching nama file dengan No Testee / Nama Peserta
+        const match = targetPesertaBatch.find(p => {
+            const noT = (p.no_testee || '').toLowerCase().trim();
+            const namaT = (p.nama_testee || '').toLowerCase().trim();
+            return (noT && cleanFileName.includes(noT)) || (namaT && cleanFileName.includes(namaT));
+        });
+
+        if (!match) {
+            logBox.innerHTML += `<div class="text-amber-600">⚠️ [Lewat] ${file.name} (Tidak ada peserta cocok)</div>`;
+            gagal++;
+            updateProgressPusat(i + 1, files.length);
+            continue;
         }
 
-        function closeModalHasilBatch() {
-            document.getElementById('modalHasilBatch').classList.add('hidden');
+        try {
+            const storagePath = `batch_${batchId}/${Date.now()}_${file.name}`;
+            const { error: uploadErr } = await _supabase
+                .storage
+                .from('hasil-pdf')
+                .upload(storagePath, file, { cacheControl: '3600', upsert: true });
+
+            if (uploadErr) throw uploadErr;
+
+            const { data: publicUrlData } = _supabase
+                .storage
+                .from('hasil-pdf')
+                .getPublicUrl(storagePath);
+
+            const publicUrl = publicUrlData.publicUrl;
+
+            const { error: dbErr } = await _supabase
+                .from('data_peserta')
+                .update({ file_hasil_url: publicUrl })
+                .eq('id', match.id);
+
+            if (dbErr) throw dbErr;
+
+            logBox.innerHTML += `<div class="text-emerald-600">✓ [Berhasil] ${match.nama_testee} (${file.name})</div>`;
+            sukses++;
+
+        } catch (err) {
+            logBox.innerHTML += `<div class="text-rose-600">✕ [Gagal] ${file.name}: ${err.message}</div>`;
+            gagal++;
         }
 
-        // 4. MENYIMPAN LINK HASIL PUSAT KE TABEL batch_upload
-        async function simpanHasilBatch(e) {
-            e.preventDefault();
-            const idBatch = document.getElementById('batchIdTarget').value;
-            const urlHasil = document.getElementById('urlHasilPusat').value.trim();
-            const btn = document.getElementById('btnSimpanHasilBatch');
+        updateProgressPusat(i + 1, files.length);
+        logBox.scrollTop = logBox.scrollHeight;
+    }
 
-            btn.disabled = true;
-            btn.textContent = "Menyimpan...";
+    await _supabase
+        .from('batch_upload')
+        .update({ hasil_pusat_url: 'Terisi' })
+        .eq('id', batchId);
 
-            try {
-                const { error } = await _supabase
-                    .from('batch_upload')
-                    .update({ hasil_pusat_url: urlHasil })
-                    .eq('id', idBatch);
+    alert(`Alhamdulillah! ${sukses} file PDF berhasil diunggah & terhubung. (${gagal} file tidak cocok/gagal).`);
+    btn.disabled = false;
+    closeModalHasilBatch();
+    
+    if (typeof loadDataBatch === 'function') loadDataBatch();
 
-                if (error) throw error;
-
-                alert("Alhamdulillah! Link hasil analisa batch berhasil disimpan.");
-                closeModalHasilBatch();
-                loadDataBatch();
-            } catch (err) {
-                alert("Gagal menyimpan link hasil: " + err.message);
-            } finally {
-                btn.disabled = false;
-                btn.textContent = "Simpan Link Hasil Analisa";
-            }
-        }
+    function updateProgressPusat(cur, total) {
+        const pct = Math.round((cur / total) * 100);
+        progressText.innerText = `Mengunggah ${cur} dari ${total} PDF...`;
+        percentText.innerText = `${pct}%`;
+        progressBar.style.width = `${pct}%`;
+    }
+}
 
         function filterPeserta() {
             const query = document.getElementById('searchPeserta').value.toLowerCase();

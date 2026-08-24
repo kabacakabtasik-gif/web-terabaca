@@ -7,6 +7,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <link rel="shortcut icon" href="#">
 </head>
@@ -535,133 +537,159 @@ async function handleSingleSubmit(e) {
   }
 }
 
-    // 4. Submit Form Upload Massal (Excel -> Drive + Supabase)
+  // 4. Submit Form Upload Massal (Excel -> Drive + Supabase)
     async function handleExcelUpload() {
-  const fileInput = document.getElementById('excel-file');
-  const file = fileInput.files[0];
-  if (!file) return alert('Silakan pilih file Excel dulu!');
+      const fileInput = document.getElementById('excel-file');
+      const file = fileInput ? fileInput.files[0] : null;
+      if (!file) return alert('Silakan pilih file Excel dulu!');
 
-  const btn = document.getElementById('btn-upload-massal');
-  btn.disabled = true;
-  btn.innerText = "Memproses Excel...";
+      const btn = document.getElementById('btn-upload-massal');
+      btn.disabled = true;
+      btn.innerText = "Memproses Excel...";
 
-  const reader = new FileReader();
+      const reader = new FileReader();
 
-  reader.onload = async (e) => {
-    try {
-      const base64Data = e.target.result;
-      const cleanBase64 = base64Data.includes(',') ? base64Data.split(',')[1] : base64Data;
+      reader.onload = async (e) => {
+        try {
+          const base64Data = e.target.result;
+          const cleanBase64 = base64Data.includes(',') ? base64Data.split(',')[1] : base64Data;
 
-      // 1. Upload File Fisik ke Google Apps Script (Drive)
-      const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbya1vzhQ993URT53aofily26Y7LPRmMMl17eZwAzh5BYeD4UR7NUmqfKVsHuNvFg7yF/exec';
+          // 1. Upload File Fisik ke Google Apps Script (Drive)
+          const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbya1vzhQ993URT53aofily26Y7LPRmMMl17eZwAzh5BYeD4UR7NUmqfKVsHuNvFg7yF/exec';
 
-      const driveRes = await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({
-          fileName: `${currentCabang}_${Date.now()}_${file.name}`,
-          fileData: cleanBase64
-        })
-      });
+          let driveData = {};
+          try {
+            const driveRes = await fetch(APPS_SCRIPT_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({
+                fileName: `${currentCabang}_${Date.now()}_${file.name}`,
+                fileData: cleanBase64
+              })
+            });
+            driveData = await driveRes.json();
+          } catch (errDrive) {
+            console.warn("Gagal upload ke Drive, melanjutkan simpan database:", errDrive);
+          }
 
-      const driveData = await driveRes.json();
-      if (!driveData.success) {
-        throw new Error(driveData.message || 'Gagal mengunggah ke Google Drive');
-      }
+          // 2. Baca Isian Excel (Mendukung Header Objek & Array Index Fallback)
+          const binaryStr = atob(cleanBase64);
+          const workbook = XLSX.read(binaryStr, { type: 'binary' });
+          const sheetName = workbook.SheetNames[0];
+          const sheet = workbook.Sheets[sheetName];
+          
+          // Pembacaan Objek (Berdasarkan Nama Header Kolom Excel)
+          const jsonRows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+          // Pembacaan Array (Fallback Indeks Baris 0, 1, 2...)
+          const rawArrayRows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+          const dataRowsArray = rawArrayRows.slice(1);
 
-      // 2. Baca Isian Excel Menggunakan Array Index (Mendukung 27 Kolom Presisi)
-      const binaryStr = atob(cleanBase64);
-      const workbook = XLSX.read(binaryStr, { type: 'binary' });
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-      
-      // Ambil sebagai Array of Arrays (Header di Index 0, Data di Index 1+)
-      const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-      const dataRows = rawRows.slice(1);
+          if (jsonRows.length === 0) {
+            throw new Error("File Excel kosong atau tidak terbaca.");
+          }
 
-      // Nilai fallback default dari form/sesi
-      const user = JSON.parse(sessionStorage.getItem('user_cabang')) || {};
-      const kodeCabangVal = user.kode_cabang || user.id || currentCabang;
-      const defaultPaket = document.getElementById('f_jenis_paket_massal')?.value || 'Basic';
+          // Nilai fallback default dari form/sesi
+          const user = JSON.parse(sessionStorage.getItem('user_cabang') || '{}');
+          const kodeCabangVal = user.kode_cabang || user.id || currentCabang;
+          const defaultPaket = document.getElementById('f_jenis_paket_massal')?.value || 'Basic';
 
-      // 3. Catat Batch Upload ke Supabase
-      const { data: batch, error: batchErr } = await supabaseClient
-        .from('batch_upload')
-        .insert([{
-          nama_file_asli: file.name,
-          file_url: driveData.webViewLink || driveData.fileId,
-          cabang: currentCabang,
-          kode_cabang: kodeCabangVal,
-          nama_penginput: user.nama || currentCabang,
-          jumlah_data: dataRows.length,
-          lembaga: dataRows[0]?.[5] || '-', // Index 5 = Nama Lembaga
-          paket: dataRows[0]?.[2] || defaultPaket // Index 2 = Jenis Paket
-        }])
-        .select()
-        .single();
+          // 3. Catat Batch Upload ke Supabase
+          const { data: batch, error: batchErr } = await supabaseClient
+            .from('batch_upload')
+            .insert([{
+              nama_file_asli: file.name,
+              file_url: driveData.webViewLink || driveData.fileId || '-',
+              cabang: currentCabang,
+              kode_cabang: kodeCabangVal,
+              nama_penginput: user.nama || currentCabang,
+              jumlah_data: jsonRows.length,
+              lembaga: jsonRows[0]['Lembaga/Institusi'] || jsonRows[0]['Lembaga'] || dataRowsArray[0]?.[5] || '-',
+              paket: jsonRows[0]['Paket Tes'] || jsonRows[0]['Jenis Paket'] || dataRowsArray[0]?.[2] || defaultPaket
+            }])
+            .select()
+            .single();
 
-      if (batchErr) throw batchErr;
+          if (batchErr) throw batchErr;
 
-      // 4. Petakan 27 Kolom ke Tabel data_peserta Supabase
-const payload = dataRows.map(row => ({
-  batch_id:           batch.id, // SANGAT PENTING: Untuk relasi ke tabel batch_upload
-  bukti_transfer_url: row[0] || '-',
-  file_coretan_url:   row[1] || '-',
-  paket_tes:          row[2] || defaultPaket,
-  nama_testee:        row[3] || '',
-  no_testee:          row[4] || '-',
-  lembaga_institusi:  row[5] || '',
-  tempat_lahir:       row[6] || '',
-  tanggal_lahir:      row[7] || null,
-  usia:               row[8] || '',
-  tanggal_tes:        row[9] || null,
-  jenis_kelamin:      row[10] || 'Laki-Laki',
-  level_pendidikan:   row[11] || '-',
-  jurusan_sma:        row[12] || '-',
-  bantuan_menggambar: row[13] || 'Mandiri',
-  kondisi_kertas:     row[14] || 'Tidak Sobek',
-  posisi_kertas:      row[15] || 'Vertical',
-  alat_gambar:        row[16] || 'Pensil Warna',
-  dominasi_warna:     row[17] || 'Biru (Semua warna terang)',
-  catatan_gambar:     row[18] || '-',
-  email_cabang:       row[19] || '',
-  jenis_paket_bayar:  row[20] || 'Berbayar Utama',
-  bentuk_kerjasama:   row[21] || 'Umum',
-  nama_penginput:     row[22] || user.nama || currentCabang,
-  whatsapp_penginput: row[23] || '',
-  cabang:             row[24] || currentCabang,
-  catatan_khusus:     row[25] || '-',
-  jurusan_terlintas:  row[26] || '-'
-})).filter(item => item.nama_testee.toString().trim() !== '');
-      // 5. Insert Massal Detail Peserta
-      if (payload.length > 0) {
-        const { error: insertErr } = await supabaseClient
-          .from('data_peserta')
-          .insert(payload);
+          // 4. Petakan 27 Kolom ke Tabel data_peserta Supabase (Flexibel Header / Index)
+          const payload = jsonRows.map((row, idx) => {
+            const arr = dataRowsArray[idx] || [];
+            
+            // Helper fungsi untuk mengambil nilai baik dari Header Text maupun Index Array
+            const getValue = (headerKeys, arrIndex, defaultVal = '') => {
+              for (let key of headerKeys) {
+                if (row[key] !== undefined && row[key] !== '') return row[key];
+              }
+              return arr[arrIndex] !== undefined && arr[arrIndex] !== '' ? arr[arrIndex] : defaultVal;
+            };
 
-        if (insertErr) throw insertErr;
-      }
+            const namaPeserta = getValue(['Nama Lengkap Testee', 'Nama Testee', 'Nama Lengkap', 'Nama'], 3, '');
 
-      alert(`Berhasil mengunggah file dan ${payload.length} data peserta ke sistem!`);
-      fileInput.value = '';
-      if (typeof switchTab === 'function') switchTab('batch');
+            return {
+              batch_id:           batch.id, // Relasi ID ke batch_upload
+              bukti_transfer_url: getValue(['Bukti Transfer', 'Bukti Transfer URL'], 0, '-'),
+              file_coretan_url:   getValue(['File Coretan', 'File Coretan URL'], 1, '-'),
+              paket_tes:          getValue(['Paket Tes', 'Paket'], 2, defaultPaket),
+              nama_testee:        namaPeserta,
+              no_testee:          getValue(['No Testee', 'No. Testee'], 4, '-'),
+              lembaga_institusi:  getValue(['Lembaga/Institusi', 'Lembaga', 'Sekolah'], 5, ''),
+              tempat_lahir:       getValue(['Tempat Lahir'], 6, ''),
+              tanggal_lahir:      getValue(['Tanggal Lahir'], 7, null) || null,
+              usia:               getValue(['Usia'], 8, ''),
+              tanggal_tes:        getValue(['Tanggal Tes'], 9, null) || null,
+              jenis_kelamin:      getValue(['Jenis Kelamin'], 10, 'Laki-Laki'),
+              level_pendidikan:   getValue(['Level Pendidikan', 'Pendidikan'], 11, '-'),
+              jurusan_sma:        getValue(['Jurusan SMA', 'Jurusan'], 12, '-'),
+              bantuan_menggambar: getValue(['Bantuan Menggambar'], 13, 'Mandiri'),
+              kondisi_kertas:     getValue(['Kondisi Kertas'], 14, 'Tidak Sobek'),
+              posisi_kertas:      getValue(['Posisi Kertas'], 15, 'Vertical'),
+              alat_gambar:        getValue(['Alat Gambar'], 16, 'Pensil Warna'),
+              dominasi_warna:     getValue(['Dominasi Warna'], 17, 'Biru (Semua warna terang)'),
+              catatan_gambar:     getValue(['Catatan Gambar'], 18, '-'),
+              email_cabang:       getValue(['Email Cabang', 'Email'], 19, ''),
+              jenis_paket_bayar:  getValue(['Jenis Paket Bayar'], 20, 'Berbayar Utama'),
+              bentuk_kerjasama:   getValue(['Bentuk Kerjasama'], 21, 'Umum'),
+              nama_penginput:     getValue(['Nama Penginput'], 22, user.nama || currentCabang),
+              whatsapp_penginput: getValue(['WhatsApp Penginput', 'No WA'], 23, ''),
+              cabang:             getValue(['Cabang'], 24, currentCabang),
+              catatan_khusus:     getValue(['Catatan Khusus'], 25, '-'),
+              jurusan_terlintas:  getValue(['Jurusan Terlintas'], 26, '-')
+            };
+          }).filter(item => item.nama_testee && item.nama_testee.toString().trim() !== '');
 
-    } catch (err) {
-      alert('Error: ' + err.message);
-    } finally {
-      btn.disabled = false;
-      btn.innerText = "Proses & Unggah Excel";
+          // 5. Insert Massal Detail Peserta ke Database
+          if (payload.length > 0) {
+            const { error: insertErr } = await supabaseClient
+              .from('data_peserta')
+              .insert(payload);
+
+            if (insertErr) throw insertErr;
+            alert(`Berhasil mengunggah file dan ${payload.length} data peserta ke sistem!`);
+          } else {
+            alert("Batch terbuat, tetapi tidak ada baris peserta valid yang berhasil dibaca. Pastikan kolom nama peserta terisi.");
+          }
+
+          fileInput.value = '';
+          if (typeof loadBatchUploads === 'function') loadBatchUploads();
+          if (typeof switchTab === 'function') switchTab('batch');
+
+        } catch (err) {
+          console.error("Upload error detail:", err);
+          alert('Error: ' + err.message);
+        } finally {
+          btn.disabled = false;
+          btn.innerText = "Proses & Unggah Excel";
+        }
+      };
+
+      reader.onerror = () => {
+        alert('Gagal membaca file Excel!');
+        btn.disabled = false;
+        btn.innerText = "Proses & Unggah Excel";
+      };
+
+      reader.readAsDataURL(file);
     }
-  };
-
-  reader.onerror = () => {
-    alert('Gagal membaca file Excel!');
-    btn.disabled = false;
-    btn.innerText = "Proses & Unggah Excel";
-  };
-
-  reader.readAsDataURL(file);
-}
 
     // 5. Load Data Batch Upload dari Supabase
     async function loadBatchUploads() {
@@ -691,41 +719,39 @@ const payload = dataRows.map(row => ({
     }
 
     // 6. Render Isian Tabel Batch Upload
-    function renderBatchTable(dataList) {
-      const tbody = document.getElementById('batch-table-body');
+function renderBatchTable(dataList) {
+  const tbody = document.getElementById('batch-table-body');
 
-      if (!dataList || dataList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Data batch tidak ditemukan.</td></tr>`;
-        return;
-      }
+  if (!dataList || dataList.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Data batch tidak ditemukan.</td></tr>`;
+    return;
+  }
 
-      tbody.innerHTML = dataList.map(b => {
-        const hasHasil = b.file_hasil_url;
-        
-        const hasilButton = hasHasil
-          ? `<a href="${hasHasil}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded font-semibold text-xs transition">
-              <i class="fa-solid fa-download"></i> Unduh Hasil
-             </a>`
-          : `<span class="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-600 rounded text-xs border border-amber-200">
-              <i class="fa-solid fa-clock"></i> Menunggu Hasil Pusat
-             </span>`;
+  tbody.innerHTML = dataList.map(b => {
+    // Tombol ZIP dipanggil menggunakan b.id dan b.nama_file_asli
+    const hasilButton = `
+      <button onclick="downloadZipHasilBatch('${b.id}', '${b.nama_file_asli || 'Batch_' + b.id}')" 
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-bold text-xs transition shadow-sm">
+        <i class="fa-solid fa-file-archive"></i> Unduh ZIP
+      </button>
+    `;
 
-        const tglFormat = b.created_at 
-          ? new Date(b.created_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) 
-          : '-';
+    const tglFormat = b.created_at 
+      ? new Date(b.created_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) 
+      : '-';
 
-        return `
-          <tr class="hover:bg-slate-50 transition">
-            <td class="p-3 font-medium text-slate-800">${b.nama_file_asli || 'Batch File'}</td>
-            <td class="p-3 text-slate-600">${b.lembaga || '-'}</td>
-            <td class="p-3"><span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 font-semibold rounded text-xs">${b.paket || 'Basic'}</span></td>
-            <td class="p-3 text-slate-600">${b.jumlah_data || 0} Peserta</td>
-            <td class="p-3 text-slate-500">${tglFormat}</td>
-            <td class="p-3 text-center">${hasilButton}</td>
-          </tr>
-        `;
-      }).join('');
-    }
+    return `
+      <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+        <td class="p-3 font-medium text-slate-800">${b.nama_file_asli || 'Batch File'}</td>
+        <td class="p-3 text-slate-600">${b.lembaga || '-'}</td>
+        <td class="p-3"><span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 font-semibold rounded text-xs">${b.paket || 'Basic'}</span></td>
+        <td class="p-3 text-slate-600">${b.jumlah_data || 0} Peserta</td>
+        <td class="p-3 text-slate-500">${tglFormat}</td>
+        <td class="p-3 text-center">${hasilButton}</td>
+      </tr>
+    `;
+  }).join('');
+}
 
     // 7. Filter Real-Time saat Mengetik Nama File / Lembaga
     function filterBatchTable() {
@@ -739,6 +765,82 @@ const payload = dataRows.map(row => ({
 
       renderBatchTable(filtered);
     }
+
+    async function downloadZipHasilBatch(idBatch, namaBatch) {
+    // 1. Konfirmasi & validasi library
+    if (typeof JSZip === 'undefined' || typeof saveAs === 'undefined') {
+        return alert("Library JSZip/FileSaver belum dimuat. Pastikan CDN sudah terpasang di HTML!");
+    }
+
+    if (!confirm(`Unduh semua file PDF hasil untuk ${namaBatch || 'batch ini'}?`)) return;
+
+    try {
+        // 2. Ambil data peserta yang memiliki file_hasil_url pada batch ini
+        const { data: pesertaList, error } = await _supabase
+            .from('data_peserta')
+            .select('no_testee, nama_testee, file_hasil_url')
+            .eq('batch_id', idBatch)
+            .not('file_hasil_url', 'is', null);
+
+        if (error) throw error;
+
+        // Filter tambahan untuk memastikan URL tidak kosong
+        const validPeserta = (pesertaList || []).filter(p => p.file_hasil_url && p.file_hasil_url.trim() !== '');
+
+        if (validPeserta.length === 0) {
+            return alert("Belum ada file PDF hasil yang diunggah untuk batch ini.");
+        }
+
+        const zip = new JSZip();
+        const folderName = (namaBatch || `Batch_${idBatch}`).replace(/[^a-zA-Z0-9_-]/g, '_');
+        const imgFolder = zip.folder(folderName);
+
+        let suksesCount = 0;
+        let gagalCount = 0;
+
+        // Visual feedback (Opsional: ubah status tombol jika ada)
+        console.log(`Memulai proses unduh ${validPeserta.length} file...`);
+
+        // 3. Loop & unduh tiap file PDF sebagai Blob
+        for (let i = 0; i < validPeserta.length; i++) {
+            const p = validPeserta[i];
+            const fileUrl = p.file_hasil_url;
+            
+            // Penamaan file di dalam ZIP (misal: 101_Ahmad_Fauzi.pdf)
+            const cleanNama = (p.nama_testee || 'Peserta').replace(/[^a-zA-Z0-9_-]/g, '_');
+            const cleanNo = (p.no_testee || `ID_${i+1}`).replace(/[^a-zA-Z0-9_-]/g, '_');
+            const fileNameInZip = `${cleanNo}_${cleanNama}.pdf`;
+
+            try {
+                // Fetch file binary dari Supabase Storage
+                const response = await fetch(fileUrl);
+                if (!response.ok) throw new Error(`HTTP status ${response.status}`);
+                
+                const blob = await response.blob();
+                
+                // Masukkan file ke dalam folder ZIP
+                imgFolder.file(fileNameInZip, blob);
+                suksesCount++;
+            } catch (err) {
+                console.error(`Gagal mengunduh file untuk ${p.nama_testee}:`, err);
+                gagalCount++;
+            }
+        }
+
+        if (suksesCount === 0) {
+            return alert("Gagal mengunduh seluruh file PDF. Periksa akses CORS di Supabase Storage.");
+        }
+
+        // 4. Generate file ZIP & pemicu download otomatis
+        const zipBlob = await zip.generateAsync({ type: "blob" });
+        saveAs(zipBlob, `${folderName}_Hasil_Analisa.zip`);
+
+        alert(`Selesai! ${suksesCount} file PDF berhasil dikemas ke dalam ZIP.` + (gagalCount > 0 ? ` (${gagalCount} gagal)` : ''));
+
+    } catch (err) {
+        alert("Terjadi kesalahan saat membuat file ZIP: " + err.message);
+    }
+}
   </script>
 </body>
 </html>
