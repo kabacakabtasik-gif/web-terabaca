@@ -402,10 +402,13 @@
           const { data: batch, error: batchErr } = await supabaseClient
             .from('batch_upload')
             .insert([{
+              nama_file_asli: file.name,
+              file_url: driveData.webViewLink || driveData.fileId,
               cabang: currentCabang,
-              nama_file: file.name,
-              drive_link: driveData.webViewLink || driveData.fileId,
-              total_row: rows.length
+              jumlah_data: rows.length,
+              lembaga: lembagaValue,
+              paket: paketValue,
+              tanggal_upload: new Date().toISOString()
             }]);
 
           if (batchErr) throw batchErr;
