@@ -1,10 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
-import crypto from 'crypto';
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+const { createClient } = require('@supabase/supabase-js');
+const crypto = require('crypto');
 
 // Fungsi Kirim Notifikasi WA via Fonnte
 async function sendWANotification(data) {
@@ -46,18 +41,22 @@ async function sendWANotification(data) {
   }
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
   try {
-    const notification = req.body;
+    let notification = req.body;
+    if (typeof notification === 'string') {
+      try { notification = JSON.parse(notification); } catch (e) { notification = {}; }
+    }
+    notification = notification || {};
 
     // 1. Verifikasi Signature Key dari Midtrans demi keamanan
-    const serverKey = process.env.MIDTRANS_SERVER_KEY;
+    const serverKey = process.env.MIDTRANS_SERVER_KEY || '';
     const hash = crypto.createHash('sha512')
-      .update(notification.order_id + notification.status_code + notification.gross_amount + serverKey)
+      .update((notification.order_id || '') + (notification.status_code || '') + (notification.gross_amount || '') + serverKey)
       .digest('hex');
 
     if (hash !== notification.signature_key) {
@@ -76,26 +75,32 @@ export default async function handler(req, res) {
       isSuccess = true;
     }
 
-    if (isSuccess) {
-      // 2. Update status pembayaran di Supabase menjadi 'paid'
-      const { data, error } = await supabase
-        .from('pembayaran')
-        .update({ 
-          status_pembayaran: 'paid',
-          updated_at: new Date().toISOString()
-        })
-        .eq('order_id', orderId)
-        .select()
-        .single();
+    if (isSuccess && orderId) {
+      const supabaseUrl = process.env.SUPABASE_URL;
+      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
-      if (error) {
-        console.error('Error update status di Supabase:', error);
-        throw error;
-      }
+      if (supabaseUrl && supabaseKey) {
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        // 2. Update status pembayaran di Supabase menjadi 'paid'
+        const { data, error } = await supabase
+          .from('pembayaran')
+          .update({ 
+            status_pembayaran: 'paid',
+            updated_at: new Date().toISOString()
+          })
+          .eq('order_id', orderId)
+          .select()
+          .single();
 
-      // 3. Kirim notifikasi WA ke Bendahara Pusat
-      if (data) {
-        await sendWANotification(data);
+        if (error) {
+          console.error('Error update status di Supabase:', error);
+          throw error;
+        }
+
+        // 3. Kirim notifikasi WA ke Bendahara Pusat
+        if (data) {
+          await sendWANotification(data);
+        }
       }
     }
 
@@ -105,4 +110,5 @@ export default async function handler(req, res) {
     console.error('Midtrans Callback Error:', error);
     return res.status(500).json({ error: error.message });
   }
-}
+};
+

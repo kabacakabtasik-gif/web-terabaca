@@ -766,7 +766,7 @@ function renderBatchTable(dataList) {
 
     try {
         // 2. Ambil data peserta yang memiliki file_hasil_url pada batch ini
-        const { data: pesertaList, error } = await _supabase
+        const { data: pesertaList, error } = await supabaseClient
             .from('data_peserta')
             .select('no_testee, nama_testee, file_hasil_url')
             .eq('batch_id', idBatch)

@@ -774,17 +774,6 @@ async function eksekusiUploadPdfBatchPusat() {
     }
 }
 
-        function filterPeserta() {
-            const query = document.getElementById('searchPeserta').value.toLowerCase();
-            const filtered = rawData.filter(item => {
-                const nama = (item.nama_testee || item.nama || '').toLowerCase();
-                const cabang = (item.cabang || '').toLowerCase();
-                const lembaga = (item.lembaga || '').toLowerCase();
-                return nama.includes(query) || cabang.includes(query) || lembaga.includes(query);
-            });
-            renderPeserta(filtered);
-        }
-
         async function setValidManual(id) {
             if (!confirm("Tandai pembayaran peserta ini sebagai Valid?")) return;
             const { error } = await _supabase.from('data_peserta').update({ is_valid_pembayaran: true }).eq('id', id);
@@ -906,41 +895,49 @@ async function eksekusiUploadPdfBatchPusat() {
 
         // EXPORT REKAP EXCEL
         function downloadRekapExcel() {
-            if (!rawData || rawData.length === 0) {
-                alert("Tidak ada data untuk diunduh!");
+            const dataToExport = (allPesertaData && allPesertaData.length > 0) ? allPesertaData : rawData;
+            if (!dataToExport || dataToExport.length === 0) {
+                alert("Tidak ada data peserta untuk diunduh!");
                 return;
             }
 
-            const excelData = rawData.map(row => {
-                let usiaText = row.usia || "-";
-                if (row.tgl_lahir) {
-                    const birthDate = new Date(row.tgl_lahir);
-                    const today = new Date();
-                    let age = today.getFullYear() - birthDate.getFullYear();
-                    const m = today.getMonth() - birthDate.getMonth();
-                    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) { age--; }
-                    usiaText = age > 0 ? `${age} Tahun` : "-";
-                }
-
+            const excelData = dataToExport.map((row, i) => {
                 return {
-                    "Nama Lengkap Testee": row.nama_testee || row.nama || "-",
+                    "No": i + 1,
+                    "No Testee": row.no_testee || "-",
+                    "Bukti Transfer": row.bukti_transfer_url || "-",
+                    "File Coretan": row.file_coretan_url || "-",
                     "Jenis Paket": row.paket_tes || "-",
-                    "Cabang": row.cabang || "Pusat",
-                    "Nama Lembaga": row.lembaga || "-",
+                    "Nama Lengkap Testee": row.nama_testee || row.nama || "-",
+                    "Lembaga / Institusi": row.lembaga_institusi || row.lembaga || "-",
                     "Tempat Lahir": row.tempat_lahir || "-",
-                    "Tanggal lahir": row.tgl_lahir || "-",
-                    "Usia": usiaText,
+                    "Tanggal Lahir": row.tanggal_lahir || row.tgl_lahir || "-",
+                    "Usia": row.usia || "-",
+                    "Tanggal Tes": row.tanggal_tes || "-",
                     "Jenis Kelamin": row.jenis_kelamin || "-",
-                    "Pendidikan": row.pendidikan || "-",
-                    "No Whatsapp": row.wa_penginput || "-",
-                    "Email Penginput": row.email_penginput || "-"
+                    "Level Pendidikan": row.level_pendidikan || row.pendidikan || "-",
+                    "Jurusan SMA": row.jurusan_sma || "-",
+                    "Proses Menggambar": row.bantuan_menggambar || "-",
+                    "Kondisi Kertas": row.kondisi_kertas || "-",
+                    "Posisi Kertas": row.posisi_kertas || "-",
+                    "Alat Gambar": row.alat_gambar || "-",
+                    "Dominasi Warna": row.dominasi_warna || "-",
+                    "Catatan Gambar": row.catatan_gambar || "-",
+                    "Email Penginput": row.email_cabang || row.email_penginput || "-",
+                    "Paket Bayar": row.jenis_paket_bayar || "-",
+                    "Bentuk Kerjasama": row.bentuk_kerjasama || "-",
+                    "Nama Penginput": row.nama_penginput || "-",
+                    "WA Penginput": row.whatsapp_penginput || row.wa_penginput || "-",
+                    "Cabang": row.cabang || "Pusat",
+                    "Catatan Khusus": row.catatan_khusus || "-",
+                    "Jurusan Terlintas": row.jurusan_terlintas || "-"
                 };
             });
 
             const worksheet = XLSX.utils.json_to_sheet(excelData);
             const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Testee");
-            XLSX.writeFile(workbook, `Rekap_Data_Testee_TERABACA_${new Date().toISOString().slice(0, 10)}.xlsx`);
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Master Peserta");
+            XLSX.writeFile(workbook, `Rekap_Master_Peserta_TERABACA_${new Date().toISOString().slice(0, 10)}.xlsx`);
         }
 
         // SIDEBAR TOGGLE

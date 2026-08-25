@@ -310,7 +310,7 @@
                             alert('Alhamdulillah! Pembayaran Berhasil.');
                             sessionStorage.setItem('isPaidTERABACA', 'true');
                             sessionStorage.setItem('orderIdTERABACA', data.orderId || (result && result.order_id) || '');
-                            window.location.href = '/pendaftaran.html';
+                            window.location.href = 'upload.html';
                         },
                         onPending: function (result) {
                             alert('Menunggu pembayaran diselesaikan.');

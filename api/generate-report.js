@@ -46,8 +46,14 @@ module.exports = async (req, res) => {
       });
     }
 
+    let body = req.body;
+    if (typeof body === 'string') {
+      try { body = JSON.parse(body); } catch (e) { body = {}; }
+    }
+    body = body || {};
+
     // Ambil data dari Body Request
-    const dataTransaksi = req.body?.transactions || [
+    const dataTransaksi = body.transactions || [
       {
         buktiTransfer: 'https://link-bukti-transfer.com/123.jpg',
         gambar: 'https://link-gambar.com/456.jpg',

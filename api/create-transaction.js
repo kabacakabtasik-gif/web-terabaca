@@ -42,7 +42,7 @@ module.exports = async function handler(req, res) {
     if (supabaseUrl && supabaseKey) {
       try {
         const supabase = createClient(supabaseUrl, supabaseKey);
-        await supabase.from('pembayaran').insert([
+        const { error: dbError } = await supabase.from('pembayaran').insert([
           {
             order_id: orderId,
             nama: cleanNama,
@@ -51,19 +51,23 @@ module.exports = async function handler(req, res) {
             cabang: cleanCabang,
             paket: cleanPaket,
             gross_amount: cleanNominal,
-            tipe_bayar: cleanTipeBayar, // <--- TAMBAHAN
-            catatan: cleanCatatan,       // <--- TAMBAHAN
+            tipe_bayar: cleanTipeBayar,
+            catatan: cleanCatatan,
             status_pembayaran: 'pending'
           }
         ]);
+        if (dbError) {
+          console.error('Supabase insert warning:', dbError.message);
+        }
       } catch (dbErr) {
-        console.error('Supabase warning (ignored):', dbErr.message);
+        console.error('Supabase warning:', dbErr.message);
       }
     }
 
     // 3. Buat Transaksi Midtrans Snap
+    const isProduction = process.env.MIDTRANS_IS_PRODUCTION === 'true' || process.env.NODE_ENV === 'production';
     const snap = new midtransClient.Snap({
-      isProduction: false,
+      isProduction: isProduction,
       serverKey: process.env.MIDTRANS_SERVER_KEY || 'Mid-server-EAtUEPxspPR8vrU4GC8qk9gT',
       clientKey: process.env.MIDTRANS_CLIENT_KEY || 'Mid-client-2-2L5XUm_r2zrd6p'
     });

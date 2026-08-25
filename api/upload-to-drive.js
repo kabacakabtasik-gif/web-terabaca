@@ -1,10 +1,16 @@
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, message: 'Method Not Allowed' });
   }
 
   try {
-    const { fileName, fileData, fileBase64 } = req.body;
+    let body = req.body;
+    if (typeof body === 'string') {
+      try { body = JSON.parse(body); } catch (e) { body = {}; }
+    }
+    body = body || {};
+
+    const { fileName, fileData, fileBase64 } = body;
     const base64Content = fileData || fileBase64;
 
     if (!fileName || !base64Content) {
@@ -59,8 +65,5 @@ export default async function handler(req, res) {
     console.error('Upload Error:', error);
     return res.status(500).json({ success: false, message: error.message });
   }
-}
-
-export const config = {
-  api: { bodyParser: { sizeLimit: '10mb' } },
 };
+
