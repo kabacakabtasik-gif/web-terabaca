@@ -505,16 +505,16 @@
                     const namaFileBatch = b.nama_file_asli || '-';
                     const totalPeserta = b.jumlah_data || 0;
                     const driveCabangUrl = b.file_url || '';
-                    const hasilPusatUrl = b.hasil_pusat_url || '';
+                    const hasilPusatUrl = (b.hasil_pusat_url || '').trim();
+                    let linkPusat = `<span class="text-slate-400 italic">Belum diunggah</span>`;
 
-                    const linkCabang = driveCabangUrl
-                        ? `<a href="${driveCabangUrl}" target="_blank" class="text-indigo-600 hover:underline font-medium"><i class="fas fa-external-link-alt"></i> Open Drive</a>`
-                        : '-';
-
-                    const isHasilReady = hasilPusatUrl && hasilPusatUrl !== '-' && hasilPusatUrl.trim() !== '';
-                    const linkPusat = isHasilReady
-                        ? `<button onclick="downloadZipHasilBatch('${b.id}', '${namaFileBatch}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs shadow-sm transition"><i class="fas fa-file-archive"></i> Unduh Hasil (ZIP)</button>`
-                        : '<span class="text-slate-400 italic">Belum diunggah</span>';
+                    if (hasilPusatUrl && hasilPusatUrl !== '-' && hasilPusatUrl !== 'Terisi') {
+                        if (hasilPusatUrl.includes('drive.google.com')) {
+                            linkPusat = `<a href="${hasilPusatUrl}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-xs shadow-sm transition"><i class="fas fa-external-link-alt"></i> Buka Drive</a>`;
+                        } else {
+                            linkPusat = `<button onclick="downloadZipHasilBatch('${b.id}', '${namaFileBatch}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs shadow-sm transition"><i class="fas fa-file-archive"></i> Unduh Hasil (ZIP)</button>`;
+                        }
+                    }
 
                     return `
                 <tr class="hover:bg-slate-50 transition">
