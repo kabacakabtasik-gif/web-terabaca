@@ -12,17 +12,36 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <link rel="shortcut icon" href="#">
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex">
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col md:flex-row">
 
-  <!-- Sidebar -->
-  <aside class="w-64 bg-slate-900 text-white min-h-screen p-4 flex flex-col justify-between shrink-0">
+  <!-- Mobile Top Navigation Header -->
+  <div class="md:hidden bg-slate-900 text-white p-4 flex items-center justify-between sticky top-0 z-30 shadow-md w-full">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-lg">T</div>
+      <span class="font-bold text-sm tracking-wide">TeraBaca Cabang</span>
+    </div>
+    <button onclick="toggleSidebar()" type="button" class="text-slate-200 hover:text-white p-1 text-lg focus:outline-none cursor-pointer">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+
+  <!-- Mobile Sidebar Overlay Backdrop -->
+  <div id="sidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/60 z-40 hidden md:hidden backdrop-blur-xs"></div>
+
+  <!-- Sidebar Drawer -->
+  <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-50 w-64 bg-slate-900 text-white flex flex-col justify-between transition-transform duration-300 transform -translate-x-full md:translate-x-0 shrink-0 h-screen md:min-h-screen p-4 shadow-xl md:shadow-none">
     <div>
-      <div class="flex items-center gap-3 mb-8 px-2">
-        <div class="w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-xl">T</div>
-        <div>
-          <h1 class="font-bold text-lg leading-none">TeraBaca</h1>
-          <span class="text-xs text-slate-400">Cabang Admin</span>
+      <div class="flex items-center justify-between mb-8 px-2">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-xl">T</div>
+          <div>
+            <h1 class="font-bold text-lg leading-none">TeraBaca</h1>
+            <span class="text-xs text-slate-400">Cabang Admin</span>
+          </div>
         </div>
+        <button onclick="toggleSidebar()" type="button" class="md:hidden text-slate-400 hover:text-white text-lg">
+          <i class="fa-solid fa-times"></i>
+        </button>
       </div>
 
       <nav class="space-y-1">
@@ -50,7 +69,7 @@
       <div>
         <div class="text-xs text-slate-400 mb-1">Login sebagai:</div>
         <div id="cabang-info" class="font-semibold text-sm truncate text-indigo-400">Memuat...</div>
-        <button onclick="logout()" class="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-800 hover:bg-red-600 text-xs text-slate-300 hover:text-white rounded transition">
+        <button onclick="logout()" class="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-800 hover:bg-red-600 text-xs text-slate-300 hover:text-white rounded transition cursor-pointer">
           <i class="fa-solid fa-right-from-bracket"></i> Keluar
         </button>
       </div>
@@ -59,7 +78,7 @@
   </aside>
 
   <!-- Content Area -->
-  <main class="flex-1 p-8 overflow-y-auto">
+  <main class="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto w-full">
     
     <!-- Tab 1: Input Satuan (27 Format Pusat) -->
     <div id="content-satuan" class="max-w-4xl mx-auto space-y-6">
@@ -367,6 +386,16 @@ window.addEventListener('DOMContentLoaded', async () => {
   loadBatchUploads();
 });
 
+    // Sidebar Toggle untuk Layar Seluler (Mobile)
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      if (sidebar && backdrop) {
+        sidebar.classList.toggle('-translate-x-full');
+        backdrop.classList.toggle('hidden');
+      }
+    }
+
     // Switch Tab Dashboard
     function switchTab(tab) {
       document.getElementById('content-satuan').classList.toggle('hidden', tab !== 'satuan');
@@ -388,12 +417,25 @@ window.addEventListener('DOMContentLoaded', async () => {
       if (tab === 'batch') {
         loadBatchUploads();
       }
+
+      // Auto-close sidebar jika dibuka di layar seluler
+      if (window.innerWidth < 768) {
+        const sidebar = document.getElementById('sidebar');
+        const backdrop = document.getElementById('sidebarBackdrop');
+        if (sidebar && !sidebar.classList.contains('-translate-x-full')) {
+          sidebar.classList.add('-translate-x-full');
+          if (backdrop) backdrop.classList.add('hidden');
+        }
+      }
     }
 
-    // Logout
+    // Logout -> Diarahkan ke halaman paling depan (index.html)
     function logout() {
-      sessionStorage.clear();
-      window.location.href = '/login.html';
+      if (confirm("Apakah Anda yakin ingin keluar dari sistem?")) {
+        sessionStorage.clear();
+        localStorage.removeItem('user_terabaca');
+        window.location.href = 'index.html';
+      }
     }
 
     // Fungsi untuk membuat & mengunduh Template Excel otomatis
