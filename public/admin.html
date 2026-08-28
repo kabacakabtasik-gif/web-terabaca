@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
@@ -288,27 +289,15 @@
         <div class="p-6">
             <input type="hidden" id="batchIdTarget">
 
-            <div class="mb-4 space-y-3">
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">
-                        Pilih / Drag Multi-File PDF Hasil Peserta
-                    </label>
-                    <input type="file" id="pusatPdfFiles" multiple accept="application/pdf"
-                        class="w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 border border-slate-200 rounded-xl p-2 transition cursor-pointer">
-                    <p class="mt-1 text-[11px] text-slate-500">
-                        * Nama file PDF otomatis dicocokkan dengan <b>No Testee</b> atau <b>Nama Peserta</b> (contoh: <i>001_Budi.pdf</i> atau <i>Budi_Santoso.pdf</i>).
-                    </p>
-                </div>
-                <div class="relative flex py-1 items-center">
-                    <div class="flex-grow border-t border-slate-200"></div>
-                    <span class="flex-shrink mx-2 text-[10px] text-slate-400 font-bold uppercase tracking-wider">Atau Link Folder Drive</span>
-                    <div class="flex-grow border-t border-slate-200"></div>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Link Folder Google Drive (Opsional)</label>
-                    <input type="url" id="pusatDriveFolderUrl" placeholder="https://drive.google.com/drive/folders/..." 
-                        class="w-full text-xs border border-slate-200 rounded-xl p-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:border-indigo-500 transition">
-                </div>
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-slate-700 mb-1">
+                    Pilih / Drag Multi-File PDF Hasil Peserta
+                </label>
+                <input type="file" id="pusatPdfFiles" multiple accept="application/pdf"
+                    class="w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 border border-slate-200 rounded-xl p-2 transition cursor-pointer">
+                <p class="mt-1.5 text-[11px] text-slate-500 leading-relaxed">
+                    * Nama file PDF otomatis dicocokkan dengan <b>No Testee</b> atau <b>Nama Peserta</b> (contoh: <i>001_Budi.pdf</i> atau <i>Budi_Santoso.pdf</i>).
+                </p>
             </div>
 
             <!-- Indicator Progress Box -->
@@ -522,8 +511,9 @@
                         ? `<a href="${driveCabangUrl}" target="_blank" class="text-indigo-600 hover:underline font-medium"><i class="fas fa-external-link-alt"></i> Open Drive</a>`
                         : '-';
 
-                    const linkPusat = hasilPusatUrl
-                        ? `<a href="${hasilPusatUrl}" target="_blank" class="text-emerald-600 hover:underline font-medium"><i class="fas fa-folder font-bold"></i> Hasil Pusat</a>`
+                    const isHasilReady = hasilPusatUrl && hasilPusatUrl !== '-' && hasilPusatUrl.trim() !== '';
+                    const linkPusat = isHasilReady
+                        ? `<button onclick="downloadZipHasilBatch('${b.id}', '${namaFileBatch}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs shadow-sm transition"><i class="fas fa-file-archive"></i> Unduh Hasil (ZIP)</button>`
                         : '<span class="text-slate-400 italic">Belum diunggah</span>';
 
                     return `
@@ -535,8 +525,8 @@
                     <td class="p-3.5">${linkCabang}</td>
                     <td class="p-3.5">${linkPusat}</td>
                     <td class="p-3.5 text-center">
-                        <button onclick="openModalHasilBatch('${b.id}', '${hasilPusatUrl}')" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-semibold text-[11px] rounded-lg transition">
-                            <i class="fas fa-upload"></i> Set Link Hasil
+                        <button onclick="openModalHasilBatch('${b.id}')" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-semibold text-[11px] rounded-lg transition" title="Upload PDF Hasil">
+                            <i class="fas fa-cloud-upload-alt"></i> Upload PDF Hasil
                         </button>
                     </td>
                 </tr>
@@ -700,12 +690,10 @@ const normalizeStr = (str) => (str || '').toLowerCase().replace(/[^a-z0-9]/g, ''
 async function eksekusiUploadPdfBatchPusat() {
     const batchId = document.getElementById('batchIdTarget').value;
     const fileInput = document.getElementById('pusatPdfFiles');
-    const folderUrlInput = document.getElementById('pusatDriveFolderUrl');
-    const driveFolderUrl = folderUrlInput ? folderUrlInput.value.trim() : '';
     const files = Array.from(fileInput.files);
 
-    if (files.length === 0 && !driveFolderUrl) {
-        return alert("Pilih minimal 1 file PDF atau masukkan Link Folder Google Drive!");
+    if (files.length === 0) {
+        return alert("Pilih minimal 1 file PDF!");
     }
 
     const btn = document.getElementById('btnSimpanHasilBatch');
@@ -718,37 +706,23 @@ async function eksekusiUploadPdfBatchPusat() {
     btn.disabled = true;
     progressBox.classList.remove('hidden');
 
-    // Jika admin hanya memasukkan Link Folder Drive
-    if (files.length === 0 && driveFolderUrl) {
-        try {
-            await _supabase
-                .from('batch_upload')
-                .update({ hasil_pusat_url: driveFolderUrl })
-                .eq('id', batchId);
-            alert("Alhamdulillah! Link Folder Google Drive Hasil Pusat berhasil disimpan.");
-            btn.disabled = false;
-            closeModalHasilBatch();
-            if (typeof loadDataBatch === 'function') loadDataBatch();
-            return;
-        } catch (e) {
-            alert("Gagal menyimpan link folder: " + e.message);
-            btn.disabled = false;
-            return;
-        }
-    }
-
     let sukses = 0;
     let gagal = 0;
     let completed = 0;
 
-    // Pre-calculate normalized values for fast matching
-    const normalizedPeserta = targetPesertaBatch.map(p => ({
-        id: p.id,
-        nama_testee: p.nama_testee,
-        no_testee: p.no_testee,
-        normNo: normalizeStr(p.no_testee),
-        normNama: normalizeStr(p.nama_testee)
-    }));
+    // Pre-calculate normalized values & word tokens for fast matching
+    const normalizedPeserta = targetPesertaBatch.map(p => {
+        const rawNama = p.nama_testee || '';
+        const words = rawNama.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(w => w.length >= 3);
+        return {
+            id: p.id,
+            nama_testee: rawNama,
+            no_testee: p.no_testee,
+            normNo: normalizeStr(p.no_testee),
+            normNama: normalizeStr(rawNama),
+            words: words
+        };
+    });
 
     function updateProgressPusat(cur, total) {
         const pct = Math.round((cur / total) * 100);
@@ -757,15 +731,29 @@ async function eksekusiUploadPdfBatchPusat() {
         progressBar.style.width = `${pct}%`;
     }
 
+    const totalPesertaCount = normalizedPeserta.length;
+
     async function uploadSingleFile(file) {
         const rawFileName = file.name.replace(/\.[^/.]+$/, "");
         const normFileName = normalizeStr(rawFileName);
 
-        // Matching: normNo (min 2 char) ATAU normNama (min 3 char)
+        // Matching Strategy:
+        // 1. Fallback single file: If 1 participant in batch & 1 uploaded file, match 100%
+        // 2. No Testee match (min 2 char)
+        // 3. Full Name match (min 3 char)
+        // 4. Reverse Name match
+        // 5. Word-overlap match (e.g. Hasna, Siti, Nurhasanah inside TK Al-Musyawirin Basic Hasna Siti Nurhasanah.pdf)
         const match = normalizedPeserta.find(p => {
-            const matchNo = p.normNo && p.normNo.length >= 2 && normFileName.includes(p.normNo);
-            const matchNama = p.normNama && p.normNama.length >= 3 && normFileName.includes(p.normNama);
-            return matchNo || matchNama;
+            if (totalPesertaCount === 1 && files.length === 1) return true;
+            if (p.normNo && p.normNo.length >= 2 && normFileName.includes(p.normNo)) return true;
+            if (p.normNama && p.normNama.length >= 3 && normFileName.includes(p.normNama)) return true;
+            if (normFileName && normFileName.length >= 3 && p.normNama && p.normNama.includes(normFileName)) return true;
+            if (p.words && p.words.length > 0) {
+                const matchedWords = p.words.filter(w => normFileName.includes(w));
+                if (p.words.length === 1 && matchedWords.length === 1) return true;
+                if (p.words.length >= 2 && matchedWords.length >= Math.min(2, p.words.length)) return true;
+            }
+            return false;
         });
 
         if (!match) {
@@ -815,16 +803,81 @@ async function eksekusiUploadPdfBatchPusat() {
         await Promise.all(chunk.map(file => uploadSingleFile(file)));
     }
 
-    await _supabase
-        .from('batch_upload')
-        .update({ hasil_pusat_url: driveFolderUrl || 'Terisi' })
-        .eq('id', batchId);
+    if (sukses > 0) {
+        await _supabase
+            .from('batch_upload')
+            .update({ hasil_pusat_url: 'Terisi' })
+            .eq('id', batchId);
+        alert(`Alhamdulillah! ${sukses} file PDF berhasil diunggah & terhubung.` + (gagal > 0 ? ` (${gagal} file tidak cocok/gagal).` : ''));
+    } else {
+        alert(`Perhatian: 0 file PDF terhubung dengan peserta batch ini (${gagal} file tidak cocok). Pastikan nama file mencantumkan nama peserta.`);
+    }
 
-    alert(`Alhamdulillah! ${sukses} file PDF berhasil diunggah & terhubung. (${gagal} file tidak cocok/gagal).`);
     btn.disabled = false;
     closeModalHasilBatch();
     
     if (typeof loadDataBatch === 'function') loadDataBatch();
+}
+
+// 4. UNDUH ZIP HASIL BATCH PUSAT / CABANG
+async function downloadZipHasilBatch(idBatch, namaBatch) {
+    if (typeof JSZip === 'undefined' || typeof saveAs === 'undefined') {
+        return alert("Library JSZip/FileSaver belum dimuat di halaman ini!");
+    }
+
+    if (!confirm(`Unduh semua file PDF hasil untuk ${namaBatch || 'batch ini'}?`)) return;
+
+    try {
+        const { data: pesertaList, error } = await _supabase
+            .from('data_peserta')
+            .select('no_testee, nama_testee, file_hasil_url')
+            .eq('batch_id', idBatch)
+            .not('file_hasil_url', 'is', null);
+
+        if (error) throw error;
+
+        const validPeserta = (pesertaList || []).filter(p => p.file_hasil_url && p.file_hasil_url.trim() !== '');
+
+        if (validPeserta.length === 0) {
+            return alert("Belum ada file PDF hasil yang diunggah untuk batch ini.");
+        }
+
+        const zip = new JSZip();
+        const folderName = (namaBatch || `Batch_${idBatch}`).replace(/[^a-zA-Z0-9_-]/g, '_');
+        const imgFolder = zip.folder(folderName);
+
+        let suksesCount = 0;
+        let gagalCount = 0;
+
+        for (let i = 0; i < validPeserta.length; i++) {
+            const p = validPeserta[i];
+            try {
+                const response = await fetch(p.file_hasil_url);
+                if (!response.ok) throw new Error("Gagal mengambil file");
+                const blob = await response.blob();
+                
+                const safeNama = (p.nama_testee || 'Peserta').replace(/[^a-zA-Z0-9_-]/g, '_');
+                const safeNo = (p.no_testee || '').replace(/[^a-zA-Z0-9_-]/g, '_');
+                const fileName = safeNo ? `${safeNo}_${safeNama}.pdf` : `${safeNama}.pdf`;
+                
+                imgFolder.file(fileName, blob);
+                suksesCount++;
+            } catch (err) {
+                console.error(`Gagal mengunduh file ${p.nama_testee}:`, err);
+                gagalCount++;
+            }
+        }
+
+        if (suksesCount === 0) {
+            return alert("Gagal mengunduh seluruh file PDF. Pastikan file tersedia di server.");
+        }
+
+        const zipBlob = await zip.generateAsync({ type: "blob" });
+        saveAs(zipBlob, `${folderName}_Hasil_Pusat.zip`);
+
+    } catch (err) {
+        alert("Terjadi kesalahan saat mengunduh ZIP: " + err.message);
+    }
 }
 
         async function setValidManual(id) {

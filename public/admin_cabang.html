@@ -729,17 +729,25 @@ async function handleSingleSubmit(e) {
       tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Memuat riwayat batch upload...</td></tr>`;
 
       try {
-        const { data, error } = await supabaseClient
-          .from('batch_upload')
-          .select('*')
-          .eq('cabang', currentCabang)
-          .order('created_at', { ascending: false });
+        const user = JSON.parse(sessionStorage.getItem('user_cabang')) || {};
+        const kodeCabang = user.kode_cabang || user.id || '';
+        const namaCabang = currentCabang || user.nama_cabang || user.cabang || '';
+
+        // Query matching Nama Cabang ATAU Kode Cabang agar semua batch cabang ini muncul 100%
+        let query = supabaseClient.from('batch_upload').select('*');
+        
+        if (namaCabang || kodeCabang) {
+          const filterOr = `cabang.eq."${namaCabang}",kode_cabang.eq."${namaCabang}"${kodeCabang ? `,kode_cabang.eq."${kodeCabang}",cabang.eq."${kodeCabang}"` : ''}`;
+          query = query.or(filterOr);
+        }
+
+        const { data, error } = await query.order('created_at', { ascending: false });
 
         if (error) throw error;
 
         allBatchData = data || []; // Simpan ke variabel global
         
-        // Riset input pencarian saat reload
+        // Reset input pencarian saat reload
         const searchInput = document.getElementById('batch-search-input');
         if (searchInput) searchInput.value = '';
 
@@ -760,13 +768,13 @@ function renderBatchTable(dataList) {
   }
 
   tbody.innerHTML = dataList.map(b => {
-    // Tombol ZIP dipanggil menggunakan b.id dan b.nama_file_asli
-    const hasilButton = `
-      <button onclick="downloadZipHasilBatch('${b.id}', '${b.nama_file_asli || 'Batch_' + b.id}')" 
+    const isHasilReady = b.hasil_pusat_url && b.hasil_pusat_url !== '-' && b.hasil_pusat_url.trim() !== '';
+    const hasilButton = isHasilReady 
+      ? `<button onclick="downloadZipHasilBatch('${b.id}', '${b.nama_file_asli || 'Batch_' + b.id}')" 
               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-bold text-xs transition shadow-sm">
         <i class="fa-solid fa-file-archive"></i> Unduh ZIP
-      </button>
-    `;
+      </button>`
+      : `<span class="text-slate-400 italic font-normal text-xs">Belum diunggah</span>`;
 
     const tglFormat = b.created_at 
       ? new Date(b.created_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) 
