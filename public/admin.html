@@ -706,23 +706,8 @@ async function eksekusiUploadPdfBatchPusat() {
     btn.disabled = true;
     progressBox.classList.remove('hidden');
 
-    let sukses = 0;
-    let gagal = 0;
     let completed = 0;
-
-    // Pre-calculate normalized values & word tokens for fast matching
-    const normalizedPeserta = targetPesertaBatch.map(p => {
-        const rawNama = p.nama_testee || '';
-        const words = rawNama.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(w => w.length >= 3);
-        return {
-            id: p.id,
-            nama_testee: rawNama,
-            no_testee: p.no_testee,
-            normNo: normalizeStr(p.no_testee),
-            normNama: normalizeStr(rawNama),
-            words: words
-        };
-    });
+    const uploadedFileList = [];
 
     function updateProgressPusat(cur, total) {
         const pct = Math.round((cur / total) * 100);
@@ -731,64 +716,34 @@ async function eksekusiUploadPdfBatchPusat() {
         progressBar.style.width = `${pct}%`;
     }
 
-    const totalPesertaCount = normalizedPeserta.length;
-
     async function uploadSingleFile(file) {
-        const rawFileName = file.name.replace(/\.[^/.]+$/, "");
-        const normFileName = normalizeStr(rawFileName);
+        try {
+            const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+            const storagePath = `batch_${batchId}/${Date.now()}_${cleanName}`;
+            
+            const { error: uploadErr } = await _supabase
+                .storage
+                .from('hasil-pdf')
+                .upload(storagePath, file, { cacheControl: '3600', upsert: true });
 
-        // Matching Strategy:
-        // 1. Fallback single file: If 1 participant in batch & 1 uploaded file, match 100%
-        // 2. No Testee match (min 2 char)
-        // 3. Full Name match (min 3 char)
-        // 4. Reverse Name match
-        // 5. Word-overlap match (e.g. Hasna, Siti, Nurhasanah inside TK Al-Musyawirin Basic Hasna Siti Nurhasanah.pdf)
-        const match = normalizedPeserta.find(p => {
-            if (totalPesertaCount === 1 && files.length === 1) return true;
-            if (p.normNo && p.normNo.length >= 2 && normFileName.includes(p.normNo)) return true;
-            if (p.normNama && p.normNama.length >= 3 && normFileName.includes(p.normNama)) return true;
-            if (normFileName && normFileName.length >= 3 && p.normNama && p.normNama.includes(normFileName)) return true;
-            if (p.words && p.words.length > 0) {
-                const matchedWords = p.words.filter(w => normFileName.includes(w));
-                if (p.words.length === 1 && matchedWords.length === 1) return true;
-                if (p.words.length >= 2 && matchedWords.length >= Math.min(2, p.words.length)) return true;
-            }
-            return false;
-        });
+            if (uploadErr) throw uploadErr;
 
-        if (!match) {
-            gagal++;
-            logBox.innerHTML += `<div class="text-amber-600">⚠️ [Lewat] ${file.name} (Tidak ada peserta cocok)</div>`;
-        } else {
-            try {
-                const storagePath = `batch_${batchId}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-                const { error: uploadErr } = await _supabase
-                    .storage
-                    .from('hasil-pdf')
-                    .upload(storagePath, file, { cacheControl: '3600', upsert: true });
+            const { data: publicUrlData } = _supabase
+                .storage
+                .from('hasil-pdf')
+                .getPublicUrl(storagePath);
 
-                if (uploadErr) throw uploadErr;
+            const publicUrl = publicUrlData.publicUrl;
 
-                const { data: publicUrlData } = _supabase
-                    .storage
-                    .from('hasil-pdf')
-                    .getPublicUrl(storagePath);
+            uploadedFileList.push({
+                name: file.name,
+                url: publicUrl
+            });
 
-                const publicUrl = publicUrlData.publicUrl;
+            logBox.innerHTML += `<div class="text-emerald-600">✓ [Berhasil] ${file.name}</div>`;
 
-                const { error: dbErr } = await _supabase
-                    .from('data_peserta')
-                    .update({ file_hasil_url: publicUrl })
-                    .eq('id', match.id);
-
-                if (dbErr) throw dbErr;
-
-                sukses++;
-                logBox.innerHTML += `<div class="text-emerald-600">✓ [Berhasil] ${match.nama_testee} (${file.name})</div>`;
-            } catch (err) {
-                gagal++;
-                logBox.innerHTML += `<div class="text-rose-600">✕ [Gagal] ${file.name}: ${err.message}</div>`;
-            }
+        } catch (err) {
+            logBox.innerHTML += `<div class="text-rose-600">✕ [Gagal] ${file.name}: ${err.message}</div>`;
         }
 
         completed++;
@@ -803,14 +758,28 @@ async function eksekusiUploadPdfBatchPusat() {
         await Promise.all(chunk.map(file => uploadSingleFile(file)));
     }
 
-    if (sukses > 0) {
+    if (uploadedFileList.length > 0) {
+        // Ambil data file yang sudah ada sebelumnya jika ada
+        const { data: bData } = await _supabase.from('batch_upload').select('hasil_pusat_url').eq('id', batchId).single();
+        let existingFiles = [];
+        if (bData && bData.hasil_pusat_url) {
+            try {
+                const parsed = JSON.parse(bData.hasil_pusat_url);
+                if (Array.isArray(parsed)) existingFiles = parsed;
+            } catch (e) {}
+        }
+
+        const allFiles = [...existingFiles, ...uploadedFileList];
+        const resultPayload = JSON.stringify(allFiles);
+
         await _supabase
             .from('batch_upload')
-            .update({ hasil_pusat_url: 'Terisi' })
+            .update({ hasil_pusat_url: resultPayload })
             .eq('id', batchId);
-        alert(`Alhamdulillah! ${sukses} file PDF berhasil diunggah & terhubung.` + (gagal > 0 ? ` (${gagal} file tidak cocok/gagal).` : ''));
+
+        alert(`Alhamdulillah! ${uploadedFileList.length} file PDF berhasil diunggah.`);
     } else {
-        alert(`Perhatian: 0 file PDF terhubung dengan peserta batch ini (${gagal} file tidak cocok). Pastikan nama file mencantumkan nama peserta.`);
+        alert("Gagal mengunggah file PDF.");
     }
 
     btn.disabled = false;
@@ -828,17 +797,26 @@ async function downloadZipHasilBatch(idBatch, namaBatch) {
     if (!confirm(`Unduh semua file PDF hasil untuk ${namaBatch || 'batch ini'}?`)) return;
 
     try {
-        const { data: pesertaList, error } = await _supabase
-            .from('data_peserta')
-            .select('no_testee, nama_testee, file_hasil_url')
-            .eq('batch_id', idBatch)
-            .not('file_hasil_url', 'is', null);
+        const { data: batchData, error } = await _supabase
+            .from('batch_upload')
+            .select('hasil_pusat_url, nama_file_asli')
+            .eq('id', idBatch)
+            .single();
 
-        if (error) throw error;
+        if (error || !batchData || !batchData.hasil_pusat_url) {
+            return alert("Belum ada file PDF hasil yang diunggah untuk batch ini.");
+        }
 
-        const validPeserta = (pesertaList || []).filter(p => p.file_hasil_url && p.file_hasil_url.trim() !== '');
+        let filesToDownload = [];
+        const rawHasil = batchData.hasil_pusat_url.trim();
 
-        if (validPeserta.length === 0) {
+        if (rawHasil.startsWith('[')) {
+            try { filesToDownload = JSON.parse(rawHasil); } catch(e) {}
+        } else if (rawHasil.startsWith('http')) {
+            filesToDownload = [{ name: `${namaBatch || 'Hasil'}_Pusat.pdf`, url: rawHasil }];
+        }
+
+        if (!filesToDownload || filesToDownload.length === 0) {
             return alert("Belum ada file PDF hasil yang diunggah untuk batch ini.");
         }
 
@@ -847,29 +825,24 @@ async function downloadZipHasilBatch(idBatch, namaBatch) {
         const imgFolder = zip.folder(folderName);
 
         let suksesCount = 0;
-        let gagalCount = 0;
+        for (let i = 0; i < filesToDownload.length; i++) {
+            const item = filesToDownload[i];
+            const fileUrl = typeof item === 'string' ? item : item.url;
+            const fileName = (typeof item === 'object' && item.name) ? item.name : `Hasil_Pusat_${i + 1}.pdf`;
 
-        for (let i = 0; i < validPeserta.length; i++) {
-            const p = validPeserta[i];
             try {
-                const response = await fetch(p.file_hasil_url);
+                const response = await fetch(fileUrl);
                 if (!response.ok) throw new Error("Gagal mengambil file");
                 const blob = await response.blob();
-                
-                const safeNama = (p.nama_testee || 'Peserta').replace(/[^a-zA-Z0-9_-]/g, '_');
-                const safeNo = (p.no_testee || '').replace(/[^a-zA-Z0-9_-]/g, '_');
-                const fileName = safeNo ? `${safeNo}_${safeNama}.pdf` : `${safeNama}.pdf`;
-                
                 imgFolder.file(fileName, blob);
                 suksesCount++;
             } catch (err) {
-                console.error(`Gagal mengunduh file ${p.nama_testee}:`, err);
-                gagalCount++;
+                console.error(`Gagal mengunduh file ${fileName}:`, err);
             }
         }
 
         if (suksesCount === 0) {
-            return alert("Gagal mengunduh seluruh file PDF. Pastikan file tersedia di server.");
+            return alert("Gagal mengunduh file PDF hasil. Pastikan file tersedia.");
         }
 
         const zipBlob = await zip.generateAsync({ type: "blob" });

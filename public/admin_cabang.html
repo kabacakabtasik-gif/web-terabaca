@@ -729,24 +729,29 @@ async function handleSingleSubmit(e) {
       tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Memuat riwayat batch upload...</td></tr>`;
 
       try {
-        const user = JSON.parse(sessionStorage.getItem('user_cabang')) || {};
-        const kodeCabang = user.kode_cabang || user.id || '';
-        const namaCabang = currentCabang || user.nama_cabang || user.cabang || '';
-
-        // Query matching Nama Cabang ATAU Kode Cabang agar semua batch cabang ini muncul 100%
-        let query = supabaseClient.from('batch_upload').select('*');
-        
-        if (namaCabang || kodeCabang) {
-          const filterOr = `cabang.eq."${namaCabang}",kode_cabang.eq."${namaCabang}"${kodeCabang ? `,kode_cabang.eq."${kodeCabang}",cabang.eq."${kodeCabang}"` : ''}`;
-          query = query.or(filterOr);
-        }
-
-        const { data, error } = await query.order('created_at', { ascending: false });
+        const { data, error } = await supabaseClient
+          .from('batch_upload')
+          .select('*')
+          .order('created_at', { ascending: false });
 
         if (error) throw error;
 
-        allBatchData = data || []; // Simpan ke variabel global
-        
+        const user = JSON.parse(sessionStorage.getItem('user_cabang')) || {};
+        const normNama = (currentCabang || user.nama_cabang || user.cabang || '').toLowerCase().trim();
+        const normKode = (user.kode_cabang || user.id || '').toLowerCase().trim();
+
+        // Filter data batch yang milik cabang ini (cocok berdasarkan nama cabang atau kode cabang)
+        allBatchData = (data || []).filter(b => {
+          if (!normNama && !normKode) return true;
+          const bCabang = (b.cabang || '').toLowerCase().trim();
+          const bKode = (b.kode_cabang || '').toLowerCase().trim();
+
+          const matchNama = normNama && (bCabang.includes(normNama) || normNama.includes(bCabang) || bKode.includes(normNama) || normNama.includes(bKode));
+          const matchKode = normKode && (bKode.includes(normKode) || bCabang.includes(normKode) || normKode.includes(bCabang));
+
+          return matchNama || matchKode;
+        });
+
         // Reset input pencarian saat reload
         const searchInput = document.getElementById('batch-search-input');
         if (searchInput) searchInput.value = '';
@@ -807,28 +812,34 @@ function renderBatchTable(dataList) {
     }
 
     async function downloadZipHasilBatch(idBatch, namaBatch) {
-    // 1. Konfirmasi & validasi library
-    if (typeof JSZip === 'undefined' || typeof saveAs === 'undefined') {
-        return alert("Library JSZip/FileSaver belum dimuat. Pastikan CDN sudah terpasang di HTML!");
-    }
+      if (typeof JSZip === 'undefined' || typeof saveAs === 'undefined') {
+        return alert("Library JSZip/FileSaver belum dimuat di halaman ini!");
+      }
 
-    if (!confirm(`Unduh semua file PDF hasil untuk ${namaBatch || 'batch ini'}?`)) return;
+      if (!confirm(`Unduh semua file PDF hasil untuk ${namaBatch || 'batch ini'}?`)) return;
 
-    try {
-        // 2. Ambil data peserta yang memiliki file_hasil_url pada batch ini
-        const { data: pesertaList, error } = await supabaseClient
-            .from('data_peserta')
-            .select('no_testee, nama_testee, file_hasil_url')
-            .eq('batch_id', idBatch)
-            .not('file_hasil_url', 'is', null);
+      try {
+        const { data: batchData, error } = await supabaseClient
+          .from('batch_upload')
+          .select('hasil_pusat_url, nama_file_asli')
+          .eq('id', idBatch)
+          .single();
 
-        if (error) throw error;
+        if (error || !batchData || !batchData.hasil_pusat_url) {
+          return alert("Belum ada file PDF hasil yang diunggah untuk batch ini.");
+        }
 
-        // Filter tambahan untuk memastikan URL tidak kosong
-        const validPeserta = (pesertaList || []).filter(p => p.file_hasil_url && p.file_hasil_url.trim() !== '');
+        let filesToDownload = [];
+        const rawHasil = batchData.hasil_pusat_url.trim();
 
-        if (validPeserta.length === 0) {
-            return alert("Belum ada file PDF hasil yang diunggah untuk batch ini.");
+        if (rawHasil.startsWith('[')) {
+          try { filesToDownload = JSON.parse(rawHasil); } catch(e) {}
+        } else if (rawHasil.startsWith('http')) {
+          filesToDownload = [{ name: `${namaBatch || 'Hasil'}_Pusat.pdf`, url: rawHasil }];
+        }
+
+        if (!filesToDownload || filesToDownload.length === 0) {
+          return alert("Belum ada file PDF hasil yang diunggah untuk batch ini.");
         }
 
         const zip = new JSZip();
@@ -836,51 +847,33 @@ function renderBatchTable(dataList) {
         const imgFolder = zip.folder(folderName);
 
         let suksesCount = 0;
-        let gagalCount = 0;
+        for (let i = 0; i < filesToDownload.length; i++) {
+          const item = filesToDownload[i];
+          const fileUrl = typeof item === 'string' ? item : item.url;
+          const fileName = (typeof item === 'object' && item.name) ? item.name : `Hasil_Pusat_${i + 1}.pdf`;
 
-        // Visual feedback (Opsional: ubah status tombol jika ada)
-        console.log(`Memulai proses unduh ${validPeserta.length} file...`);
-
-        // 3. Loop & unduh tiap file PDF sebagai Blob
-        for (let i = 0; i < validPeserta.length; i++) {
-            const p = validPeserta[i];
-            const fileUrl = p.file_hasil_url;
-            
-            // Penamaan file di dalam ZIP (misal: 101_Ahmad_Fauzi.pdf)
-            const cleanNama = (p.nama_testee || 'Peserta').replace(/[^a-zA-Z0-9_-]/g, '_');
-            const cleanNo = (p.no_testee || `ID_${i+1}`).replace(/[^a-zA-Z0-9_-]/g, '_');
-            const fileNameInZip = `${cleanNo}_${cleanNama}.pdf`;
-
-            try {
-                // Fetch file binary dari Supabase Storage
-                const response = await fetch(fileUrl);
-                if (!response.ok) throw new Error(`HTTP status ${response.status}`);
-                
-                const blob = await response.blob();
-                
-                // Masukkan file ke dalam folder ZIP
-                imgFolder.file(fileNameInZip, blob);
-                suksesCount++;
-            } catch (err) {
-                console.error(`Gagal mengunduh file untuk ${p.nama_testee}:`, err);
-                gagalCount++;
-            }
+          try {
+            const response = await fetch(fileUrl);
+            if (!response.ok) throw new Error("Gagal mengambil file");
+            const blob = await response.blob();
+            imgFolder.file(fileName, blob);
+            suksesCount++;
+          } catch (err) {
+            console.error(`Gagal mengunduh file ${fileName}:`, err);
+          }
         }
 
         if (suksesCount === 0) {
-            return alert("Gagal mengunduh seluruh file PDF. Periksa akses CORS di Supabase Storage.");
+          return alert("Gagal mengunduh file PDF hasil. Pastikan file tersedia.");
         }
 
-        // 4. Generate file ZIP & pemicu download otomatis
         const zipBlob = await zip.generateAsync({ type: "blob" });
-        saveAs(zipBlob, `${folderName}_Hasil_Analisa.zip`);
+        saveAs(zipBlob, `${folderName}_Hasil_Pusat.zip`);
 
-        alert(`Selesai! ${suksesCount} file PDF berhasil dikemas ke dalam ZIP.` + (gagalCount > 0 ? ` (${gagalCount} gagal)` : ''));
-
-    } catch (err) {
-        alert("Terjadi kesalahan saat membuat file ZIP: " + err.message);
+      } catch (err) {
+        alert("Terjadi kesalahan saat mengunduh ZIP: " + err.message);
+      }
     }
-}
   </script>
 </body>
 </html>
