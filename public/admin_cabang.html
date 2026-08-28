@@ -777,11 +777,7 @@ function renderBatchTable(dataList) {
     let hasilButton = `<span class="text-slate-400 italic font-normal text-xs">Belum diunggah</span>`;
 
     if (hasilPusatUrl && hasilPusatUrl !== '-' && hasilPusatUrl !== 'Terisi') {
-      if (hasilPusatUrl.includes('drive.google.com')) {
-        hasilButton = `<a href="${hasilPusatUrl}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-bold text-xs shadow-sm transition"><i class="fa-solid fa-folder-open"></i> Buka Drive</a>`;
-      } else {
-        hasilButton = `<button onclick="downloadZipHasilBatch('${b.id}', '${b.nama_file_asli || 'Batch_' + b.id}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-bold text-xs transition shadow-sm"><i class="fa-solid fa-file-archive"></i> Unduh ZIP</button>`;
-      }
+      hasilButton = `<button onclick="downloadZipHasilBatch('${b.id}', '${b.nama_file_asli || 'Batch_' + b.id}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-bold text-xs transition shadow-sm"><i class="fa-solid fa-file-archive"></i> Unduh ZIP</button>`;
     }
 
     const tglFormat = b.created_at 
@@ -834,6 +830,11 @@ function renderBatchTable(dataList) {
 
         let filesToDownload = [];
         const rawHasil = batchData.hasil_pusat_url.trim();
+
+        if (rawHasil.includes('drive.google.com')) {
+          window.open(rawHasil, '_blank');
+          return;
+        }
 
         if (rawHasil.startsWith('[')) {
           try { filesToDownload = JSON.parse(rawHasil); } catch(e) {}
