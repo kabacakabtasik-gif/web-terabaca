@@ -324,7 +324,6 @@
               <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
                 <th class="p-3">Nama File</th>
                 <th class="p-3">Lembaga / Instansi</th>
-                <th class="p-3">Paket</th>
                 <th class="p-3">Jumlah Data</th>
                 <th class="p-3">Tanggal Upload</th>
                 <th class="p-3 text-center">Hasil Testee (Pusat)</th>
@@ -332,7 +331,7 @@
             </thead>
             <tbody id="batch-table-body" class="divide-y divide-slate-200">
               <tr>
-                <td colspan="6" class="p-4 text-center text-slate-400">Memuat riwayat batch upload...</td>
+                <td colspan="5" class="p-4 text-center text-slate-400">Memuat riwayat batch upload...</td>
               </tr>
             </tbody>
           </table>
@@ -508,20 +507,99 @@ window.addEventListener('DOMContentLoaded', async () => {
       XLSX.writeFile(wb, "Template_Upload_Massal_TeraBaca.xlsx");
     }
 
-    // 3. Submit Form Satuan
+    // 3. Submit Form Satuan (Otomatis Membuat Excel ke Google Drive & Batch Terpisah)
 async function handleSingleSubmit(e) {
   e.preventDefault();
   const btn = document.getElementById('btn-submit-satuan');
   btn.disabled = true;
-  btn.innerText = "Menyimpan Data...";
+  btn.innerText = "Menyimpan & Mengunggah Excel ke Drive...";
 
   try {
+    const user = JSON.parse(sessionStorage.getItem('user_cabang')) || {};
+    const namaTesteeVal = (document.getElementById('f_nama_testee').value || 'Satuan').trim();
+    const noTesteeVal = document.getElementById('f_no_testee').value || '-';
+    const lembagaVal = (document.getElementById('f_lembaga').value || '-').trim();
+    const jenisPaketVal = document.getElementById('f_jenis_paket').value || 'Basic';
+    const safeNamaTestee = namaTesteeVal.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const namaBatchSatuan = `Satuan_${safeNamaTestee}.xlsx`;
+
+    // 1. Buat File Excel Otomatis (27 Format Kolom Resmi) untuk 1 Peserta ini
+    let base64Excel = '';
+    let driveLink = '-';
+    if (typeof XLSX !== 'undefined') {
+      const headers = [
+        "Link Bukti Transfer", "Link File Coretan/Gambar", "Jenis Paket", "Nama Lengkap Testee", "No Testee",
+        "Lembaga/Institusi", "Tempat Lahir", "Tanggal Lahir", "Usia", "Tanggal Tes", "Jenis Kelamin",
+        "Level Pendidikan", "Jurusan SMA", "Bantuan Menggambar", "Kondisi Kertas", "Posisi Kertas",
+        "Alat Gambar", "Dominasi Warna", "Catatan Gambar", "Email Cabang", "Jenis Paket Bayar",
+        "Bentuk Kerjasama", "Nama Penginput", "WhatsApp Penginput", "Cabang", "Catatan Khusus", "Jurusan Terlintas"
+      ];
+
+      const rowData = [
+        '-', '-', jenisPaketVal, namaTesteeVal, noTesteeVal,
+        lembagaVal, document.getElementById('f_tempat_lahir').value || '', document.getElementById('f_tgl_lahir').value || '',
+        document.getElementById('f_usia').value || '', document.getElementById('f_tgl_tes').value || '',
+        document.getElementById('f_jk').value || 'Laki-Laki', document.getElementById('f_level_pendidikan').value || '-',
+        document.getElementById('f_jurusan_sma').value || '-', document.getElementById('f_proses_gambar').value || 'Mandiri',
+        document.getElementById('f_kondisi_kertas').value || 'Tidak Sobek', document.getElementById('f_posisi_kertas').value || 'Vertical',
+        document.getElementById('f_alat_gambar').value || 'Pensil Warna', document.getElementById('f_dominasi_warna').value || 'Biru (Semua warna terang)',
+        document.getElementById('f_catatan_gambar').value || '-', document.getElementById('f_email_pengupload').value || '',
+        document.getElementById('f_paket_bayar').value || 'Berbayar Utama', document.getElementById('f_kerjasama').value || 'Umum',
+        document.getElementById('f_nama_penginput').value || user.nama || currentCabang, document.getElementById('f_wa_penginput').value || '',
+        currentCabang, document.getElementById('f_catatan_khusus').value || '-', document.getElementById('f_pilihan_jurusan').value || '-'
+      ];
+
+      const ws = XLSX.utils.aoa_to_sheet([headers, rowData]);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Data Peserta");
+      base64Excel = XLSX.write(wb, { type: 'base64', bookType: 'xlsx' });
+    }
+
+    // 2. Unggah File Excel Otomatis ke Google Drive via Apps Script
+    if (base64Excel) {
+      const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbya1vzhQ993URT53aofily26Y7LPRmMMl17eZwAzh5BYeD4UR7NUmqfKVsHuNvFg7yF/exec';
+      try {
+        const driveRes = await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            fileName: `${currentCabang}_${Date.now()}_${namaBatchSatuan}`,
+            fileData: base64Excel
+          })
+        });
+        const driveData = await driveRes.json();
+        if (driveData && (driveData.webViewLink || driveData.fileId)) {
+          driveLink = driveData.webViewLink || driveData.fileId;
+        }
+      } catch (errDrive) {
+        console.warn("Gagal upload Excel ke Drive (melanjutkan simpan Supabase):", errDrive);
+      }
+    }
+
+    // 3. Buat record batch baru di batch_upload untuk Input Satuan ini
+    const { data: batchData, error: batchErr } = await supabaseClient
+      .from('batch_upload')
+      .insert([{
+        nama_file_asli: namaBatchSatuan,
+        file_url: driveLink,
+        cabang: currentCabang,
+        kode_cabang: user.kode_cabang || user.id || currentCabang,
+        nama_penginput: user.nama || currentCabang,
+        jumlah_data: 1,
+        lembaga: lembagaVal,
+        paket: jenisPaketVal
+      }])
+      .select()
+      .single();
+
+    if (batchErr) throw batchErr;
+
     const payload = {
-      // Nama Key Disesuaikan dengan Kolom Supabase Terbaru:
-      paket_tes:          document.getElementById('f_jenis_paket').value,
-      nama_testee:        document.getElementById('f_nama_testee').value,
-      no_testee:          document.getElementById('f_no_testee').value || null,
-      lembaga_institusi:  document.getElementById('f_lembaga').value,
+      batch_id:           batchData.id, // Relasi ke batch_upload baru
+      paket_tes:          jenisPaketVal,
+      nama_testee:        namaTesteeVal,
+      no_testee:          noTesteeVal,
+      lembaga_institusi:  lembagaVal,
       tempat_lahir:       document.getElementById('f_tempat_lahir').value,
       tanggal_lahir:      document.getElementById('f_tgl_lahir').value || null,
       usia:               document.getElementById('f_usia').value,
@@ -544,22 +622,23 @@ async function handleSingleSubmit(e) {
       catatan_khusus:     document.getElementById('f_catatan_khusus').value,
       jurusan_terlintas:  document.getElementById('f_pilihan_jurusan').value,
       
-      // Default untuk upload satuan (diisi '-' jika belum ada file)
       bukti_transfer_url: '-',
       file_coretan_url:   '-'
     };
 
-    const { data, error } = await supabaseClient
+    const { error: insertErr } = await supabaseClient
       .from('data_peserta')
       .insert([payload]);
 
-    if (error) throw error;
+    if (insertErr) throw insertErr;
 
-    alert('Data peserta berhasil disimpan!');
+    alert('Data peserta satuan berhasil disimpan, dibuatkan file Excel ke Google Drive, & terdaftar di batch!');
     document.getElementById('form-satuan').reset();
-    if(document.getElementById('f_cabang')) {
+    if (document.getElementById('f_cabang')) {
       document.getElementById('f_cabang').value = currentCabang;
     }
+
+    if (typeof loadBatchUploads === 'function') loadBatchUploads();
 
   } catch (err) {
     alert('Gagal menyimpan data: ' + err.message);
@@ -759,7 +838,7 @@ async function handleSingleSubmit(e) {
         renderBatchTable(allBatchData);
 
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-rose-500">Gagal mengambil data: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-rose-500">Gagal mengambil data: ${err.message}</td></tr>`;
       }
     }
 
@@ -768,7 +847,7 @@ function renderBatchTable(dataList) {
   const tbody = document.getElementById('batch-table-body');
 
   if (!dataList || dataList.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Data batch tidak ditemukan.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Data batch tidak ditemukan.</td></tr>`;
     return;
   }
 
@@ -788,7 +867,6 @@ function renderBatchTable(dataList) {
       <tr class="hover:bg-slate-50 transition border-b border-slate-100">
         <td class="p-3 font-medium text-slate-800">${b.nama_file_asli || 'Batch File'}</td>
         <td class="p-3 text-slate-600">${b.lembaga || '-'}</td>
-        <td class="p-3"><span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 font-semibold rounded text-xs">${b.paket || 'Basic'}</span></td>
         <td class="p-3 text-slate-600">${b.jumlah_data || 0} Peserta</td>
         <td class="p-3 text-slate-500">${tglFormat}</td>
         <td class="p-3 text-center">${hasilButton}</td>
