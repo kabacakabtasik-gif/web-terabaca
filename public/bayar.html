@@ -301,7 +301,7 @@
                 const data = await res.json();
 
                 if (!res.ok) {
-                    throw new Error(data.message || `Gagal memproses HTTP Error (${res.status})`);
+                    throw new Error(data.message || data.error || `Gagal memproses HTTP Error (${res.status})`);
                 }
 
                 if (data.token) {

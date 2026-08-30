@@ -65,11 +65,15 @@ module.exports = async function handler(req, res) {
     }
 
     // 3. Buat Transaksi Midtrans Snap
-    const isProduction = process.env.MIDTRANS_IS_PRODUCTION === 'true' || process.env.NODE_ENV === 'production';
+    // Hanya gunakan production jika MIDTRANS_IS_PRODUCTION eksplisit bernilai 'true'
+    const isProduction = process.env.MIDTRANS_IS_PRODUCTION === 'true';
+    const serverKey = process.env.MIDTRANS_SERVER_KEY || 'Mid-server-EAtUEPxspPR8vrU4GC8qk9gT';
+    const clientKey = process.env.MIDTRANS_CLIENT_KEY || 'Mid-client-2-2L5XUm_r2zrd6p';
+
     const snap = new midtransClient.Snap({
       isProduction: isProduction,
-      serverKey: process.env.MIDTRANS_SERVER_KEY || 'Mid-server-EAtUEPxspPR8vrU4GC8qk9gT',
-      clientKey: process.env.MIDTRANS_CLIENT_KEY || 'Mid-client-2-2L5XUm_r2zrd6p'
+      serverKey: serverKey,
+      clientKey: clientKey
     });
 
     const parameter = {
@@ -92,10 +96,19 @@ module.exports = async function handler(req, res) {
     };
 
     const transaction = await snap.createTransaction(parameter);
-    return res.status(200).json({ token: transaction.token, orderId: orderId });
+    return res.status(200).json({ 
+      success: true,
+      token: transaction.token, 
+      orderId: orderId 
+    });
 
   } catch (error) {
-    console.error('Error Backend:', error);
-    return res.status(500).json({ error: error.message || 'Internal Server Error' });
+    console.error('Error Backend create-transaction:', error);
+    const errMsg = error?.ApiResponse?.error_messages?.join(', ') || error?.message || 'Internal Server Error';
+    return res.status(500).json({ 
+      success: false,
+      message: errMsg,
+      error: errMsg 
+    });
   }
 };
