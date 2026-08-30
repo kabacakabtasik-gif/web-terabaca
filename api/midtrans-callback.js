@@ -4,10 +4,10 @@ const crypto = require('crypto');
 // Fungsi Kirim Notifikasi WA via Fonnte
 async function sendWANotification(data) {
   const token = process.env.WA_GATEWAY_TOKEN;
-  const target = process.env.NO_WA_BENDAHARA;
+  const target = process.env.NO_WA_BENDAHARA || '082115343686';
 
-  if (!token || !target) {
-    console.error('WA_GATEWAY_TOKEN atau NO_WA_BENDAHARA belum diatur di Vercel');
+  if (!token) {
+    console.error('WA_GATEWAY_TOKEN belum diatur di Vercel');
     return;
   }
 
@@ -76,8 +76,8 @@ module.exports = async function handler(req, res) {
     }
 
     if (isSuccess && orderId) {
-      const supabaseUrl = process.env.SUPABASE_URL;
-      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+      const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
       if (supabaseUrl && supabaseKey) {
         const supabase = createClient(supabaseUrl, supabaseKey);

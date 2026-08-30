@@ -666,7 +666,7 @@
                 lnkTanya.href = `https://wa.me/${nomorWa}?text=${encodeURIComponent(pesanTanya)}`;
             }
 
-            // 2. Format Pesan untuk Masing-Masing Paket
+            // 2. Hubungkan Tombol Paket (Personal ke Halaman Pembayaran, Lembaga ke WhatsApp/Bayar)
             const paketElements = [
                 { id: 'lnk-basic', name: 'BASIC' },
                 { id: 'lnk-parent', name: 'PARENT' },
@@ -677,8 +677,17 @@
             paketElements.forEach(paket => {
                 const el = document.getElementById(paket.id);
                 if (el) {
-                    let pesanPaket = `Halo Admin TERABACA (${cabangSelect.toUpperCase()}), perkenalkan nama saya ${nama}. Saya ingin mendaftar untuk Paket ${paket.name} (${currentKategori.toUpperCase()}). Mohon panduan selanjutnya, terima kasih.`;
-                    el.href = `https://wa.me/${nomorWa}?text=${encodeURIComponent(pesanPaket)}`;
+                    if (currentKategori === 'personal') {
+                        el.removeAttribute('target');
+                        el.href = `bayar.html?paket=${paket.name}&nama=${encodeURIComponent(nama !== 'Klien' ? nama : '')}&cabang=${cabangSelect}&tipe=personal`;
+                        el.textContent = "Pilih Paket & Bayar";
+                    } else {
+                        // Kategori Lembaga (MoU) diarahkan ke WhatsApp Admin untuk deal harga atau konsultasi
+                        el.setAttribute('target', '_blank');
+                        let pesanPaket = `Halo Admin TERABACA (${cabangSelect.toUpperCase()}), perkenalkan saya ${nama}. Saya ingin mengajukan kerjasama Lembaga (MoU) untuk Paket ${paket.name}. Mohon informasi dan prosedur penawarannya, terima kasih.`;
+                        el.href = `https://wa.me/${nomorWa}?text=${encodeURIComponent(pesanPaket)}`;
+                        el.textContent = "Hubungi Admin (MoU)";
+                    }
                 }
             });
         }

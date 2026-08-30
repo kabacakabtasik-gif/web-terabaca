@@ -237,9 +237,9 @@
 
         // Navigasi Pintar Kembali
         function goBackOrDashboard() {
-            const userSession = sessionStorage.getItem('user_session') || localStorage.getItem('userBranchCode');
+            const userCabang = sessionStorage.getItem('user_cabang') || sessionStorage.getItem('user_session') || localStorage.getItem('userBranchCode');
 
-            if (userSession) {
+            if (userCabang) {
                 window.location.href = 'admin_cabang.html';
             } else if (document.referrer && !document.referrer.includes(window.location.pathname)) {
                 window.history.back();
@@ -310,7 +310,13 @@
                             alert('Alhamdulillah! Pembayaran Berhasil.');
                             sessionStorage.setItem('isPaidTERABACA', 'true');
                             sessionStorage.setItem('orderIdTERABACA', data.orderId || (result && result.order_id) || '');
-                            window.location.href = 'upload.html';
+                            
+                            const isCabang = sessionStorage.getItem('user_cabang');
+                            if (isCabang) {
+                                window.location.href = 'admin_cabang.html';
+                            } else {
+                                window.location.href = 'upload.html';
+                            }
                         },
                         onPending: function (result) {
                             alert('Menunggu pembayaran diselesaikan.');
@@ -335,7 +341,66 @@
 
         // Inisialisasi awal saat halaman dimuat
         document.addEventListener('DOMContentLoaded', function() {
-            toggleTipeBayar('personal');
+            const urlParams = new URLSearchParams(window.location.search);
+            const tipe = urlParams.get('tipe') || 'personal';
+            const paket = urlParams.get('paket');
+            const nama = urlParams.get('nama');
+            const cabang = urlParams.get('cabang');
+
+            // Cek apakah diakses oleh Admin Cabang yang sedang login
+            let sessionCabang = null;
+            try {
+                sessionCabang = JSON.parse(sessionStorage.getItem('user_cabang'));
+            } catch (e) {}
+
+            // Set radio button tipe bayar
+            const radioTipe = document.querySelector(`input[name="tipe_bayar"][value="${tipe}"]`);
+            if (radioTipe) {
+                radioTipe.checked = true;
+            }
+            toggleTipeBayar(tipe);
+
+            // Auto-fill nama
+            if (nama) {
+                document.getElementById('pay_nama').value = decodeURIComponent(nama);
+            } else if (sessionCabang && sessionCabang.nama) {
+                document.getElementById('pay_nama').value = sessionCabang.nama;
+            }
+
+            // Auto-fill email jika ada di session cabang
+            if (sessionCabang && sessionCabang.email) {
+                document.getElementById('pay_email').value = sessionCabang.email;
+            }
+
+            // Auto-fill cabang
+            const targetCabang = cabang || (sessionCabang ? (sessionCabang.cabang || sessionCabang.nama_cabang) : null);
+            if (targetCabang) {
+                const selectCabang = document.getElementById('pay_cabang');
+                const lowerCabang = targetCabang.toLowerCase();
+                if (lowerCabang.includes('tasik')) {
+                    selectCabang.value = 'Kab. Tasikmalaya';
+                } else if (lowerCabang.includes('depok')) {
+                    selectCabang.value = 'Kota Depok';
+                } else if (lowerCabang.includes('pusat')) {
+                    selectCabang.value = 'Pusat';
+                } else {
+                    selectCabang.value = targetCabang;
+                }
+            }
+
+            // Auto-fill paket jika ada
+            if (paket) {
+                const selectPaket = document.getElementById('pay_paket');
+                const upperPaket = paket.toUpperCase();
+                for (let i = 0; i < selectPaket.options.length; i++) {
+                    if (selectPaket.options[i].value.toUpperCase() === upperPaket) {
+                        selectPaket.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            updateTotalDisplay();
         });
     </script>
 </body>
