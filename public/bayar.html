@@ -363,8 +363,8 @@
             // Auto-fill nama
             if (nama) {
                 document.getElementById('pay_nama').value = decodeURIComponent(nama);
-            } else if (sessionCabang && sessionCabang.nama) {
-                document.getElementById('pay_nama').value = sessionCabang.nama;
+            } else if (sessionCabang) {
+                document.getElementById('pay_nama').value = sessionCabang.nama || sessionCabang.nama_cabang || sessionCabang.username || '';
             }
 
             // Auto-fill email jika ada di session cabang
@@ -372,11 +372,16 @@
                 document.getElementById('pay_email').value = sessionCabang.email;
             }
 
+            // Auto-fill no whatsapp jika ada di session cabang
+            if (sessionCabang && (sessionCabang.whatsapp || sessionCabang.phone || sessionCabang.no_wa)) {
+                document.getElementById('pay_phone').value = sessionCabang.whatsapp || sessionCabang.phone || sessionCabang.no_wa;
+            }
+
             // Auto-fill cabang
-            const targetCabang = cabang || (sessionCabang ? (sessionCabang.cabang || sessionCabang.nama_cabang) : null);
+            const targetCabang = cabang || (sessionCabang ? (sessionCabang.cabang || sessionCabang.nama_cabang || sessionCabang.username) : null);
             if (targetCabang) {
                 const selectCabang = document.getElementById('pay_cabang');
-                const lowerCabang = targetCabang.toLowerCase();
+                const lowerCabang = String(targetCabang).toLowerCase();
                 if (lowerCabang.includes('tasik')) {
                     selectCabang.value = 'Kab. Tasikmalaya';
                 } else if (lowerCabang.includes('depok')) {
