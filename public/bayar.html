@@ -56,9 +56,9 @@
             <!-- Form Pembayaran -->
             <form id="paymentForm" class="space-y-4">
 
-                <!-- TIPE PEMBAYARAN (PERSONAL vs LEMBAGA MOU) -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Tipe Pembayaran *</label>
+                <!-- TIPE PEMBAYARAN (HANYA MUNCUL JIKA ADMIN CABANG LOGIN) -->
+                <div id="section-tipe-bayar" class="hidden">
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Tipe Pembayaran (Admin Access) *</label>
                     <div class="grid grid-cols-2 gap-2.5">
                         <label class="flex items-center gap-2 p-2.5 border rounded-xl cursor-pointer hover:bg-blue-50/50 transition border-slate-200 has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50/40">
                             <input type="radio" name="tipe_bayar" value="personal" checked onchange="toggleTipeBayar(this.value)" class="text-blue-600 focus:ring-blue-500">
@@ -118,7 +118,23 @@
                     </div>
                 </div>
 
-                <!-- OPSIONAL FORM LEMBAGA / MOU (DIBUKA JIKA PILIH LEMBAGA) -->
+                <!-- KODE KERJASAMA LEMBAGA (KHUSUS PUBLIK / ORANG TUA SISWA SEKOLAH MITRA) -->
+                <div id="section-voucher" class="bg-blue-50/60 p-3 rounded-xl border border-blue-100 space-y-1.5">
+                    <label class="block text-xs font-semibold text-blue-950">
+                        🏷️ Punya Kode Kerjasama Lembaga / Sekolah? <span class="text-slate-400 font-normal">(Opsional)</span>
+                    </label>
+                    <div class="flex gap-2">
+                        <input type="text" id="input_kode_mou" placeholder="Contoh: MOU-SDIT"
+                            class="w-full px-3 py-2 text-xs uppercase border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white font-mono font-bold tracking-wider">
+                        <button type="button" onclick="applyKodeMoU()"
+                            class="px-3.5 py-2 bg-blue-700 hover:bg-blue-800 active:scale-95 text-white rounded-lg text-xs font-semibold whitespace-nowrap transition cursor-pointer">
+                            Gunakan
+                        </button>
+                    </div>
+                    <div id="info_kode_mou" class="text-[11px] hidden font-medium"></div>
+                </div>
+
+                <!-- OPSIONAL FORM LEMBAGA / MOU (DIBUKA KHUSUS ADMIN CABANG) -->
                 <div id="section-lembaga" class="hidden space-y-3 bg-blue-50/50 p-3.5 rounded-xl border border-blue-100">
                     <div>
                         <label for="pay_lembaga" class="block text-xs font-bold text-blue-900 uppercase mb-1">Nama Lembaga / Sekolah *</label>
@@ -159,7 +175,7 @@
                 </div>
 
                 <button type="submit" id="btnPay"
-                    class="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-semibold py-3 rounded-xl transition shadow-md text-sm mt-2 disabled:bg-slate-400 disabled:cursor-not-allowed">
+                    class="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-semibold py-3 rounded-xl transition shadow-md text-sm mt-2 disabled:bg-slate-400 disabled:cursor-not-allowed cursor-pointer">
                     Lanjut ke Pembayaran Online (Midtrans)
                 </button>
             </form>
@@ -172,10 +188,52 @@
     </footer>
 
     <script>
+        // Database Kode Kerjasama MoU Lembaga (Bisa ditambah sesuai kebutuhan)
+        const masterKodeMoU = {
+            "SDIT-IDRISIYYAH": { nama: "SDIT Idrisiyyah Purbaratu", harga: 150000 },
+            "MOU-KABTASIK": { nama: "Kemitraan Sekolah Kab. Tasikmalaya", harga: 150000 },
+            "MOU-DEPOK": { nama: "Kemitraan Sekolah Kota Depok", harga: 150000 },
+            "MOU-PUSAT": { nama: "Kemitraan Sekolah Pusat", harga: 150000 },
+            "SPESIAL-150": { nama: "Harga Kemitraan Khusus", harga: 150000 }
+        };
+
+        let activeVoucher = null;
+
+        // Fungsi Terapkan Kode Kerjasama MoU
+        function applyKodeMoU() {
+            const input = document.getElementById('input_kode_mou');
+            const info = document.getElementById('info_kode_mou');
+            const kode = (input.value || '').trim().toUpperCase();
+
+            if (!kode) {
+                activeVoucher = null;
+                info.className = "text-[11px] text-red-500 font-medium";
+                info.innerText = "Silakan masukkan kode kerjasama terlebih dahulu.";
+                info.classList.remove('hidden');
+                updateTotalDisplay();
+                return;
+            }
+
+            if (masterKodeMoU[kode]) {
+                activeVoucher = { kode: kode, ...masterKodeMoU[kode] };
+                info.className = "text-[11px] text-emerald-700 font-semibold bg-emerald-50 p-2 rounded-lg border border-emerald-200 mt-1 block";
+                info.innerHTML = `✅ <b>Kode Kemitraan Aktif:</b> ${activeVoucher.nama}<br><span class="text-[10px] font-normal text-emerald-600">Tarif khusus Rp ${activeVoucher.harga.toLocaleString('id-ID')} telah diterapkan.</span>`;
+                info.classList.remove('hidden');
+            } else {
+                activeVoucher = null;
+                info.className = "text-[11px] text-red-600 font-medium bg-red-50 p-2 rounded-lg border border-red-200 mt-1 block";
+                info.innerText = "❌ Kode kerjasama tidak valid atau belum terdaftar. Silakan hubungi admin sekolah/cabang.";
+                info.classList.remove('hidden');
+            }
+
+            updateTotalDisplay();
+        }
+
         // Switcher Tipe Pembayaran (Personal vs Lembaga)
         function toggleTipeBayar(tipe) {
             const secPersonal = document.getElementById('section-paket-personal');
             const secLembaga = document.getElementById('section-lembaga');
+            const secVoucher = document.getElementById('section-voucher');
             
             const reqPaket = document.getElementById('pay_paket');
             const reqLembaga = document.getElementById('pay_lembaga');
@@ -196,6 +254,7 @@
             } else {
                 secPersonal.classList.add('hidden');
                 secLembaga.classList.remove('hidden');
+                if (secVoucher) secVoucher.classList.add('hidden');
 
                 reqPaket.removeAttribute('required');
                 reqPaket.disabled = true;
@@ -218,8 +277,17 @@
 
             if (tipe === 'personal') {
                 const selectPaket = document.getElementById('pay_paket');
+                let normalPrice = 0;
                 if (selectPaket.selectedIndex !== -1) {
-                    total = parseInt(selectPaket.options[selectPaket.selectedIndex].getAttribute('data-harga')) || 0;
+                    normalPrice = parseInt(selectPaket.options[selectPaket.selectedIndex].getAttribute('data-harga')) || 0;
+                }
+
+                if (activeVoucher && activeVoucher.harga) {
+                    total = activeVoucher.harga;
+                    display.innerHTML = `<span class="line-through text-slate-400 text-xs font-normal mr-1.5">Rp ${normalPrice.toLocaleString('id-ID')}</span> Rp ${total.toLocaleString('id-ID')}`;
+                } else {
+                    total = normalPrice;
+                    display.innerText = 'Rp ' + total.toLocaleString('id-ID');
                 }
                 detailKolektif.classList.add('hidden');
             } else {
@@ -229,9 +297,9 @@
 
                 detailKolektif.innerText = `(${qty} Murid x Rp ${harga.toLocaleString('id-ID')})`;
                 detailKolektif.classList.remove('hidden');
+                display.innerText = 'Rp ' + total.toLocaleString('id-ID');
             }
 
-            display.innerText = 'Rp ' + total.toLocaleString('id-ID');
             return total;
         }
 
@@ -270,8 +338,13 @@
 
             if (tipeBayar === 'personal') {
                 const namaPaket = selectPaket.value;
-                nominalFinal = parseInt(selectPaket.options[selectPaket.selectedIndex].getAttribute('data-harga')) || 0;
-                paketFinal = `${namaPaket}${catatan ? ' | A.n: ' + catatan : ''}`;
+                if (activeVoucher && activeVoucher.harga) {
+                    nominalFinal = activeVoucher.harga;
+                    paketFinal = `${namaPaket} [MoU: ${activeVoucher.nama}]${catatan ? ' | A.n: ' + catatan : ''}`;
+                } else {
+                    nominalFinal = parseInt(selectPaket.options[selectPaket.selectedIndex].getAttribute('data-harga')) || 0;
+                    paketFinal = `${namaPaket}${catatan ? ' | A.n: ' + catatan : ''}`;
+                }
             } else {
                 const namaLembaga = document.getElementById('pay_lembaga').value.trim();
                 const qty = parseInt(document.getElementById('pay_qty').value) || 0;
@@ -353,12 +426,23 @@
                 sessionCabang = JSON.parse(sessionStorage.getItem('user_cabang'));
             } catch (e) {}
 
+            // Atur Visibilitas Kontrol berdasarkan status Login Admin vs Pengguna Publik
+            const secTipe = document.getElementById('section-tipe-bayar');
+            const secVoucher = document.getElementById('section-voucher');
+            if (sessionCabang) {
+                if (secTipe) secTipe.classList.remove('hidden');
+                if (secVoucher) secVoucher.classList.add('hidden');
+            } else {
+                if (secTipe) secTipe.classList.add('hidden');
+                if (secVoucher) secVoucher.classList.remove('hidden');
+            }
+
             // Set radio button tipe bayar
             const radioTipe = document.querySelector(`input[name="tipe_bayar"][value="${tipe}"]`);
             if (radioTipe) {
                 radioTipe.checked = true;
             }
-            toggleTipeBayar(tipe);
+            toggleTipeBayar(sessionCabang ? tipe : 'personal');
 
             // Auto-fill nama
             if (nama) {
