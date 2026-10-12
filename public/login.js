@@ -13,6 +13,26 @@ window.closeLoginModal = function () {
   if (modal) modal.style.display = 'none';
 };
 
+// Fungsi Toggle Tampilkan / Sembunyikan Password
+window.togglePasswordVisibility = function (inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const icon = btn.querySelector('i');
+  if (input.type === 'password') {
+    input.type = 'text';
+    if (icon) {
+      icon.classList.remove('fa-eye');
+      icon.classList.add('fa-eye-slash');
+    }
+  } else {
+    input.type = 'password';
+    if (icon) {
+      icon.classList.remove('fa-eye-slash');
+      icon.classList.add('fa-eye');
+    }
+  }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
   // Mencari Form Login (Mendukung ID 'login-form' maupun 'secretLoginForm')
   const loginForm = document.getElementById('login-form') || document.getElementById('secretLoginForm');
