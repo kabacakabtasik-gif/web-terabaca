@@ -2,7 +2,7 @@ require('dotenv/config');
 const { createClient } = require('@supabase/supabase-js');
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+const supabaseAnonKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY;
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -27,11 +27,11 @@ module.exports = async function handler(req, res) {
   try {
     let authenticatedUser = null;
 
-    // 1. Cek tabel data_cabang (Mendukung login via Email ATAU Username)
+    // 1. Cek tabel data_cabang (Mendukung login via Email ATAU Kode Cabang)
     const { data: dbCabang, error: dbErr } = await supabase
       .from('data_cabang')
       .select('*')
-      .or(`email.eq.${identifier},username.eq.${identifier}`)
+      .or(`email.eq.${identifier},kode_cabang.eq.${identifier}`)
       .eq('password', password)
       .maybeSingle();
 

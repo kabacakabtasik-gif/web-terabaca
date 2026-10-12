@@ -93,11 +93,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const sb = window.supabaseClient || (typeof supabase !== 'undefined' ? supabase : null);
       if (sb && typeof sb.from === 'function') {
         try {
-          // Cari berdasarkan email atau username
+          // Cari berdasarkan email atau kode cabang
           const { data: dbCabang, error: dbErr } = await sb
             .from('data_cabang')
             .select('*')
-            .or(`email.eq.${identifier},username.eq.${identifier}`)
+            .or(`email.eq.${identifier},kode_cabang.eq.${identifier}`)
             .eq('password', password)
             .maybeSingle();
 
