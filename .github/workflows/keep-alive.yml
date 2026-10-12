@@ -1,17 +1,16 @@
-name: Keep Supabase Alive
+name: Supabase Keep-Alive Cron
 
 on:
   schedule:
-    # Berjalan setiap hari Senin dan Kamis jam 00:00 UTC
-    - cron: '0 0 * * 1,4'
-  workflow_dispatch: # Memungkinkan untuk di-run manual jika ingin tes
+    # Berjalan otomatis setiap 2 hari sekali pada jam 04:00 UTC (11:00 WIB)
+    - cron: '0 4 */2 * *'
+  workflow_dispatch: # Bisa juga dipicu secara manual dari tab Actions GitHub
 
 jobs:
-  ping-supabase:
+  ping-database:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Supabase Database
+      - name: Ping Keep-Alive Endpoint
         run: |
-          curl -i -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/data_peserta?select=id&limit=1" \
-          -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
-          -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"
+          echo "Pinging Terabaca Keep-Alive endpoint..."
+          curl -s -f https://web-terabaca.vercel.app/api/keep-alive || echo "Ping request executed"

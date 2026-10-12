@@ -3,5 +3,11 @@
   "rewrites": [
     { "source": "/login", "destination": "/login.html" },
     { "source": "/admin_cabang", "destination": "/admin_cabang.html" }
+  ],
+  "crons": [
+    {
+      "path": "/api/keep-alive",
+      "schedule": "0 0 * * *"
+    }
   ]
 }
