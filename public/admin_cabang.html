@@ -54,6 +54,12 @@
         <button onclick="switchTab('batch')" id="tab-batch" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition cursor-pointer">
           <i class="fa-solid fa-folder-open w-5"></i> Batch Upload
         </button>
+        <button onclick="switchTab('testee')" id="tab-testee" class="w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition cursor-pointer">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-users w-5 text-indigo-400"></i> Database Testee
+          </div>
+          <span id="badge-total-testee" class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-slate-800 text-slate-300">0</span>
+        </button>
         <a href="bayar.html" id="tab-bayar" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition cursor-pointer">
           <i class="fa-solid fa-credit-card w-5 text-emerald-400"></i> Pembayaran Online
         </a>
@@ -342,7 +348,307 @@
       </div>
     </div>
 
+    <!-- Tab 4: Database Testee Cabang (Lengkap & Terperinci) -->
+    <div id="content-testee" class="max-w-6xl mx-auto space-y-6 hidden">
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+        
+        <!-- Header & Aksi Cepat -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900 mb-1 flex items-center gap-2">
+              <i class="fa-solid fa-users text-indigo-600"></i> Database Testee & Hasil Analisa
+            </h2>
+            <p class="text-sm text-slate-500">Database lengkap peserta cabang, pencarian real-time, biodata 27 parameter, serta pemantauan status rilis hasil dari Pusat.</p>
+          </div>
+          <div class="flex items-center gap-2.5 shrink-0 flex-wrap">
+            <button onclick="exportTesteeExcel()" class="inline-flex items-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition shadow-sm cursor-pointer">
+              <i class="fa-solid fa-file-excel"></i> Export Excel (.xlsx)
+            </button>
+            <button onclick="loadDataTestee()" class="inline-flex items-center gap-1.5 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-semibold transition cursor-pointer">
+              <i class="fa-solid fa-rotate"></i> Refresh Data
+            </button>
+          </div>
+        </div>
+
+        <!-- 3 Kartu Statistik Ringkasan -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div class="bg-gradient-to-br from-indigo-50 to-slate-50 border border-indigo-100 p-4 rounded-xl flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-indigo-600 uppercase tracking-wider">Total Testee</p>
+              <h3 id="stat-total-testee" class="text-2xl font-bold text-slate-800 mt-0.5">0</h3>
+              <p class="text-[11px] text-slate-500 mt-0.5">Terdaftar di cabang ini</p>
+            </div>
+            <div class="w-11 h-11 bg-indigo-600 text-white rounded-xl flex items-center justify-center text-lg shadow-sm">
+              <i class="fa-solid fa-users"></i>
+            </div>
+          </div>
+
+          <div class="bg-gradient-to-br from-emerald-50 to-slate-50 border border-emerald-100 p-4 rounded-xl flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Sudah Keluar Hasil</p>
+              <h3 id="stat-selesai-testee" class="text-2xl font-bold text-emerald-700 mt-0.5">0</h3>
+              <p class="text-[11px] text-emerald-600 font-medium mt-0.5">PDF siap diunduh</p>
+            </div>
+            <div class="w-11 h-11 bg-emerald-600 text-white rounded-xl flex items-center justify-center text-lg shadow-sm">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+          </div>
+
+          <div class="bg-gradient-to-br from-amber-50 to-slate-50 border border-amber-100 p-4 rounded-xl flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-amber-600 uppercase tracking-wider">Menunggu Hasil Pusat</p>
+              <h3 id="stat-menunggu-testee" class="text-2xl font-bold text-amber-700 mt-0.5">0</h3>
+              <p class="text-[11px] text-amber-600 font-medium mt-0.5">Dalam analisa Pusat</p>
+            </div>
+            <div class="w-11 h-11 bg-amber-500 text-white rounded-xl flex items-center justify-center text-lg shadow-sm">
+              <i class="fa-solid fa-clock"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter & Search Controls -->
+        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 mb-5">
+          <div class="relative flex-1">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
+            <input type="text" id="testee-search-input" onkeyup="filterTesteeTable()" placeholder="Cari berdasarkan nama testee, no testee, atau lembaga/sekolah..." class="w-full pl-9 pr-3 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition">
+          </div>
+          
+          <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            <!-- Filter Status Hasil -->
+            <select id="filter-status-hasil" onchange="filterTesteeTable()" class="text-xs bg-white border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+              <option value="all">🔍 Semua Status Hasil</option>
+              <option value="selesai">✅ Hasil Sudah Keluar</option>
+              <option value="menunggu">⏳ Menunggu Hasil Pusat</option>
+            </select>
+
+            <!-- Filter Paket -->
+            <select id="filter-paket-testee" onchange="filterTesteeTable()" class="text-xs bg-white border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+              <option value="all">📦 Semua Paket</option>
+              <option value="Basic">Basic</option>
+              <option value="Parent">Parent</option>
+              <option value="Talent">Talent</option>
+              <option value="Brainwave">Brainwave</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Tabel Database Testee -->
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
+                <th class="p-3 text-center w-12">No</th>
+                <th class="p-3 min-w-[150px]">Status Hasil Pusat</th>
+                <th class="p-3 min-w-[130px]">No. Testee</th>
+                <th class="p-3 min-w-[180px]">Nama Testee</th>
+                <th class="p-3 min-w-[150px]">Lembaga / Instansi</th>
+                <th class="p-3 min-w-[90px]">Paket</th>
+                <th class="p-3 min-w-[120px]">Tgl Tes / Usia</th>
+                <th class="p-3 text-center min-w-[110px]">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="testee-table-body" class="divide-y divide-slate-200">
+              <tr>
+                <td colspan="8" class="p-6 text-center text-slate-400">Memuat database testee...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Footer Ringkasan Baris -->
+        <div class="flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 mt-4 px-1 gap-2">
+          <div id="testee-count-info">Menampilkan 0 data peserta</div>
+          <div class="text-[11px] text-slate-400">Klik tombol "Detail" untuk membuka seluruh 27 parameter data & link berkas asli.</div>
+        </div>
+
+      </div>
+    </div>
+
   </main>
+
+  <!-- MODAL DETAIL LENGKAP TESTEE (27 PARAMETER PUSAT) -->
+  <div id="modalDetailTestee" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-fadeIn">
+      
+      <!-- Modal Header -->
+      <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">
+            <i class="fa-solid fa-user-check"></i>
+          </div>
+          <div>
+            <h3 id="modal-testee-nama" class="font-bold text-base text-slate-900">Nama Testee</h3>
+            <p id="modal-testee-sub" class="text-xs text-slate-500">No Testee • Lembaga</p>
+          </div>
+        </div>
+        <button onclick="closeDetailTesteeModal()" type="button" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-200/50 transition cursor-pointer">
+          <i class="fa-solid fa-times text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="p-4 sm:p-6 space-y-5 overflow-y-auto flex-1 text-xs">
+        
+        <!-- Status Hasil Banner -->
+        <div id="modal-hasil-banner"></div>
+
+        <!-- Section 1: Biodata & Pelaksanaan Tes -->
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-3">
+          <h4 class="font-bold text-xs text-indigo-700 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-address-card"></i> 1. Biodata & Pelaksanaan Tes
+          </h4>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-slate-700">
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">No Testee</span>
+              <span id="dt-no-testee" class="font-bold text-slate-900">-</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">Nama Lengkap</span>
+              <span id="dt-nama-testee" class="font-semibold text-slate-900">-</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">Lembaga / Sekolah</span>
+              <span id="dt-lembaga" class="font-medium">-</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">Paket Tes</span>
+              <span id="dt-paket" class="font-semibold text-indigo-600">-</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">Tanggal Tes</span>
+              <span id="dt-tgl-tes" class="font-medium">-</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">Usia</span>
+              <span id="dt-usia" class="font-medium">-</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">Tempat & Tanggal Lahir</span>
+              <span id="dt-ttl" class="font-medium">-</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">Jenis Kelamin</span>
+              <span id="dt-jk" class="font-medium">-</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">Level Pendidikan</span>
+              <span id="dt-level-pendidikan" class="font-medium">-</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">Jurusan SMA/SMK</span>
+              <span id="dt-jurusan-sma" class="font-medium">-</span>
+            </div>
+            <div class="col-span-2">
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">Maksimal 3 Jurusan Terlintas</span>
+              <span id="dt-jurusan-terlintas" class="font-medium">-</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Observasi Menggambar -->
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-3">
+          <h4 class="font-bold text-xs text-indigo-700 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-palette"></i> 2. Observasi Menggambar
+          </h4>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-slate-700">
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">Bantuan Menggambar</span>
+              <span id="dt-proses-gambar" class="font-medium">-</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">Kondisi Kertas</span>
+              <span id="dt-kondisi-kertas" class="font-medium">-</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">Posisi Kertas</span>
+              <span id="dt-posisi-kertas" class="font-medium">-</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">Alat Gambar</span>
+              <span id="dt-alat-gambar" class="font-medium">-</span>
+            </div>
+            <div class="col-span-2">
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">Dominasi Warna</span>
+              <span id="dt-dominasi-warna" class="font-medium">-</span>
+            </div>
+            <div class="col-span-2 sm:col-span-3">
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">Catatan Terkait Gambar</span>
+              <p id="dt-catatan-gambar" class="font-medium text-slate-600 bg-white p-2.5 rounded-lg border border-slate-200 mt-1">-</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Administrasi & Kontak Cabang -->
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-3">
+          <h4 class="font-bold text-xs text-indigo-700 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-building-user"></i> 3. Administrasi & Penginput
+          </h4>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-slate-700">
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">Cabang</span>
+              <span id="dt-cabang" class="font-semibold text-slate-900">-</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">Nama Penginput</span>
+              <span id="dt-nama-penginput" class="font-medium">-</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">WhatsApp Penginput</span>
+              <span id="dt-wa-penginput" class="font-medium">-</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">Email Pengupload</span>
+              <span id="dt-email-cabang" class="font-medium">-</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">Paket Bayar / Bonus</span>
+              <span id="dt-paket-bayar" class="font-medium">-</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">Bentuk Kerjasama</span>
+              <span id="dt-bentuk-kerjasama" class="font-medium">-</span>
+            </div>
+            <div class="col-span-2 sm:col-span-3">
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">Catatan Khusus</span>
+              <p id="dt-catatan-khusus" class="font-medium text-slate-600 bg-white p-2.5 rounded-lg border border-slate-200 mt-1">-</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4: Tautan File Berkas Asli -->
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-3">
+          <h4 class="font-bold text-xs text-indigo-700 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-paperclip"></i> 4. Berkas Lampiran
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="bg-white p-3 rounded-lg border border-slate-200 flex items-center justify-between">
+              <div>
+                <span class="text-[10px] text-slate-400 uppercase font-semibold block">File Coretan / Gambar Hasil Tes</span>
+                <span id="dt-file-coretan-desc" class="text-xs text-slate-700">Tersedia</span>
+              </div>
+              <div id="dt-file-coretan-action"></div>
+            </div>
+            <div class="bg-white p-3 rounded-lg border border-slate-200 flex items-center justify-between">
+              <div>
+                <span class="text-[10px] text-slate-400 uppercase font-semibold block">Bukti Transfer</span>
+                <span id="dt-bukti-tf-desc" class="text-xs text-slate-700">Tersedia</span>
+              </div>
+              <div id="dt-bukti-tf-action"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-3 sm:p-4 border-t border-slate-100 flex justify-end bg-slate-50">
+        <button onclick="closeDetailTesteeModal()" type="button" class="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold transition cursor-pointer">
+          Tutup Detail
+        </button>
+      </div>
+
+    </div>
+  </div>
 
   <script>
     // 1. Konfigurasi Client Supabase
@@ -352,6 +658,9 @@
 
     let currentCabang = "";
     let allBatchData = []; // Menampung array data batch untuk filter pencarian
+    let allPesertaData = []; // Menampung array data peserta lengkap
+    let filteredPesertaData = []; // Data peserta terfilter
+    let batchMapGlobal = {}; // Map batch_id ke data batch & file hasil pusat
 
     // 2. Inisialisasi & Proteksi Sesi Login
 window.addEventListener('DOMContentLoaded', async () => {
@@ -384,8 +693,9 @@ window.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('f_cabang').value = currentCabang;
   }
   
-  // 3. Muat data batch
+  // 3. Muat data batch & database testee
   loadBatchUploads();
+  loadDataTestee();
 });
 
     // Sidebar Toggle untuk Layar Seluler (Mobile)
@@ -403,21 +713,26 @@ window.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('content-satuan').classList.toggle('hidden', tab !== 'satuan');
       document.getElementById('content-massal').classList.toggle('hidden', tab !== 'massal');
       document.getElementById('content-batch').classList.toggle('hidden', tab !== 'batch');
+      document.getElementById('content-testee').classList.toggle('hidden', tab !== 'testee');
       
-      document.getElementById('tab-satuan').className = tab === 'satuan' 
-        ? "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium bg-indigo-600 text-white transition"
-        : "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition";
+      const activeClass = "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium bg-indigo-600 text-white transition cursor-pointer";
+      const inactiveClass = "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition cursor-pointer";
 
-      document.getElementById('tab-massal').className = tab === 'massal'
-        ? "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium bg-indigo-600 text-white transition"
-        : "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition";
+      document.getElementById('tab-satuan').className = tab === 'satuan' ? activeClass : inactiveClass;
+      document.getElementById('tab-massal').className = tab === 'massal' ? activeClass : inactiveClass;
+      document.getElementById('tab-batch').className = tab === 'batch' ? activeClass : inactiveClass;
 
-      document.getElementById('tab-batch').className = tab === 'batch'
-        ? "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium bg-indigo-600 text-white transition"
-        : "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition";
+      const tabTestee = document.getElementById('tab-testee');
+      if (tabTestee) {
+        tabTestee.className = tab === 'testee'
+          ? "w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium bg-indigo-600 text-white transition cursor-pointer"
+          : "w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition cursor-pointer";
+      }
 
       if (tab === 'batch') {
         loadBatchUploads();
+      } else if (tab === 'testee') {
+        loadDataTestee();
       }
 
       // Auto-close sidebar jika dibuka di layar seluler
@@ -958,6 +1273,467 @@ function renderBatchTable(dataList) {
       } catch (err) {
         alert("Terjadi kesalahan saat mengunduh ZIP: " + err.message);
       }
+    }
+
+    // =========================================================================
+    // 8. DATABASE TESTEE & HASIL ANALISA PUSAT
+    // =========================================================================
+
+    // Normalisasi string alfanumerik untuk pencocokan nama & no testee
+    const cleanStrMatch = (str) => (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    // Muat data master peserta & cocokkan dengan PDF hasil Pusat
+    async function loadDataTestee() {
+      const tbody = document.getElementById('testee-table-body');
+      if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="8" class="p-6 text-center text-slate-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Memuat database testee & hasil pusat...</td></tr>';
+      }
+
+      try {
+        // 1. Ambil data batch_upload untuk mapping PDF hasil
+        const { data: batches, error: bErr } = await supabaseClient
+          .from('batch_upload')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        batchMapGlobal = {};
+        (batches || []).forEach(b => {
+          let files = [];
+          if (b.hasil_pusat_url) {
+            if (b.hasil_pusat_url.startsWith('[')) {
+              try { files = JSON.parse(b.hasil_pusat_url); } catch(e) {}
+            } else if (b.hasil_pusat_url !== '-' && b.hasil_pusat_url.startsWith('http')) {
+              files = [{ name: b.nama_file_asli || 'Hasil Pusat.pdf', url: b.hasil_pusat_url }];
+            }
+          }
+          if (b.file_hasil_url && b.file_hasil_url !== '-') {
+            files.push({ name: 'Hasil Batch', url: b.file_hasil_url });
+          }
+          batchMapGlobal[b.id] = Object.assign({}, b, { files: files });
+        });
+
+        // 2. Ambil data_peserta dari Supabase
+        const { data: pesertas, error: pErr } = await supabaseClient
+          .from('data_peserta')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (pErr) throw pErr;
+
+        const user = JSON.parse(sessionStorage.getItem('user_cabang')) || {};
+        const normNama = (currentCabang || user.nama_cabang || user.cabang || '').toLowerCase().trim();
+        const normKode = (user.kode_cabang || user.id || '').toLowerCase().trim();
+        const userEmail = (user.email || '').toLowerCase().trim();
+
+        // 3. Filter peserta milik cabang ini
+        const filteredByCabang = (pesertas || []).filter(p => {
+          if (!normNama && !normKode && !userEmail) return true;
+          const pCabang = (p.cabang || '').toLowerCase().trim();
+          const pEmail = (p.email_cabang || '').toLowerCase().trim();
+          const pBatchId = p.batch_id;
+
+          const batchOfCabang = pBatchId && batchMapGlobal[pBatchId];
+          if (batchOfCabang) {
+            const bCabang = (batchOfCabang.cabang || '').toLowerCase().trim();
+            const bKode = (batchOfCabang.kode_cabang || '').toLowerCase().trim();
+            if ((normNama && bCabang.includes(normNama)) || (normKode && bKode.includes(normKode))) return true;
+          }
+
+          const matchNama = normNama && (pCabang.includes(normNama) || normNama.includes(pCabang));
+          const matchEmail = userEmail && (pEmail === userEmail || pEmail.includes(userEmail));
+          const matchKode = normKode && (pCabang.includes(normKode) || (p.no_testee || '').toLowerCase().includes(normKode));
+          const prefixTasik = (normNama.includes('tasik') || normKode.includes('tsk')) && (p.no_testee || '').toUpperCase().startsWith('TSM');
+
+          return matchNama || matchEmail || matchKode || prefixTasik;
+        });
+
+        // 4. Petakan status hasil tes untuk setiap testee
+        allPesertaData = filteredByCabang.map(p => {
+          let matchedFile = null;
+          let batch = p.batch_id ? batchMapGlobal[p.batch_id] : null;
+
+          // Prioritas 1: Jika ada URL hasil analisa langsung di row peserta
+          if (p.hasil_analisa_url && p.hasil_analisa_url !== '-') {
+            matchedFile = { name: (p.nama_testee || 'Hasil') + '_Pusat.pdf', url: p.hasil_analisa_url };
+          } 
+          // Prioritas 2: Cocokkan dengan file PDF di batch_upload yang bersangkutan
+          else if (batch && batch.files && batch.files.length > 0) {
+            const cleanNo = cleanStrMatch(p.no_testee);
+            const cleanNama = cleanStrMatch(p.nama_testee);
+
+            matchedFile = batch.files.find(f => {
+              const cFn = cleanStrMatch(f.name);
+              return (cleanNo && cleanNo.length > 3 && cFn.includes(cleanNo)) ||
+                     (cleanNama && cleanNama.length > 4 && cFn.includes(cleanNama));
+            });
+
+            // Jika dalam batch hanya ada 1 peserta dan 1 file hasil
+            if (!matchedFile && batch.files.length === 1 && (batch.jumlah_data === 1 || filteredByCabang.filter(x => x.batch_id === batch.id).length === 1)) {
+              matchedFile = batch.files[0];
+            }
+          }
+
+          // Prioritas 3: Pencarian lintas batch jika batch_id kosong atau terpisah
+          if (!matchedFile) {
+            const cleanNo = cleanStrMatch(p.no_testee);
+            const cleanNama = cleanStrMatch(p.nama_testee);
+            for (const bid in batchMapGlobal) {
+              const b = batchMapGlobal[bid];
+              const found = (b.files || []).find(f => {
+                const cFn = cleanStrMatch(f.name);
+                return (cleanNo && cleanNo.length > 3 && cFn.includes(cleanNo)) ||
+                       (cleanNama && cleanNama.length > 4 && cFn.includes(cleanNama));
+              });
+              if (found) {
+                matchedFile = found;
+                break;
+              }
+            }
+          }
+
+          return Object.assign({}, p, {
+            has_result: !!matchedFile,
+            matched_result_file: matchedFile
+          });
+        });
+
+        // Perbarui badge total di sidebar
+        const badgeSidebar = document.getElementById('badge-total-testee');
+        if (badgeSidebar) badgeSidebar.innerText = allPesertaData.length;
+
+        // Perbarui kartu statistik
+        updateTesteeStats();
+
+        // Tampilkan tabel dengan filter terkini
+        filterTesteeTable();
+
+      } catch (err) {
+        console.error('Error loadDataTestee:', err);
+        if (tbody) {
+          tbody.innerHTML = '<tr><td colspan="8" class="p-6 text-center text-rose-500 font-medium">Gagal memuat database testee: ' + err.message + '</td></tr>';
+        }
+      }
+    }
+
+    // Perbarui angka di kartu ringkasan
+    function updateTesteeStats() {
+      const total = allPesertaData.length;
+      const selesai = allPesertaData.filter(p => p.has_result).length;
+      const menunggu = total - selesai;
+
+      const elTotal = document.getElementById('stat-total-testee');
+      const elSelesai = document.getElementById('stat-selesai-testee');
+      const elMenunggu = document.getElementById('stat-menunggu-testee');
+
+      if (elTotal) elTotal.innerText = total;
+      if (elSelesai) elSelesai.innerText = selesai;
+      if (elMenunggu) elMenunggu.innerText = menunggu;
+    }
+
+    // Filter real-time tabel berdasarkan keyword, status hasil, dan paket
+    function filterTesteeTable() {
+      const keyword = (document.getElementById('testee-search-input')?.value || '').toLowerCase().trim();
+      const statusFilter = document.getElementById('filter-status-hasil')?.value || 'all';
+      const paketFilter = document.getElementById('filter-paket-testee')?.value || 'all';
+
+      filteredPesertaData = allPesertaData.filter(p => {
+        // Filter Pencarian Keyword (Nama, No Testee, Lembaga)
+        const matchKeyword = !keyword || 
+          (p.nama_testee && p.nama_testee.toLowerCase().includes(keyword)) ||
+          (p.no_testee && p.no_testee.toLowerCase().includes(keyword)) ||
+          (p.lembaga_institusi && p.lembaga_institusi.toLowerCase().includes(keyword));
+
+        // Filter Status Hasil
+        let matchStatus = true;
+        if (statusFilter === 'selesai') matchStatus = p.has_result;
+        else if (statusFilter === 'menunggu') matchStatus = !p.has_result;
+
+        // Filter Paket
+        let matchPaket = true;
+        if (paketFilter !== 'all') {
+          matchPaket = (p.paket_tes || '').toLowerCase() === paketFilter.toLowerCase();
+        }
+
+        return matchKeyword && matchStatus && matchPaket;
+      });
+
+      renderTesteeTable(filteredPesertaData);
+    }
+
+    // Render baris data ke tabel database testee
+    function renderTesteeTable(dataList) {
+      const tbody = document.getElementById('testee-table-body');
+      const countInfo = document.getElementById('testee-count-info');
+
+      if (!tbody) return;
+
+      if (countInfo) {
+        countInfo.innerText = 'Menampilkan ' + dataList.length + ' dari total ' + allPesertaData.length + ' data peserta';
+      }
+
+      if (!dataList || dataList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="p-6 text-center text-slate-400">Tidak ada data testee yang cocok dengan filter.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = dataList.map((row, index) => {
+        // Kolom Status Hasil
+        let statusBadge = '';
+        if (row.has_result && row.matched_result_file) {
+          statusBadge = `
+            <div class="flex flex-col items-start gap-1">
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-full font-bold text-[10px]">
+                <i class="fa-solid fa-circle-check"></i> Sudah Keluar
+              </span>
+              <a href="${row.matched_result_file.url}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 hover:text-emerald-900 hover:underline">
+                <i class="fa-solid fa-file-pdf"></i> Unduh PDF
+              </a>
+            </div>
+          `;
+        } else {
+          statusBadge = `
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full font-medium text-[10px] border border-amber-200">
+              <i class="fa-solid fa-clock"></i> Menunggu Pusat
+            </span>
+          `;
+        }
+
+        // Tanggal Tes / Usia
+        const tglTes = row.tanggal_tes ? row.tanggal_tes : '-';
+        const usia = row.usia ? row.usia : '';
+        const jk = row.jenis_kelamin ? (row.jenis_kelamin.toLowerCase().includes('laki') ? 'L' : 'P') : '';
+
+        // Badge Paket
+        let paketClass = 'bg-indigo-50 text-indigo-700 border-indigo-100';
+        if (row.paket_tes === 'Parent') paketClass = 'bg-purple-50 text-purple-700 border-purple-100';
+        if (row.paket_tes === 'Talent') paketClass = 'bg-amber-50 text-amber-700 border-amber-100';
+        if (row.paket_tes === 'Brainwave') paketClass = 'bg-rose-50 text-rose-700 border-rose-100';
+
+        return `
+          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+            <td class="p-3 text-center text-slate-400 font-medium">${index + 1}</td>
+            <td class="p-3">${statusBadge}</td>
+            <td class="p-3 font-mono font-semibold text-slate-800">${row.no_testee && row.no_testee !== '-' ? row.no_testee : '<span class="text-slate-400 italic">Belum Ada</span>'}</td>
+            <td class="p-3">
+              <div class="font-bold text-slate-800 text-xs">${row.nama_testee || '-'}</div>
+              <div class="text-[11px] text-slate-500">${usia ? usia + ' • ' : ''}${jk ? (jk === 'L' ? 'Laki-Laki' : 'Perempuan') : ''}</div>
+            </td>
+            <td class="p-3 text-slate-600 font-medium">${row.lembaga_institusi || '-'}</td>
+            <td class="p-3">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${paketClass}">
+                ${row.paket_tes || 'Basic'}
+              </span>
+            </td>
+            <td class="p-3 text-slate-600">
+              <div>${tglTes}</div>
+              <div class="text-[10px] text-slate-400">${row.level_pendidikan || '-'}</div>
+            </td>
+            <td class="p-3 text-center">
+              <button onclick="openDetailTesteeModal('${row.id}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold transition shadow-sm cursor-pointer" title="Lihat 27 Parameter Lengkap">
+                <i class="fa-solid fa-eye"></i> Detail
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Buka Modal Detail 27 Parameter Testee
+    function openDetailTesteeModal(pesertaId) {
+      const item = allPesertaData.find(p => String(p.id) === String(pesertaId));
+      if (!item) return alert('Data peserta tidak ditemukan!');
+
+      // Set Header
+      document.getElementById('modal-testee-nama').innerText = item.nama_testee || 'Detail Testee';
+      document.getElementById('modal-testee-sub').innerText = (item.no_testee || '-') + ' • ' + (item.lembaga_institusi || '-');
+
+      // Banner Status Hasil
+      const bannerBox = document.getElementById('modal-hasil-banner');
+      if (item.has_result && item.matched_result_file) {
+        bannerBox.innerHTML = `
+          <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 text-lg shadow-sm">
+                <i class="fa-solid fa-file-pdf"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-xs sm:text-sm text-emerald-900">Hasil Tes Sudah Keluar dari Pusat!</h4>
+                <p class="text-[11px] text-emerald-700 truncate max-w-xs sm:max-w-md">${item.matched_result_file.name}</p>
+              </div>
+            </div>
+            <a href="${item.matched_result_file.url}" target="_blank" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition shadow-sm shrink-0">
+              <i class="fa-solid fa-download"></i> Unduh / Buka PDF
+            </a>
+          </div>
+        `;
+      } else {
+        bannerBox.innerHTML = `
+          <div class="bg-amber-50 border border-amber-200 p-3.5 rounded-xl flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-amber-500 text-white flex items-center justify-center shrink-0 text-base shadow-sm">
+              <i class="fa-solid fa-clock"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-xs text-amber-900">Menunggu Hasil Analisa dari Pusat</h4>
+              <p class="text-[11px] text-amber-700">Berkas tes peserta ini sedang dalam tahap analisa oleh tim pusat.</p>
+            </div>
+          </div>
+        `;
+      }
+
+      // 1. Biodata & Pelaksanaan Tes
+      document.getElementById('dt-no-testee').innerText = item.no_testee || '-';
+      document.getElementById('dt-nama-testee').innerText = item.nama_testee || '-';
+      document.getElementById('dt-lembaga').innerText = item.lembaga_institusi || '-';
+      document.getElementById('dt-paket').innerText = item.paket_tes || '-';
+      document.getElementById('dt-tgl-tes').innerText = item.tanggal_tes || '-';
+      document.getElementById('dt-usia').innerText = item.usia || '-';
+      document.getElementById('dt-ttl').innerText = (item.tempat_lahir || '-') + ', ' + (item.tanggal_lahir || '-');
+      document.getElementById('dt-jk').innerText = item.jenis_kelamin || '-';
+      document.getElementById('dt-level-pendidikan').innerText = item.level_pendidikan || '-';
+      document.getElementById('dt-jurusan-sma').innerText = item.jurusan_sma || '-';
+      document.getElementById('dt-jurusan-terlintas').innerText = item.jurusan_terlintas || '-';
+
+      // 2. Observasi Menggambar
+      document.getElementById('dt-proses-gambar').innerText = item.bantuan_menggambar || '-';
+      document.getElementById('dt-kondisi-kertas').innerText = item.kondisi_kertas || '-';
+      document.getElementById('dt-posisi-kertas').innerText = item.posisi_kertas || '-';
+      document.getElementById('dt-alat-gambar').innerText = item.alat_gambar || '-';
+      document.getElementById('dt-dominasi-warna').innerText = item.dominasi_warna || '-';
+      document.getElementById('dt-catatan-gambar').innerText = item.catatan_gambar || '-';
+
+      // 3. Administrasi & Kontak
+      document.getElementById('dt-cabang').innerText = item.cabang || currentCabang;
+      document.getElementById('dt-nama-penginput').innerText = item.nama_penginput || '-';
+      document.getElementById('dt-wa-penginput').innerText = item.whatsapp_penginput || '-';
+      document.getElementById('dt-email-cabang').innerText = item.email_cabang || '-';
+      document.getElementById('dt-paket-bayar').innerText = item.jenis_paket_bayar || '-';
+      document.getElementById('dt-bentuk-kerjasama').innerText = item.bentuk_kerjasama || '-';
+      document.getElementById('dt-catatan-khusus').innerText = item.catatan_khusus || '-';
+
+      // 4. Berkas Lampiran
+      const fileCoretanAction = document.getElementById('dt-file-coretan-action');
+      const fileCoretanDesc = document.getElementById('dt-file-coretan-desc');
+      if (item.file_coretan_url && item.file_coretan_url !== '-') {
+        fileCoretanDesc.innerText = 'File gambar/coretan tersedia';
+        fileCoretanAction.innerHTML = '<a href="' + item.file_coretan_url + '" target="_blank" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-semibold"><i class="fa-solid fa-arrow-up-right-from-square"></i> Buka File</a>';
+      } else {
+        fileCoretanDesc.innerText = 'Tidak ada lampiran file coretan';
+        fileCoretanAction.innerHTML = '<span class="text-slate-400 italic">-</span>';
+      }
+
+      const buktiTfAction = document.getElementById('dt-bukti-tf-action');
+      const buktiTfDesc = document.getElementById('dt-bukti-tf-desc');
+      if (item.bukti_transfer_url && item.bukti_transfer_url !== '-') {
+        buktiTfDesc.innerText = 'Bukti transfer tersedia';
+        buktiTfAction.innerHTML = '<a href="' + item.bukti_transfer_url + '" target="_blank" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-semibold"><i class="fa-solid fa-arrow-up-right-from-square"></i> Buka Bukti</a>';
+      } else {
+        buktiTfDesc.innerText = 'Tidak ada berkas bukti transfer';
+        buktiTfAction.innerHTML = '<span class="text-slate-400 italic">-</span>';
+      }
+
+      // Tampilkan Modal
+      const modal = document.getElementById('modalDetailTestee');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    // Tutup Modal Detail Testee
+    function closeDetailTesteeModal() {
+      const modal = document.getElementById('modalDetailTestee');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    // Export Database Testee ke Excel (.xlsx) dengan 27 Kolom Lengkap + Status Hasil
+    function exportTesteeExcel() {
+      if (typeof XLSX === 'undefined') {
+        return alert('Library XLSX belum dimuat!');
+      }
+
+      const dataToExport = filteredPesertaData.length > 0 ? filteredPesertaData : allPesertaData;
+      if (dataToExport.length === 0) {
+        return alert('Belum ada data peserta untuk diexport!');
+      }
+
+      const headers = [
+        "No",
+        "Status Hasil Pusat",
+        "Link PDF Hasil Pusat",
+        "No Testee",
+        "Nama Lengkap Testee",
+        "Lembaga / Institusi",
+        "Jenis Paket",
+        "Tanggal Tes",
+        "Usia",
+        "Tempat Lahir",
+        "Tanggal Lahir",
+        "Jenis Kelamin",
+        "Level Pendidikan",
+        "Jurusan SMA",
+        "Bantuan Menggambar",
+        "Kondisi Kertas",
+        "Posisi Kertas",
+        "Alat Gambar",
+        "Dominasi Warna",
+        "Catatan Gambar",
+        "Email Pengupload",
+        "Paket Berbayar / Bonus",
+        "Bentuk Kerjasama",
+        "Nama Penginput",
+        "WhatsApp Penginput",
+        "Cabang",
+        "Catatan Khusus",
+        "Jurusan Terlintas",
+        "Link File Coretan",
+        "Link Bukti Transfer"
+      ];
+
+      const rows = dataToExport.map((p, idx) => {
+        const statusHasil = p.has_result ? "Sudah Keluar" : "Menunggu Hasil Pusat";
+        const linkHasil = (p.has_result && p.matched_result_file) ? p.matched_result_file.url : "-";
+
+        return [
+          idx + 1,
+          statusHasil,
+          linkHasil,
+          p.no_testee || "-",
+          p.nama_testee || "-",
+          p.lembaga_institusi || "-",
+          p.paket_tes || "Basic",
+          p.tanggal_tes || "-",
+          p.usia || "-",
+          p.tempat_lahir || "-",
+          p.tanggal_lahir || "-",
+          p.jenis_kelamin || "-",
+          p.level_pendidikan || "-",
+          p.jurusan_sma || "-",
+          p.bantuan_menggambar || "-",
+          p.kondisi_kertas || "-",
+          p.posisi_kertas || "-",
+          p.alat_gambar || "-",
+          p.dominasi_warna || "-",
+          p.catatan_gambar || "-",
+          p.email_cabang || "-",
+          p.jenis_paket_bayar || "-",
+          p.bentuk_kerjasama || "-",
+          p.nama_penginput || "-",
+          p.whatsapp_penginput || "-",
+          p.cabang || currentCabang,
+          p.catatan_khusus || "-",
+          p.jurusan_terlintas || "-",
+          p.file_coretan_url || "-",
+          p.bukti_transfer_url || "-"
+        ];
+      });
+
+      const worksheetData = [headers, ...rows];
+      const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+      ws['!cols'] = headers.map(h => ({ wch: Math.max(h.length + 3, 14) }));
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Database Testee");
+
+      const cleanCabang = (currentCabang || "Cabang").replace(/[^a-zA-Z0-9_-]/g, '_');
+      const filename = `Database_Testee_${cleanCabang}_${Date.now()}.xlsx`;
+      XLSX.writeFile(wb, filename);
     }
   </script>
 </body>
