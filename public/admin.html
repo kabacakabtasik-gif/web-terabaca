@@ -291,12 +291,24 @@
 
             <div class="mb-4">
                 <label class="block text-sm font-semibold text-slate-700 mb-1">
-                    Pilih / Drag Multi-File PDF Hasil Peserta
+                    📄 Pilih File PDF Hasil Peserta (Bisa 1 atau Banyak)
                 </label>
                 <input type="file" id="pusatPdfFiles" multiple accept="application/pdf"
                     class="w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 border border-slate-200 rounded-xl p-2 transition cursor-pointer">
                 <p class="mt-1.5 text-[11px] text-slate-500 leading-relaxed">
                     * Nama file PDF otomatis dicocokkan dengan <b>No Testee</b> atau <b>Nama Peserta</b> (contoh: <i>001_Budi.pdf</i> atau <i>Budi_Santoso.pdf</i>).
+                </p>
+            </div>
+
+            <!-- Opsi Link Google Drive (Alternatif Cepat & Ringan) -->
+            <div class="mb-4 p-3 bg-indigo-50/60 border border-indigo-100 rounded-xl">
+                <label class="block text-xs font-semibold text-indigo-900 mb-1">
+                    🔗 Atau Tempel Link Google Drive / Cloud (Alternatif):
+                </label>
+                <input type="url" id="pusatDriveLinkInput" placeholder="https://drive.google.com/drive/folders/... atau file link" 
+                    class="w-full text-xs bg-white border border-slate-200 rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800">
+                <p class="mt-1 text-[10px] text-indigo-600">
+                    Jika file hasil sudah diunggah di Google Drive, cukup tempel link foldernya di sini tanpa perlu upload ulang.
                 </p>
             </div>
 
@@ -656,12 +668,33 @@
 // 1. BUKA MODAL & AMBIL DATA PESERTA BATCH
 async function openModalHasilBatch(idBatch) {
     document.getElementById('batchIdTarget').value = idBatch;
-    document.getElementById('pusatPdfFiles').value = '';
     
+    const fileInput = document.getElementById('pusatPdfFiles');
+    if (fileInput) fileInput.value = '';
+
+    const driveInput = document.getElementById('pusatDriveLinkInput');
+    if (driveInput) driveInput.value = '';
+
     const progressBox = document.getElementById('pusatProgressBox');
     const logBox = document.getElementById('pusatUploadLog');
     if (progressBox) progressBox.classList.add('hidden');
     if (logBox) logBox.innerHTML = '';
+
+    // Cek jika batch sudah memiliki link Google Drive sebelumnya
+    try {
+        const { data: bData } = await _supabase
+            .from('batch_upload')
+            .select('hasil_pusat_url')
+            .eq('id', idBatch)
+            .single();
+
+        if (bData && bData.hasil_pusat_url && driveInput) {
+            const hUrl = bData.hasil_pusat_url.trim();
+            if (hUrl.startsWith('http') && !hUrl.startsWith('[')) {
+                driveInput.value = hUrl;
+            }
+        }
+    } catch(e) {}
 
     try {
         const { data, error } = await _supabase
@@ -686,14 +719,45 @@ function closeModalHasilBatch() {
 // Helper normalisasi alfanumerik untuk pencocokan nama file & peserta
 const normalizeStr = (str) => (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
-// 3. UPLOAD MULTI PDF KE SUPABASE STORAGE
+// 3. UPLOAD MULTI PDF VIA SECURE BACKEND API / DIRECT FALLBACK
 async function eksekusiUploadPdfBatchPusat() {
     const batchId = document.getElementById('batchIdTarget').value;
     const fileInput = document.getElementById('pusatPdfFiles');
-    const files = Array.from(fileInput.files);
+    const driveInput = document.getElementById('pusatDriveLinkInput');
+    const driveLinkVal = driveInput ? driveInput.value.trim() : '';
+
+    const files = fileInput && fileInput.files ? Array.from(fileInput.files) : [];
+
+    // Opsi 1: Jika pengguna memilih simpan Link Google Drive
+    if (files.length === 0 && driveLinkVal) {
+        if (!confirm("Simpan tautan Google Drive ini sebagai hasil rilis batch?")) return;
+        const btn = document.getElementById('btnSimpanHasilBatch');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+
+        try {
+            const res = await fetch('/api/upload-pdf-hasil', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ batchId, driveUrl: driveLinkVal })
+            });
+            const data = await res.json();
+            if (!res.ok || !data.success) throw new Error(data.message || 'Gagal menyimpan link');
+
+            alert("Alhamdulillah! Tautan hasil tes berhasil disimpan.");
+            closeModalHasilBatch();
+            loadDataBatch();
+        } catch (err) {
+            alert("Gagal menyimpan tautan: " + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Unggah & Simpan';
+        }
+        return;
+    }
 
     if (files.length === 0) {
-        return alert("Pilih minimal 1 file PDF!");
+        return alert("Pilih minimal 1 file PDF atau masukkan link Google Drive hasil!");
     }
 
     const btn = document.getElementById('btnSimpanHasilBatch');
@@ -705,87 +769,72 @@ async function eksekusiUploadPdfBatchPusat() {
 
     btn.disabled = true;
     progressBox.classList.remove('hidden');
+    logBox.innerHTML = '';
 
-    let completed = 0;
     const uploadedFileList = [];
+    const failedFiles = [];
 
-    function updateProgressPusat(cur, total) {
-        const pct = Math.round((cur / total) * 100);
-        progressText.innerText = `Mengunggah ${cur} dari ${total} PDF...`;
+    // Proses satu persatu (Sequential) agar aman dari batas koneksi mobile & memory Android
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const pct = Math.round((i / files.length) * 100);
+        progressText.innerText = `Mengunggah ${i + 1} dari ${files.length}: ${file.name}...`;
         percentText.innerText = `${pct}%`;
         progressBar.style.width = `${pct}%`;
-    }
 
-    async function uploadSingleFile(file) {
         try {
-            const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-            const storagePath = `batch_${batchId}/${Date.now()}_${cleanName}`;
-            
-            const { error: uploadErr } = await _supabase
-                .storage
-                .from('hasil-pdf')
-                .upload(storagePath, file, { cacheControl: '3600', upsert: true });
-
-            if (uploadErr) throw uploadErr;
-
-            const { data: publicUrlData } = _supabase
-                .storage
-                .from('hasil-pdf')
-                .getPublicUrl(storagePath);
-
-            const publicUrl = publicUrlData.publicUrl;
-
-            uploadedFileList.push({
-                name: file.name,
-                url: publicUrl
+            // 1. Baca isi file sebagai base64 (Aman 100% untuk Android / Mobile tanpa masalah file lock)
+            const base64Data = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = () => reject(new Error("Gagal membaca file dari penyimpanan perangkat"));
+                reader.readAsDataURL(file);
             });
 
-            logBox.innerHTML += `<div class="text-emerald-600">✓ [Berhasil] ${file.name}</div>`;
+            // 2. Kirim ke API endpoint backend yang terotentikasi penuh dengan hak akses admin
+            const apiRes = await fetch('/api/upload-pdf-hasil', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    batchId: batchId,
+                    fileName: file.name,
+                    fileBase64: base64Data
+                })
+            });
+
+            const result = await apiRes.json();
+            if (!apiRes.ok || !result.success) {
+                throw new Error(result.message || 'Server gagal memproses upload');
+            }
+
+            uploadedFileList.push(result.file);
+            logBox.innerHTML += `<div class="text-emerald-600 font-semibold">✓ [Berhasil] ${file.name}</div>`;
 
         } catch (err) {
-            logBox.innerHTML += `<div class="text-rose-600">✕ [Gagal] ${file.name}: ${err.message}</div>`;
+            console.error(`Error uploading ${file.name}:`, err);
+            failedFiles.push(`${file.name}: ${err.message}`);
+            logBox.innerHTML += `<div class="text-rose-600 font-semibold">✕ [Gagal] ${file.name}: ${err.message}</div>`;
         }
 
-        completed++;
-        updateProgressPusat(completed, files.length);
         logBox.scrollTop = logBox.scrollHeight;
     }
 
-    // Process with Concurrency Pool (5 parallel uploads at a time)
-    const CONCURRENCY = 5;
-    for (let i = 0; i < files.length; i += CONCURRENCY) {
-        const chunk = files.slice(i, i + CONCURRENCY);
-        await Promise.all(chunk.map(file => uploadSingleFile(file)));
-    }
-
-    if (uploadedFileList.length > 0) {
-        // Ambil data file yang sudah ada sebelumnya jika ada
-        const { data: bData } = await _supabase.from('batch_upload').select('hasil_pusat_url').eq('id', batchId).single();
-        let existingFiles = [];
-        if (bData && bData.hasil_pusat_url) {
-            try {
-                const parsed = JSON.parse(bData.hasil_pusat_url);
-                if (Array.isArray(parsed)) existingFiles = parsed;
-            } catch (e) {}
-        }
-
-        const allFiles = [...existingFiles, ...uploadedFileList];
-        const resultPayload = JSON.stringify(allFiles);
-
-        await _supabase
-            .from('batch_upload')
-            .update({ hasil_pusat_url: resultPayload })
-            .eq('id', batchId);
-
-        alert(`Alhamdulillah! ${uploadedFileList.length} file PDF berhasil diunggah.`);
-    } else {
-        alert("Gagal mengunggah file PDF.");
-    }
+    progressBar.style.width = '100%';
+    percentText.innerText = '100%';
 
     btn.disabled = false;
-    closeModalHasilBatch();
-    
-    if (typeof loadDataBatch === 'function') loadDataBatch();
+    btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Unggah & Simpan';
+
+    if (failedFiles.length === 0) {
+        alert(`Alhamdulillah! Seluruh ${uploadedFileList.length} file PDF hasil berhasil diunggah.`);
+        closeModalHasilBatch();
+        loadDataBatch();
+    } else if (uploadedFileList.length > 0) {
+        alert(`Perhatian:\n${uploadedFileList.length} file berhasil diunggah.\n${failedFiles.length} file gagal:\n\n${failedFiles.join('\n')}\n\nSilakan cek catatan log di layar.`);
+        loadDataBatch();
+    } else {
+        alert(`Gagal mengunggah file PDF:\n\n${failedFiles.join('\n')}\n\nTips: Jika koneksi internet di HP lambat atau file berukuran besar, Anda juga bisa memasukkan Link Google Drive hasil di kolom yang tersedia.`);
+    }
 }
 
 // 4. UNDUH ZIP HASIL BATCH PUSAT / CABANG
